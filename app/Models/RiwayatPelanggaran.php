@@ -1,0 +1,78 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class RiwayatPelanggaran extends Model
+{
+    use HasFactory;
+
+    /**
+     * Nama tabelnya adalah 'riwayat_pelanggaran'.
+     */
+    protected $table = 'riwayat_pelanggaran';
+
+    /**
+     * PENTING: Beri tahu Laravel bahwa tabel ini TIDAK menggunakan
+     * timestamps 'created_at' dan 'updated_at' bawaan.
+     * Kita akan menganggap 'tanggal_kejadian' sebagai timestamp utamanya.
+     */
+    public $timestamps = false;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'siswa_id',
+        'jenis_pelanggaran_id',
+        'guru_pencatat_user_id',
+        'tanggal_kejadian',
+        'keterangan',
+        'bukti_foto_path',
+    ];
+
+    /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'tanggal_kejadian' => 'datetime',
+    ];
+
+    // =====================================================================
+    // ----------------- DEFINISI RELASI ELOQUENT ------------------
+    // =====================================================================
+
+    /**
+     * Relasi Wajib: SATU RiwayatPelanggaran DIMILIKI OLEH SATU Siswa.
+     * (Foreign Key: siswa_id)
+     */
+    public function siswa(): BelongsTo
+    {
+        return $this->belongsTo(Siswa::class, 'siswa_id');
+    }
+
+    /**
+     * Relasi Wajib: SATU RiwayatPelanggaran MEREKAM SATU JenisPelanggaran.
+     * (Foreign Key: jenis_pelanggaran_id)
+     */
+    public function jenisPelanggaran(): BelongsTo
+    {
+        return $this->belongsTo(JenisPelanggaran::class, 'jenis_pelanggaran_id');
+    }
+
+    /**
+     * Relasi Wajib: SATU RiwayatPelanggaran DICATAT OLEH SATU User (Guru).
+     * (Foreign Key: guru_pencatat_user_id)
+     */
+    public function guruPencatat(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'guru_pencatat_user_id');
+    }
+}
