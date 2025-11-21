@@ -2,102 +2,161 @@
 
 @section('title', 'Edit Data Siswa')
 
+@section('styles')
+    <!-- Load CSS Eksternal -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="{{ asset('css/pages/siswa-edit.css') }}">
+@endsection
+
 @section('content')
 <div class="container-fluid">
+    
+    <!-- HEADER -->
+    <div class="row mb-3 pt-2">
+        <div class="col-sm-6">
+            <h4 class="m-0 text-dark font-weight-bold">
+                @if(Auth::user()->role->nama_role == 'Wali Kelas')
+                    <i class="fas fa-phone-alt text-info mr-2"></i> Update Kontak
+                @else
+                    <i class="fas fa-user-edit text-warning mr-2"></i> Edit Data Siswa
+                @endif
+            </h4>
+        </div>
+        <div class="col-sm-6 text-right">
+            <a href="{{ route('siswa.index') }}" class="btn btn-outline-secondary btn-sm border rounded">
+                <i class="fas fa-arrow-left mr-1"></i> Kembali ke Data Siswa
+            </a>
+        </div>
+    </div>
+
     <div class="row justify-content-center">
-        <div class="col-md-8">
+        <div class="col-lg-8 col-md-10">
             
-            <!-- TAMPILAN BEDA WARNA UNTUK WALI KELAS -->
             @php 
                 $isWaliKelas = (Auth::user()->role->nama_role == 'Wali Kelas');
-                $cardClass = $isWaliKelas ? 'card-info' : 'card-primary';
-                // Style background abu-abu muda untuk input readonly agar terlihat jelas terkunci
-                $readOnlyAttr = $isWaliKelas ? 'readonly style=background-color:#e9ecef;' : '';
+                // Warna Card: Info (Biru Muda) untuk Wali, Warning (Kuning) untuk Admin
+                $cardClass = $isWaliKelas ? 'card-info' : 'card-warning'; 
+                $readOnlyAttr = $isWaliKelas ? 'readonly' : '';
             @endphp
 
-            <div class="card {{ $cardClass }} shadow">
-                <div class="card-header">
-                    <h3 class="card-title">
-                        @if($isWaliKelas)
-                            <i class="fas fa-phone-alt mr-2"></i> Update Kontak Siswa
-                        @else
-                            <i class="fas fa-user-edit mr-2"></i> Edit Data Siswa
-                        @endif
-                    </h3>
+            <div class="card {{ $cardClass }} card-outline shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h3 class="card-title font-weight-bold text-dark">Formulir Perubahan Data</h3>
                 </div>
                 
                 <form action="{{ route('siswa.update', $siswa->id) }}" method="POST">
                     @csrf
                     @method('PUT')
-                    <div class="card-body">
+                    <div class="card-body bg-light">
                         
+                        <!-- ALERT KHUSUS WALI KELAS -->
                         @if($isWaliKelas)
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle mr-1"></i> Sebagai Wali Kelas, Anda hanya diizinkan mengubah <strong>Nomor HP Orang Tua</strong>. Jika ada kesalahan Nama/NISN, silakan hubungi Operator Sekolah.
+                        <div class="alert alert-light border-info text-info shadow-sm mb-4">
+                            <div class="d-flex">
+                                <div class="mr-3"><i class="fas fa-info-circle fa-2x"></i></div>
+                                <div>
+                                    <strong>Info Akses:</strong><br>
+                                    Sebagai Wali Kelas, Anda hanya diizinkan mengubah <u>Nomor HP Orang Tua</u>. 
+                                    Untuk perbaikan Nama atau NISN, silakan hubungi Operator Sekolah.
+                                </div>
+                            </div>
                         </div>
                         @endif
 
-                        <div class="form-group">
-                            <label>NISN</label>
-                            <input type="text" name="nisn" class="form-control" value="{{ $siswa->nisn }}" {{ $readOnlyAttr }} required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Nama Lengkap</label>
-                            <input type="text" name="nama_siswa" class="form-control" value="{{ $siswa->nama_siswa }}" {{ $readOnlyAttr }} required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Kelas</label>
-                            @if($isWaliKelas)
-                                <!-- Input Dummy untuk Tampilan -->
-                                <input type="text" class="form-control" value="{{ $siswa->kelas->nama_kelas }}" readonly style="background-color:#e9ecef;">
-                                <!-- Input Hidden untuk Value Asli (Agar tidak error validasi required di backend) -->
-                                <input type="hidden" name="kelas_id" value="{{ $siswa->kelas_id }}">
-                            @else
-                                <select name="kelas_id" class="form-control">
-                                    @foreach($kelas as $k)
-                                        <option value="{{ $k->id }}" {{ $siswa->kelas_id == $k->id ? 'selected' : '' }}>
-                                            {{ $k->nama_kelas }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            @endif
-                        </div>
-
-                        <div class="form-group">
-                            <label class="text-primary font-weight-bold">Nomor HP/WA Orang Tua</label>
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text"><i class="fab fa-whatsapp"></i></span>
+                        <div class="row">
+                            <!-- Kolom Kiri -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label text-muted">NISN</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white"><i class="fas fa-id-card text-secondary"></i></span>
+                                        </div>
+                                        <input type="text" name="nisn" class="form-control form-control-clean" 
+                                               value="{{ $siswa->nisn }}" {{ $readOnlyAttr }} required>
+                                    </div>
                                 </div>
-                                <input type="number" name="nomor_hp_ortu" class="form-control border-primary" value="{{ $siswa->nomor_hp_ortu }}" placeholder="08xxxxxxxx">
                             </div>
-                            <small class="text-muted">Pastikan nomor aktif dan terhubung ke WhatsApp.</small>
+
+                            <!-- Kolom Kanan -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label text-muted">Nama Lengkap</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white"><i class="fas fa-user text-secondary"></i></span>
+                                        </div>
+                                        <input type="text" name="nama_siswa" class="form-control form-control-clean" 
+                                               value="{{ $siswa->nama_siswa }}" {{ $readOnlyAttr }} required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label text-muted">Kelas</label>
+                                    @if($isWaliKelas)
+                                        <!-- Tampilan Readonly untuk Wali Kelas -->
+                                        <div class="input-group">
+                                            <div class="input-group-prepend">
+                                                <span class="input-group-text bg-white"><i class="fas fa-chalkboard text-secondary"></i></span>
+                                            </div>
+                                            <input type="text" class="form-control form-control-clean" 
+                                                   value="{{ $siswa->kelas->nama_kelas }}" readonly>
+                                        </div>
+                                        <input type="hidden" name="kelas_id" value="{{ $siswa->kelas_id }}">
+                                    @else
+                                        <!-- Dropdown Select2 untuk Operator -->
+                                        <select name="kelas_id" class="form-control select2" required data-placeholder="-- Pilih Kelas --">
+                                            @foreach($kelas as $k)
+                                                <option value="{{ $k->id }}" {{ $siswa->kelas_id == $k->id ? 'selected' : '' }}>
+                                                    {{ $k->nama_kelas }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-label text-primary">Nomor HP Orang Tua (WA)</label>
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text bg-white border-primary text-success"><i class="fab fa-whatsapp"></i></span>
+                                        </div>
+                                        <input type="text" name="nomor_hp_ortu" class="form-control form-control-clean border-primary" 
+                                               value="{{ $siswa->nomor_hp_ortu }}" placeholder="Contoh: 081234567890">
+                                    </div>
+                                    <small class="text-muted font-italic">Pastikan nomor aktif (WhatsApp).</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AKUN ORANG TUA (KHUSUS OPERATOR) -->
                         @if(!$isWaliKelas)
-                        <div class="form-group">
-                            <label>Akun Login Orang Tua</label>
-                            <select name="orang_tua_user_id" class="form-control">
-                                <option value="">-- Belum Terhubung --</option>
+                        <div class="form-group mt-3">
+                            <label class="form-label text-muted">Akun Login Wali Murid</label>
+                            <select name="orang_tua_user_id" class="form-control select2" data-placeholder="-- Pilih Akun --">
+                                <option value=""></option>
                                 @foreach($orangTua as $ortu)
                                     <option value="{{ $ortu->id }}" {{ $siswa->orang_tua_user_id == $ortu->id ? 'selected' : '' }}>
                                         {{ $ortu->nama }} ({{ $ortu->username }})
                                     </option>
                                 @endforeach
                             </select>
-                            <small class="text-muted">Hubungkan siswa ini dengan akun login orang tua yang sudah dibuat di menu "Manajemen User".</small>
+                            <small class="text-muted font-italic">Hubungkan siswa dengan akun login aplikasi.</small>
                         </div>
                         @endif
 
                     </div>
-                    <div class="card-footer d-flex justify-content-between bg-white">
-                        <a href="{{ route('siswa.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left mr-1"></i> Batal
-                        </a>
-                        <button type="submit" class="btn {{ $isWaliKelas ? 'btn-info' : 'btn-primary' }} px-4">
-                            <i class="fas fa-save mr-1"></i> Simpan Perubahan
+
+                    <div class="card-footer bg-white d-flex justify-content-end py-3">
+                        <a href="{{ route('siswa.index') }}" class="btn btn-default mr-2">Batal</a>
+                        <button type="submit" class="btn {{ $isWaliKelas ? 'btn-info' : 'btn-warning' }} px-4 font-weight-bold shadow-sm">
+                            <i class="fas fa-save mr-2"></i> Simpan Perubahan
                         </button>
                     </div>
                 </form>
@@ -106,3 +165,10 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Load Logic Eksternal -->
+    <script src="{{ asset('js/pages/siswa-edit.js') }}"></script>
+@endpush

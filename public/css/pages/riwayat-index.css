@@ -1,0 +1,101 @@
+/* --- 1. STICKY FILTER STYLES --- */
+.content-wrapper { 
+    overflow: visible !important; 
+}
+
+#stickyFilter {
+    position: -webkit-sticky; 
+    position: sticky;
+    top: 57px; 
+    z-index: 1040;
+    transition: all 0.3s ease;
+    margin-bottom: 20px;
+    border-radius: 8px; 
+}
+
+#stickyFilter.compact-mode {
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    margin-left: -7.5px;
+    margin-right: -7.5px;
+    border-top: none;
+}
+
+/* Label Filter */
+.filter-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #adb5bd;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+/* --- 2. TABLE STYLES --- */
+.table-wrapper {
+    max-height: 70vh; 
+    overflow-y: auto; 
+    overflow-x: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.table-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
+.table-wrapper::-webkit-scrollbar-track { background: #f1f1f1; }
+.table-wrapper::-webkit-scrollbar-thumb { background: #adb5bd; border-radius: 10px; }
+
+/* Header Sticky */
+.table-premium thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa; 
+    color: #495057;
+    z-index: 100; 
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.05); 
+    border-top: none;
+    padding: 15px 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.table-premium td {
+    padding: 12px 20px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f3f5;
+    color: #343a40;
+    font-size: 0.95rem;
+}
+.table-premium tbody tr:hover { background-color: #fcfcfc; }
+
+/* Components */
+.smart-link {
+    text-decoration: none; color: inherit; border-bottom: 1px dashed #adb5bd; transition: all 0.2s;
+}
+.smart-link:hover { color: #007bff; border-bottom-color: #007bff; }
+
+.form-control-clean {
+    border-radius: 4px; border: 1px solid #ced4da; font-size: 0.9rem;
+}
+.form-control-clean:focus { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.15); }
+
+.avatar-circle {
+    width: 35px; height: 35px; background-color: #e9ecef; color: #6c757d;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 0.9rem; margin-right: 10px;
+}
+
+/* Student Meta (Kelas & Poin) */
+.student-profile { display: flex; align-items: flex-start; }
+.student-meta { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+
+.badge-class {
+    font-weight: 500; color: #6c757d; background-color: #f8f9fa;
+    border: 1px solid #dee2e6; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem;
+}
+.badge-poin-total {
+    font-size: 0.75rem; font-weight: 700; padding: 2px 8px;
+    border-radius: 4px; color: #fff;
+}

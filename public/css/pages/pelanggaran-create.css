@@ -1,0 +1,88 @@
+/* --- ELEGANT UI CUSTOMIZATION --- */
+
+/* Scrollable Area dengan Scrollbar Halus */
+.scroll-area {
+    height: 500px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+.scroll-area::-webkit-scrollbar { width: 5px; }
+.scroll-area::-webkit-scrollbar-track { background: #f1f1f1; }
+.scroll-area::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+.scroll-area::-webkit-scrollbar-thumb:hover { background: #aaa; }
+
+/* 1. KARTU PILIHAN (Siswa & Pelanggaran) */
+.selection-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+}
+
+.selection-card:hover {
+    border-color: #adb5bd;
+    background-color: #f8f9fa;
+    transform: translateX(3px);
+}
+
+/* State Selected: Siswa (Biru) */
+.student-item.selected {
+    background-color: #e7f1ff;
+    border: 1px solid #007bff;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+}
+/* State Selected: Pelanggaran (Merah) */
+.violation-item.selected {
+    background-color: #fdf2f3;
+    border: 1px solid #dc3545;
+    box-shadow: 0 2px 4px rgba(220,53,69,0.1);
+}
+
+/* Avatar Circle */
+.avatar-box {
+    width: 42px; height: 42px;
+    background-color: #e9ecef;
+    color: #495057;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 1.1rem;
+    margin-right: 12px; flex-shrink: 0;
+}
+.student-item.selected .avatar-box { background-color: #007bff; color: #fff; }
+
+/* Badge Poin */
+.point-badge {
+    background-color: #f1f3f5; color: #495057;
+    font-weight: 700; font-size: 0.8rem;
+    padding: 4px 10px; border-radius: 20px;
+    min-width: 50px; text-align: center;
+}
+.violation-item.selected .point-badge { background-color: #dc3545; color: #fff; }
+
+/* Radio hidden */
+input[type="radio"] { display: none; }
+
+/* Filter Tabs (Pills) */
+.filter-pills .btn {
+    border-radius: 50px;
+    font-size: 0.85rem;
+    padding: 5px 15px;
+    margin-right: 5px;
+    margin-bottom: 5px;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+    color: #6c757d;
+}
+.filter-pills .btn:hover { background-color: #f8f9fa; }
+.filter-pills .btn.active {
+    background-color: #343a40;
+    color: #fff;
+    border-color: #343a40;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}

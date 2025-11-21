@@ -2,107 +2,15 @@
 
 @section('title', 'Riwayat Pelanggaran')
 
+@section('styles')
+    <!-- Panggil CSS Eksternal -->
+    <link rel="stylesheet" href="{{ asset('css/pages/riwayat-index.css') }}">
+@endsection
+
 @section('content')
-
-<style>
-    /* --- 1. STICKY FILTER STYLES --- */
-    .content-wrapper { overflow: visible !important; }
-
-    #stickyFilter {
-        position: -webkit-sticky; /* Safari */
-        position: sticky;
-        top: 57px; 
-        z-index: 1040;
-        transition: all 0.3s ease;
-        margin-bottom: 20px;
-    }
-
-    #stickyFilter.compact-mode {
-        border-radius: 0 0 8px 8px;
-        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-        margin-left: -7.5px;
-        margin-right: -7.5px;
-        border-top: none;
-    }
-
-    #filterHeader {
-        transition: all 0.3s ease;
-        overflow: hidden;
-        max-height: 100px;
-        opacity: 1;
-    }
-
-    .header-hidden #filterHeader {
-        max-height: 0; opacity: 0; padding: 0 !important; border: none;
-    }
-    .header-hidden .card-body {
-        padding: 10px !important; background-color: #ffffff !important;
-    }
-
-    /* --- 2. TABLE STYLES (FIXED HEADER) --- */
-    .table-wrapper {
-        /* KUNCI AGAR HEADER TETAP DIAM: Berikan tinggi maksimal pada container */
-        max-height: 70vh; /* Menggunakan 70% tinggi layar */
-        overflow-y: auto; 
-        overflow-x: auto;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        background: #fff;
-    }
-    
-    /* Header Tetap Diam (Sticky) */
-    .table-premium thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8f9fa; /* Wajib warna solid agar tidak transparan */
-        color: #495057;
-        z-index: 100; /* Pastikan di atas baris data */
-        box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); /* Bayangan halus di bawah header */
-        border-top: none;
-        padding: 15px 20px;
-        font-size: 0.85rem;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    /* Styling Scrollbar */
-    .table-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
-    .table-wrapper::-webkit-scrollbar-track { background: #f1f1f1; }
-    .table-wrapper::-webkit-scrollbar-thumb { background: #adb5bd; border-radius: 10px; }
-    .table-wrapper::-webkit-scrollbar-thumb:hover { background: #6c757d; }
-
-    .table-premium td {
-        padding: 12px 20px;
-        vertical-align: middle;
-        border-bottom: 1px solid #f1f3f5;
-        color: #343a40;
-    }
-    .table-premium tbody tr:hover { background-color: #f8f9fa; }
-
-    .smart-link {
-        text-decoration: none; color: inherit; border-bottom: 1px dashed #adb5bd; transition: all 0.2s;
-    }
-    .smart-link:hover { color: #007bff; border-bottom-color: #007bff; }
-
-    .form-control-clean {
-        border-radius: 4px; border: 1px solid #ced4da; font-size: 0.9rem;
-    }
-    .form-control-clean:focus { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.15); }
-
-    .avatar-circle {
-        width: 35px; height: 35px; background-color: #e9ecef; color: #6c757d;
-        border-radius: 50%; display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 0.9rem; margin-right: 10px;
-    }
-    .badge-poin-total {
-        font-size: 0.75rem; font-weight: 700; padding: 3px 8px; border-radius: 12px;
-        background-color: #343a40; color: #fff; display: inline-block; margin-top: 4px;
-    }
-</style>
-
 <div class="container-fluid">
 
-    <!-- HEADER -->
+    <!-- HEADER HALAMAN -->
     <div class="row mb-3 pt-2 align-items-center">
         <div class="col-sm-6">
             <h4 class="m-0 text-dark font-weight-bold">
@@ -130,30 +38,17 @@
         </div>
     </div>
 
-    <!-- FILTER SECTION (STICKY & SHRINK) -->
-    <div id="stickyFilter" class="card card-outline card-primary shadow-sm">
+    <!-- FILTER SECTION (STICKY) -->
+    <!-- ID stickyFilter digunakan oleh JS untuk efek melayang -->
+    <div id="stickyFilter" class="card card-outline card-primary shadow-sm border-0">
         
-        <div id="filterHeader" class="card-header bg-white">
-            <div class="d-flex justify-content-between align-items-center">
-                <h3 class="card-title text-primary font-weight-bold" style="font-size: 1rem;">
-                    <i class="fas fa-filter mr-1"></i> Filter & Pencarian
-                </h3>
-                
-                @if(request()->has('cari_siswa') || request()->has('start_date') || request()->has('jenis_pelanggaran_id'))
-                    <a href="{{ route('riwayat.index') }}" class="btn btn-xs btn-light text-danger border font-weight-bold px-3">
-                        <i class="fas fa-times mr-1"></i> Reset
-                    </a>
-                @endif
-            </div>
-        </div>
-
-        <div class="card-body bg-light">
+        <div class="card-body bg-white py-3" style="border-radius: 8px;">
             <form id="filterForm" action="{{ route('riwayat.index') }}" method="GET">
-                <div class="row">
+                <div class="row align-items-end">
                     
-                    <!-- 1. Filter Tanggal -->
+                    <!-- Filter Tanggal -->
                     <div class="col-md-3 mb-2">
-                        <label class="filter-label small font-weight-bold text-muted">Rentang Waktu</label>
+                        <label class="filter-label">Rentang Waktu</label>
                         <div class="input-group input-group-sm">
                             <input type="date" name="start_date" value="{{ request('start_date') }}" class="form-control form-control-clean" onchange="this.form.submit()">
                             <div class="input-group-prepend input-group-append">
@@ -163,12 +58,12 @@
                         </div>
                     </div>
 
-                    <!-- 2. Filter Kelas (Admin Only) -->
+                    <!-- Filter Kelas (Admin Only) -->
                     @if(Auth::user()->role->nama_role != 'Wali Kelas')
                     <div class="col-md-2 mb-2">
-                        <label class="filter-label small font-weight-bold text-muted">Kelas</label>
+                        <label class="filter-label">Kelas</label>
                         <select name="kelas_id" class="form-control form-control-sm form-control-clean" onchange="this.form.submit()">
-                            <option value="">Semua Kelas</option>
+                            <option value="">- Semua -</option>
                             @foreach($allKelas as $k)
                                 <option value="{{ $k->id }}" {{ request('kelas_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
                             @endforeach
@@ -176,11 +71,11 @@
                     </div>
                     @endif
 
-                    <!-- 3. Filter Jenis Pelanggaran -->
+                    <!-- Filter Jenis Pelanggaran -->
                     <div class="col-md-4 mb-2">
-                        <label class="filter-label small font-weight-bold text-muted">Jenis Pelanggaran</label>
+                        <label class="filter-label">Jenis Pelanggaran</label>
                         <select name="jenis_pelanggaran_id" class="form-control form-control-sm form-control-clean" onchange="this.form.submit()">
-                            <option value="">Semua Jenis</option>
+                            <option value="">- Semua Jenis -</option>
                             @foreach($allPelanggaran as $jp)
                                 <option value="{{ $jp->id }}" {{ request('jenis_pelanggaran_id') == $jp->id ? 'selected' : '' }}>
                                     [{{ $jp->kategoriPelanggaran->nama_kategori }}] {{ $jp->nama_pelanggaran }}
@@ -189,9 +84,9 @@
                         </select>
                     </div>
 
-                    <!-- 4. Cari Nama (Live) -->
+                    <!-- Live Search -->
                     <div class="col-md-3 mb-2">
-                        <label class="filter-label small font-weight-bold text-muted">Cari Siswa</label>
+                        <label class="filter-label">Cari Siswa</label>
                         <div class="input-group input-group-sm">
                             <input type="text" id="liveSearch" name="cari_siswa" class="form-control form-control-clean" 
                                    placeholder="Ketik nama..." value="{{ request('cari_siswa') }}">
@@ -202,15 +97,26 @@
                     </div>
 
                 </div>
+
+                <!-- Tombol Reset (Hanya muncul jika filter aktif) -->
+                @if(request()->has('cari_siswa') || request()->has('start_date') || request()->has('jenis_pelanggaran_id') || request()->has('kelas_id') || request()->has('pencatat_id'))
+                <div class="row mt-1 pt-2 border-top">
+                    <div class="col-12 text-right">
+                         <a href="{{ route('riwayat.index') }}" class="btn btn-default btn-xs shadow-sm text-danger font-weight-bold">
+                            <i class="fas fa-times-circle mr-1"></i> Hapus Filter
+                        </a>
+                    </div>
+                </div>
+                @endif
             </form>
         </div>
     </div>
 
-    <!-- TABEL DATA (SCROLLABLE & FIXED HEADER) -->
+    <!-- TABEL DATA (SCROLLABLE) -->
     <div class="card shadow-sm border-0">
         <div class="card-body p-0">
             <div class="table-wrapper">
-                <table class="table table-premium text-nowrap w-100">
+                <table class="table table-hover table-premium w-100">
                     <thead>
                         <tr>
                             <th style="padding-left: 25px;">Waktu</th>
@@ -225,9 +131,10 @@
                         @forelse($riwayat as $r)
                         <tr>
                             <!-- 1. WAKTU -->
-                            <td style="padding-left: 25px;">
+                            <td class="pl-4 align-top pt-3">
                                 <div class="font-weight-bold text-dark">
-                                    <a href="{{ route('riwayat.index', array_merge(request()->all(), ['start_date' => $r->tanggal_kejadian->format('Y-m-d'), 'end_date' => $r->tanggal_kejadian->format('Y-m-d')])) }}" class="smart-link" title="Filter tanggal ini">
+                                    <a href="{{ route('riwayat.index', array_merge(request()->all(), ['start_date' => $r->tanggal_kejadian->format('Y-m-d'), 'end_date' => $r->tanggal_kejadian->format('Y-m-d')])) }}" 
+                                       class="smart-link" title="Filter tanggal ini">
                                         {{ $r->tanggal_kejadian->format('d M Y') }}
                                     </a>
                                 </div>
@@ -238,7 +145,7 @@
 
                             <!-- 2. SISWA -->
                             <td>
-                                <div class="d-flex align-items-center">
+                                <div class="student-profile">
                                     @php $initial = strtoupper(substr($r->siswa->nama_siswa, 0, 1)); @endphp
                                     <div class="avatar-circle">{{ $initial }}</div>
                                     
@@ -246,8 +153,9 @@
                                         <a href="{{ route('riwayat.index', ['cari_siswa' => $r->siswa->nama_siswa]) }}" class="text-primary font-weight-bold smart-link" title="Lihat riwayat siswa ini">
                                             {{ $r->siswa->nama_siswa }}
                                         </a>
-                                        <div class="mt-1">
-                                            <a href="{{ route('riwayat.index', ['kelas_id' => $r->siswa->kelas_id]) }}" class="badge badge-light border text-muted" title="Filter kelas">
+                                        
+                                        <div class="student-meta">
+                                            <a href="{{ route('riwayat.index', ['kelas_id' => $r->siswa->kelas_id]) }}" class="badge-class text-decoration-none" title="Filter kelas">
                                                 {{ $r->siswa->kelas->nama_kelas }}
                                             </a>
                                             
@@ -255,7 +163,7 @@
                                                 $totalPoinSiswa = $r->siswa->riwayatPelanggaran->sum(fn($rp) => $rp->jenisPelanggaran->poin);
                                                 $bgTotal = $totalPoinSiswa >= 100 ? 'bg-danger' : ($totalPoinSiswa >= 50 ? 'bg-warning' : 'bg-secondary');
                                             @endphp
-                                            <span class="badge {{ $bgTotal }} ml-1" style="font-weight:normal; font-size:0.7rem;">
+                                            <span class="badge-poin-total {{ $bgTotal }}" title="Total Akumulasi Poin Siswa Ini">
                                                 Total: {{ $totalPoinSiswa }}
                                             </span>
                                         </div>
@@ -278,7 +186,7 @@
 
                             <!-- 4. POIN -->
                             <td class="text-center">
-                                <span class="badge badge-danger px-3 py-2 shadow-sm" style="font-size: 0.9rem; border-radius: 20px;">
+                                <span class="badge badge-danger px-3 py-1 shadow-sm" style="font-size: 0.85rem; border-radius: 15px;">
                                     +{{ $r->jenisPelanggaran->poin }}
                                 </span>
                             </td>
@@ -286,9 +194,8 @@
                             <!-- 5. PELAPOR -->
                             <td>
                                 @if($r->guruPencatat)
-                                    <!-- Klik untuk filter berdasarkan ID pencatat -->
-                                    <a href="{{ route('riwayat.index', ['pencatat_id' => $r->guru_pencatat_user_id]) }}" class="d-flex align-items-center text-dark text-decoration-none group-hover">
-                                        <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mr-2 border" style="width:32px; height:32px;">
+                                    <a href="{{ route('riwayat.index', ['pencatat_id' => $r->guru_pencatat_user_id]) }}" class="d-flex align-items-center text-dark text-decoration-none group-hover" title="Lihat riwayat pelapor ini">
+                                        <div class="bg-light rounded-circle d-flex justify-content-center align-items-center mr-2 border" style="width:30px; height:30px;">
                                             <i class="fas fa-user-tie text-secondary small"></i>
                                         </div>
                                         <div>
@@ -297,7 +204,7 @@
                                         </div>
                                     </a>
                                 @else
-                                    <span class="text-muted"><i class="fas fa-robot mr-1"></i> Sistem</span>
+                                    <span class="text-muted small"><i class="fas fa-robot mr-1"></i> Sistem</span>
                                 @endif
                             </td>
 
@@ -343,42 +250,6 @@
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // LOGIC STICKY & SHRINK FILTER
-        const stickyFilter = document.getElementById('stickyFilter');
-        
-        window.addEventListener('scroll', function() {
-            if (window.scrollY > 20) {
-                stickyFilter.classList.add('compact-mode');
-                stickyFilter.classList.add('header-hidden'); 
-            } else {
-                stickyFilter.classList.remove('compact-mode');
-                stickyFilter.classList.remove('header-hidden'); 
-            }
-        });
-
-        // LOGIC LIVE SEARCH
-        let timeout = null;
-        const searchInput = document.getElementById('liveSearch');
-        const form = document.getElementById('filterForm');
-
-        if(searchInput){
-            searchInput.addEventListener('keyup', function() {
-                clearTimeout(timeout);
-                timeout = setTimeout(function () {
-                    form.submit(); 
-                }, 800);
-            });
-
-            const urlParams = new URLSearchParams(window.location.search);
-            if(urlParams.has('cari_siswa')) {
-                searchInput.focus();
-                const val = searchInput.value;
-                searchInput.value = '';
-                searchInput.value = val;
-            }
-        }
-    });
-</script>
+    <!-- Load Logic Eksternal -->
+    <script src="{{ asset('js/pages/riwayat-index.js') }}"></script>
 @endpush

@@ -2,75 +2,80 @@
 
 @section('title', 'Data Siswa')
 
+@section('styles')
+    <link rel="stylesheet" href="{{ asset('css/pages/siswa-index.css') }}">
+@endsection
+
 @section('content')
 
     @php
         $userRole = Auth::user()->role->nama_role;
         $isOperator = ($userRole == 'Operator Sekolah');
         $isWaliKelas = ($userRole == 'Wali Kelas');
-        $isWaka = ($userRole == 'Waka Kesiswaan'); // Definisi variabel Waka
+        $isWaka = ($userRole == 'Waka Kesiswaan');
     @endphp
 
     <div class="container-fluid">
+        
         <!-- HEADER -->
-        <div class="row mb-3">
-            <div class="col-12 d-flex justify-content-between align-items-center">
-                <div>
-                    <h4 class="m-0 text-dark font-weight-bold">
-                        <i class="fas fa-user-graduate text-primary mr-2"></i>
-                        @if($isWaliKelas) Siswa Kelas Anda @else Data Induk Siswa @endif
-                    </h4>
-                    <p class="text-muted small mb-0">
-                        @if($isWaka)
-                            Klik tombol aksi untuk melihat riwayat pelanggaran siswa.
-                        @else
-                            Manajemen data siswa aktif.
-                        @endif
-                    </p>
-                </div>
+        <div class="row mb-3 pt-2 align-items-center">
+            <div class="col-sm-6">
+                <h4 class="m-0 text-dark font-weight-bold">
+                    <i class="fas fa-user-graduate text-primary mr-2"></i>
+                    @if($isWaliKelas) Siswa Kelas Anda @else Data Induk Siswa @endif
+                </h4>
+            </div>
+            <div class="col-sm-6 text-right">
                 <div class="btn-group">
-                    @if($isOperator)
-                        <a href="{{ route('siswa.create') }}" class="btn btn-primary shadow-sm">
-                            <i class="fas fa-plus mr-1"></i> Tambah Siswa
+                    @if($isOperator || $isWaka)
+                         <a href="{{ route('dashboard.admin') }}" class="btn btn-outline-secondary btn-sm border rounded mr-2">
+                            <i class="fas fa-arrow-left mr-1"></i> Dashboard
                         </a>
+                    @elseif($isWaliKelas)
+                        <a href="{{ route('dashboard.walikelas') }}" class="btn btn-outline-secondary btn-sm border rounded mr-2">
+                            <i class="fas fa-arrow-left mr-1"></i> Dashboard
+                        </a>
+                    @endif
+                   
+                    @if($isOperator)
+                    <a href="{{ route('siswa.create') }}" class="btn btn-primary btn-sm shadow-sm">
+                        <i class="fas fa-plus mr-1"></i> Tambah Siswa
+                    </a>
                     @endif
                 </div>
             </div>
         </div>
 
-        <!-- FILTER CARD (CONSISTENT STYLE) -->
-        <div class="card card-outline {{ $isWaliKelas ? 'card-info' : 'card-primary' }} collapsed-card shadow-sm">
-            <div class="card-header">
-                <h3 class="card-title"><i class="fas fa-filter mr-1"></i> Filter Pencarian</h3>
-                <div class="card-tools">
-                    @if(!$isWaliKelas)
-                    <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-plus"></i></button>
-                    @endif
-                </div>
-            </div>
-            <div class="card-body bg-light">
-                <form action="{{ route('siswa.index') }}" method="GET">
-                    <div class="row">
+        <!-- FILTER SECTION (CLEAN - TANPA JUDUL) -->
+        <div id="stickyFilter" class="card card-outline card-primary shadow-sm mb-4">
+            <div class="card-body bg-light py-3">
+                <form id="filterForm" action="{{ route('siswa.index') }}" method="GET">
+                    <div class="row align-items-end">
+                        
+                        <!-- FILTER KHUSUS OPERATOR/ADMIN -->
                         @if(!$isWaliKelas)
                         <div class="col-md-3 mb-2">
-                            <select name="tingkat" class="form-control form-control-sm">
-                                <option value="">- Semua Tingkat -</option>
+                            <label class="small font-weight-bold text-muted mb-1">Tingkat</label>
+                            <select name="tingkat" class="form-control form-control-sm form-control-clean" onchange="this.form.submit()">
+                                <option value="">- Semua -</option>
                                 <option value="X" {{ request('tingkat') == 'X' ? 'selected' : '' }}>Kelas X</option>
                                 <option value="XI" {{ request('tingkat') == 'XI' ? 'selected' : '' }}>Kelas XI</option>
                                 <option value="XII" {{ request('tingkat') == 'XII' ? 'selected' : '' }}>Kelas XII</option>
                             </select>
                         </div>
                         <div class="col-md-3 mb-2">
-                            <select name="jurusan_id" class="form-control form-control-sm">
-                                <option value="">- Semua Jurusan -</option>
+                            <label class="small font-weight-bold text-muted mb-1">Jurusan</label>
+                            <select name="jurusan_id" class="form-control form-control-sm form-control-clean" onchange="this.form.submit()">
+                                <option value="">- Semua -</option>
                                 @foreach($allJurusan as $j)
                                     <option value="{{ $j->id }}" {{ request('jurusan_id') == $j->id ? 'selected' : '' }}>{{ $j->nama_jurusan }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="col-md-3 mb-2">
-                            <select name="kelas_id" class="form-control form-control-sm">
-                                <option value="">- Semua Kelas -</option>
+                            <label class="small font-weight-bold text-muted mb-1">Kelas</label>
+                            <select name="kelas_id" class="form-control form-control-sm form-control-clean" onchange="this.form.submit()">
+                                <option value="">- Semua -</option>
                                 @foreach($allKelas as $k)
                                     <option value="{{ $k->id }}" {{ request('kelas_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
                                 @endforeach
@@ -78,34 +83,41 @@
                         </div>
                         @endif
 
+                        <!-- LIVE SEARCH -->
                         <div class="{{ $isWaliKelas ? 'col-md-10' : 'col-md-3' }} mb-2">
+                            <label class="small font-weight-bold text-muted mb-1">Cari Siswa</label>
                             <div class="input-group input-group-sm">
-                                <input type="text" name="cari" class="form-control" placeholder="Cari Nama / NISN..." value="{{ request('cari') }}">
+                                <input type="text" id="liveSearch" name="cari" class="form-control form-control-clean" 
+                                       placeholder="Ketik Nama atau NISN..." value="{{ request('cari') }}">
                                 <div class="input-group-append">
-                                    <button type="submit" class="btn {{ $isWaliKelas ? 'btn-info' : 'btn-primary' }}"><i class="fas fa-search"></i></button>
+                                    <button type="submit" class="btn btn-primary"><i class="fas fa-search"></i></button>
                                 </div>
                             </div>
                         </div>
                         
-                        @if($isWaliKelas)
-                        <div class="col-md-2 mb-2 text-right">
-                             <a href="{{ route('siswa.index') }}" class="btn btn-default btn-sm btn-block"><i class="fas fa-undo"></i> Reset</a>
-                        </div>
+                        <!-- RESET BUTTON (Desktop: Sebelah Search, Mobile: Bawah) -->
+                         @if($isWaliKelas)
+                            <div class="col-md-2 mb-2 text-right">
+                                 <a href="{{ route('siswa.index') }}" class="btn btn-default btn-sm btn-block" title="Hapus Pencarian"><i class="fas fa-undo"></i></a>
+                            </div>
+                        @else
+                             <!-- Tombol Reset muncul hanya jika ada filter -->
+                            @if(request()->has('cari') || request()->has('kelas_id') || request()->has('tingkat') || request()->has('jurusan_id'))
+                                <div class="col-12 mt-2 text-right border-top pt-2">
+                                    <a href="{{ route('siswa.index') }}" class="btn btn-xs text-danger font-weight-bold">
+                                        <i class="fas fa-times-circle"></i> Reset Filter
+                                    </a>
+                                </div>
+                            @endif
                         @endif
+
                     </div>
-                    
-                    @if(!$isWaliKelas)
-                    <div class="text-right mt-2">
-                        <a href="{{ route('siswa.index') }}" class="btn btn-default btn-sm mr-1"><i class="fas fa-undo"></i> Reset</a>
-                        <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-filter"></i> Terapkan Filter</button>
-                    </div>
-                    @endif
                 </form>
             </div>
         </div>
 
         <!-- TABEL DATA -->
-        <div class="card shadow-sm">
+        <div class="card shadow-sm border-0">
             <div class="card-body table-responsive p-0">
                 <table class="table table-hover table-striped text-nowrap table-valign-middle">
                     <thead class="bg-light">
@@ -143,40 +155,31 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-group btn-group-sm">
-                                    
-                                    {{-- LOGIKA TOMBOL AKSI PER ROLE --}}
-
                                     @if($isWaliKelas)
-                                        <!-- WALI KELAS: Update Kontak -->
                                         <a href="{{ route('siswa.edit', $s->id) }}" class="btn btn-info btn-sm shadow-sm" title="Update Kontak">
                                             <i class="fas fa-edit mr-1"></i> Update Kontak
                                         </a>
-                                    
                                     @elseif($isOperator)
-                                        <!-- OPERATOR: Edit & Hapus -->
                                         <a href="{{ route('siswa.edit', $s->id) }}" class="btn btn-warning" title="Edit Data">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form onsubmit="return confirm('Yakin ingin menghapus?');" action="{{ route('siswa.destroy', $s->id) }}" method="POST" style="display:inline;">
+                                        <form onsubmit="return confirm('Yakin ingin menghapus siswa {{ $s->nama_siswa }}?');" action="{{ route('siswa.destroy', $s->id) }}" method="POST" style="display:inline;">
                                             @csrf @method('DELETE')
                                             <button type="submit" class="btn btn-danger" title="Hapus"><i class="fas fa-trash"></i></button>
                                         </form>
-
                                     @elseif($isWaka)
-                                        <!-- WAKA: Lihat Riwayat (Shortcut Cerdas) -->
-                                        <!-- Mengarah ke halaman Riwayat dengan filter nama siswa -->
                                         <a href="{{ route('riwayat.index', ['cari_siswa' => $s->nama_siswa]) }}" class="btn btn-primary btn-sm shadow-sm font-weight-bold">
                                             <i class="fas fa-history mr-1"></i> Lihat Riwayat
                                         </a>
                                     @endif
-
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
                             <td colspan="{{ $isWaliKelas ? 5 : 6 }}" class="text-center py-5 text-muted">
-                                <i class="fas fa-search-minus fa-3x mb-3 opacity-50"></i><br>Data siswa tidak ditemukan.
+                                <i class="fas fa-search-minus fa-3x mb-3 opacity-50"></i><br>
+                                Data siswa tidak ditemukan dengan filter ini.
                             </td>
                         </tr>
                         @endforelse
@@ -192,6 +195,5 @@
                 </div>
             </div>
         </div>
-
     </div>
 @endsection

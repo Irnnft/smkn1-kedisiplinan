@@ -1,0 +1,61 @@
+/* --- FORM STYLING --- */
+
+/* Input Bersih */
+.form-control-clean {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    height: 45px;
+    font-size: 0.95rem;
+    color: #495057;
+    transition: all 0.2s ease-in-out;
+}
+.form-control-clean:focus {
+    background-color: #fff;
+    border-color: #80bdff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+}
+
+/* Input Readonly (Terkunci) - Visual Abu-abu Halus */
+.form-control-clean[readonly] {
+    background-color: #e9ecef;
+    border-color: #dee2e6;
+    color: #6c757d;
+    cursor: not-allowed;
+    font-weight: 600; /* Agar data tetap terbaca jelas meski terkunci */
+}
+
+/* Input Group Addon */
+.input-group-text {
+    background-color: #f8f9fa;
+    border: 1px solid #ced4da;
+    border-radius: 6px 0 0 6px;
+    color: #6c757d;
+}
+
+/* Select2 Customization agar tinggi sama dengan input */
+.select2-container--classic .select2-selection--single {
+    height: 45px !important;
+    border-radius: 6px !important;
+    border-color: #ced4da !important;
+    padding-top: 8px !important;
+}
+.select2-container--classic .select2-selection--single .select2-selection__arrow {
+    height: 43px !important;
+    border-left: none !important;
+    background: transparent !important;
+}
+.select2-container--classic .select2-selection--single .select2-selection__rendered {
+    line-height: 30px !important;
+    font-size: 0.95rem;
+    color: #495057;
+}
+
+/* Label */
+.form-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: #343a40;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
