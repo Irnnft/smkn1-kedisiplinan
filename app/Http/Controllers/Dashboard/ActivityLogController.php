@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
-use Spatie\ActivityLog\Models\Activity;
+use Spatie\Activitylog\Models\Activity;
 use Illuminate\Http\Request;
 
 class ActivityLogController extends Controller

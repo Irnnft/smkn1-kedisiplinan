@@ -7,10 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class TindakLanjut extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    /**
+     * Configure activity log options for TindakLanjut model.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['siswa_id', 'status', 'pemicu', 'tanggal_tindak_lanjut'])
+            ->useLogName('tindak_lanjut')
+            ->logOnlyDirty();
+    }
 
     /**
      * Nama tabelnya adalah 'tindak_lanjut'.

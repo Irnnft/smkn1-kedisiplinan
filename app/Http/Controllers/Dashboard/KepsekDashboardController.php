@@ -39,8 +39,20 @@ class KepsekDashboardController extends Controller
             ->groupBy('jenis_pelanggaran_id')
             ->orderByDesc('jumlah')
             ->limit(5)
-            ->with('jenisPelanggaran')
-            ->get();
+            ->get()
+            ->map(function($item) {
+                $item->jenisPelanggaran = $item->jenisPelanggaran;
+                return $item;
+            });
+        
+        // Load relations for top violations
+        $violationIds = $topViolations->pluck('jenis_pelanggaran_id')->toArray();
+        $jenisPelanggaranMap = JenisPelanggaran::whereIn('id', $violationIds)->get()->keyBy('id');
+        
+        $topViolations = $topViolations->map(function($item) use ($jenisPelanggaranMap) {
+            $item->jenisPelanggaran = $jenisPelanggaranMap[$item->jenis_pelanggaran_id] ?? null;
+            return $item;
+        });
 
         // ========== 5. BREAKDOWN PER JURUSAN ==========
         $jurusanStats = Jurusan::with('kelas.siswa')

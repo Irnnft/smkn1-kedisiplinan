@@ -7,10 +7,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class Siswa extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    /**
+     * Configure activity log options for Siswa model.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['nama_siswa', 'nisn', 'kelas_id', 'wali_murid_user_id'])
+            ->useLogName('siswa')
+            ->logOnlyDirty();
+    }
 
     /**
      * Nama tabelnya adalah 'siswa', bukan 'siswas'.

@@ -109,7 +109,7 @@
                         <ul class="list-group list-group-flush">
                             @foreach($topViolations as $v)
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ $v->jenisPelanggaran->nama ?? 'N/A' }}</span>
+                                <span>{{ $v->jenisPelanggaran->nama_pelanggaran ?? 'N/A' }}</span>
                                 <span class="badge badge-danger badge-pill">{{ $v->jumlah }}</span>
                             </li>
                             @endforeach

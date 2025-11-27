@@ -6,10 +6,23 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Spatie\Activitylog\LogOptions;
 
 class RiwayatPelanggaran extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, LogsActivity;
+
+    /**
+     * Configure activity log options for RiwayatPelanggaran model.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['siswa_id', 'jenis_pelanggaran_id', 'guru_pencatat_user_id', 'tanggal_kejadian'])
+            ->useLogName('riwayat_pelanggaran')
+            ->logOnlyDirty();
+    }
 
     /**
      * Nama tabelnya adalah 'riwayat_pelanggaran'.
