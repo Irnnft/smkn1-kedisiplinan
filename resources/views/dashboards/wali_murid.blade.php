@@ -4,6 +4,38 @@
 
 @section('content')
 
+<!-- Card Pilih Anak (jika lebih dari 1) -->
+@if($semuaAnak->count() > 1)
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card card-info card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-users mr-2"></i> Pilih Anak
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach($semuaAnak as $anak)
+                    <div class="col-md-4 col-sm-6 mb-2">
+                        <a href="{{ route('dashboard.wali_murid', ['siswa_id' => $anak->id]) }}" 
+                           class="btn btn-block {{ $anak->id == $siswa->id ? 'btn-primary' : 'btn-outline-secondary' }}">
+                            @if($anak->id == $siswa->id)
+                                <i class="fas fa-check-circle mr-1"></i>
+                            @endif
+                            <strong>{{ $anak->nama_siswa }}</strong>
+                            <br>
+                            <small>{{ $anak->kelas->nama_kelas }}</small>
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="row">
     <div class="col-md-3">
         <div class="card card-primary card-outline">

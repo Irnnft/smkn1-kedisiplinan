@@ -157,6 +157,44 @@ class SiswaController extends Controller
     }
 
     /**
+     * TAMPILKAN PROFIL LENGKAP SISWA
+     */
+    public function show(Siswa $siswa)
+    {
+        $user = Auth::user();
+
+        // Data scoping: cek apakah user berhak melihat profil siswa ini
+        if ($user->hasRole('Wali Kelas')) {
+            $kelasBinaan = $user->kelasDiampu;
+            if (!$kelasBinaan || $siswa->kelas_id !== $kelasBinaan->id) {
+                abort(403, 'Anda tidak memiliki akses untuk melihat profil siswa ini.');
+            }
+        } elseif ($user->hasRole('Kaprodi')) {
+            $jurusanBinaan = $user->jurusanDiampu;
+            if (!$jurusanBinaan || $siswa->kelas->jurusan_id !== $jurusanBinaan->id) {
+                abort(403, 'Anda tidak memiliki akses untuk melihat profil siswa ini.');
+            }
+        }
+
+        // Load relasi yang diperlukan
+        $siswa->load([
+            'kelas.jurusan.kaprodi',
+            'kelas.waliKelas',
+            'waliMurid',
+            'riwayatPelanggaran.jenisPelanggaran.kategoriPelanggaran',
+            'riwayatPelanggaran.guruPencatat',
+            'tindakLanjut'
+        ]);
+
+        // Hitung total poin pelanggaran
+        $totalPoin = $siswa->riwayatPelanggaran->sum(function($riwayat) {
+            return $riwayat->jenisPelanggaran->poin ?? 0;
+        });
+
+        return view('siswa.show', compact('siswa', 'totalPoin'));
+    }
+
+    /**
      * TAMPILKAN FORM EDIT
      */
     public function edit(Siswa $siswa)

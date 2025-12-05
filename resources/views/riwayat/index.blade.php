@@ -86,7 +86,7 @@
                                     <div class="avatar-circle">{{ $initial }}</div>
                                     
                                     <div>
-                                        <a href="{{ route('riwayat.index', ['cari_siswa' => $r->siswa->nama_siswa]) }}" class="text-primary font-weight-bold smart-link" title="Lihat riwayat siswa ini">
+                                        <a href="{{ route('siswa.show', $r->siswa->id) }}" class="text-primary font-weight-bold smart-link" title="Lihat profil siswa">
                                             {{ $r->siswa->nama_siswa }}
                                         </a>
                                         

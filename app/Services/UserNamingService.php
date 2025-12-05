@@ -72,10 +72,10 @@ class UserNamingService
 
         switch ($roleName) {
             case 'Kepala Sekolah':
-                return 'kepalasekolah';
+                return self::ensureUniqueUsername('kepalasekolah', $user->id ?? null);
 
             case 'Waka Kesiswaan':
-                return 'wakakesiswaan';
+                return self::ensureUniqueUsername('wakakesiswaan', $user->id ?? null);
 
             case 'Kaprodi':
                 $jurusan = $user->jurusanDiampu;
@@ -85,7 +85,7 @@ class UserNamingService
                     $baseUsername = 'kaprodi.' . $kodeJurusan;
                     return self::ensureUniqueUsername($baseUsername, $user->id ?? null);
                 }
-                return 'kaprodi';
+                return self::ensureUniqueUsername('kaprodi', $user->id ?? null);
 
             case 'Wali Kelas':
                 $kelas = $user->kelasDiampu;
@@ -112,7 +112,7 @@ class UserNamingService
                     $baseUsername = "walikelas.{$tingkat}.{$kode}{$nomor}";
                     return self::ensureUniqueUsername($baseUsername, $user->id ?? null);
                 }
-                return 'walikelas';
+                return self::ensureUniqueUsername('walikelas', $user->id ?? null);
 
             case 'Wali Murid':
                 $anakWali = $user->anakWali()->first();
@@ -124,13 +124,13 @@ class UserNamingService
                     $baseUsername = 'wali.' . $nisn;
                     return self::ensureUniqueUsername($baseUsername, $user->id ?? null);
                 }
-                return 'walimurid';
+                return self::ensureUniqueUsername('walimurid', $user->id ?? null);
 
             case 'Guru':
-                return 'guru';
+                return self::ensureUniqueUsername('guru', $user->id ?? null);
 
             default:
-                return 'user';
+                return self::ensureUniqueUsername('user', $user->id ?? null);
         }
     }
 
@@ -220,4 +220,5 @@ class UserNamingService
         return $username;
     }
 }
+
 

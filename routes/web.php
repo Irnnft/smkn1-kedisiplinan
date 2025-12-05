@@ -150,6 +150,14 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
         ->name('siswa.index');
 
     /**
+     * SHOW - Lihat profil lengkap siswa
+     * Akses: Operator, Kepsek, Waka (semua), Kaprodi (jurusannya), Wali Kelas (kelasnya)
+     */
+    Route::get('/siswa/{siswa}', [SiswaController::class, 'show'])
+        ->middleware('role:Operator Sekolah,Waka Kesiswaan,Wali Kelas,Kaprodi,Kepala Sekolah')
+        ->name('siswa.show');
+
+    /**
      * EDIT & UPDATE - Ubah data siswa
      * Akses: Operator (full edit), Wali Kelas (limited edit)
      */

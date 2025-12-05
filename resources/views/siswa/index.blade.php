@@ -104,7 +104,9 @@
                             <td>{{ $siswa->firstItem() + $key }}</td>
                             <td><code>{{ $s->nisn }}</code></td>
                             <td>
-                                <span class="font-weight-bold text-dark">{{ $s->nama_siswa }}</span>
+                                <a href="{{ route('siswa.show', $s->id) }}" class="font-weight-bold text-primary">
+                                    {{ $s->nama_siswa }}
+                                </a>
                                 @if($isWaliKelas && !$s->waliMurid)
                                     <i class="fas fa-exclamation-circle text-danger ml-1" title="Akun Wali Murid belum dihubungkan oleh Operator"></i>
                                 @endif
