@@ -264,6 +264,12 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="{{ route('rules-engine-settings.index') }}" class="nav-link {{ Request::is('rules-engine-settings*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-cogs text-warning"></i>
+                    <p>Rules Engine</p>
+                </a>
+            </li>
+            <li class="nav-item">
               <a href="{{ route('audit.activity.index') }}" class="nav-link {{ Request::is('audit/activity*') ? 'active' : '' }}">
                 <i class="nav-icon fas fa-history text-info"></i>
                 <p>Audit & Log</p>

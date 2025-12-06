@@ -15,6 +15,7 @@ use Carbon\Carbon;
  * - Mengevaluasi poin dan frekuensi pelanggaran siswa
  * - Menentukan jenis surat (tipe eskalasi)
  * - Membuat/update TindakLanjut dan SuratPanggilan otomatis
+ * - Membaca threshold dari database (RulesEngineSettings) dengan fallback ke constants
  */
 class PelanggaranRulesEngine
 {
@@ -26,7 +27,7 @@ class PelanggaranRulesEngine
     const SURAT_3 = 'Surat 3';
 
     /**
-     * Konstanta threshold poin
+     * Konstanta threshold poin (FALLBACK VALUES - jika database tidak tersedia)
      */
     const THRESHOLD_SURAT_2_MIN = 100;
     const THRESHOLD_SURAT_2_MAX = 500;
@@ -36,10 +37,36 @@ class PelanggaranRulesEngine
     const THRESHOLD_AKUMULASI_KRITIS = 301;
 
     /**
-     * Konstanta frekuensi spesifik
+     * Konstanta frekuensi spesifik (FALLBACK VALUES)
      */
     const FREKUENSI_ATRIBUT = 10;
     const FREKUENSI_ALFA = 4;
+
+    /**
+     * Settings service instance
+     */
+    protected RulesEngineSettingsService $settingsService;
+
+    /**
+     * Constructor - inject settings service
+     */
+    public function __construct(RulesEngineSettingsService $settingsService)
+    {
+        $this->settingsService = $settingsService;
+    }
+
+    /**
+     * Get threshold value from database with fallback to constant
+     */
+    private function getThreshold(string $key, int $fallback): int
+    {
+        try {
+            return $this->settingsService->getInt($key, $fallback);
+        } catch (\Exception $e) {
+            // Fallback to constant if database error
+            return $fallback;
+        }
+    }
 
     /**
      * Proses batch pelanggaran untuk satu siswa.
@@ -122,13 +149,17 @@ class PelanggaranRulesEngine
         }
 
         // 3. Akumulasi poin: jika total sudah besar, bisa eskalasi
-        if ($totalPoinAkumulasi >= self::THRESHOLD_AKUMULASI_SEDANG_MIN) {
-            if ($totalPoinAkumulasi <= self::THRESHOLD_AKUMULASI_SEDANG_MAX) {
+        $akumSedangMin = $this->getThreshold('akumulasi_sedang_min', self::THRESHOLD_AKUMULASI_SEDANG_MIN);
+        $akumSedangMax = $this->getThreshold('akumulasi_sedang_max', self::THRESHOLD_AKUMULASI_SEDANG_MAX);
+        $akumKritis = $this->getThreshold('akumulasi_kritis', self::THRESHOLD_AKUMULASI_KRITIS);
+
+        if ($totalPoinAkumulasi >= $akumSedangMin) {
+            if ($totalPoinAkumulasi <= $akumSedangMax) {
                 if (!$tipeSurat || $tipeSurat === self::SURAT_1) {
                     $tipeSurat = self::SURAT_2;
                     $pemicu = "Akumulasi {$totalPoinAkumulasi}";
                 }
-            } elseif ($totalPoinAkumulasi >= self::THRESHOLD_AKUMULASI_KRITIS) {
+            } elseif ($totalPoinAkumulasi >= $akumKritis) {
                 $tipeSurat = self::SURAT_3;
                 $status = 'Menunggu Persetujuan';
                 $pemicu = "Akumulasi Kritis {$totalPoinAkumulasi}";
@@ -152,11 +183,14 @@ class PelanggaranRulesEngine
             ->where('jenis_pelanggaran_id', $pelanggaran->id)
             ->count();
 
-        if (str_contains($namaLower, 'atribut') && $frekuensi >= self::FREKUENSI_ATRIBUT) {
+        $frekAtribut = $this->getThreshold('frekuensi_atribut', self::FREKUENSI_ATRIBUT);
+        $frekAlfa = $this->getThreshold('frekuensi_alfa', self::FREKUENSI_ALFA);
+
+        if (str_contains($namaLower, 'atribut') && $frekuensi >= $frekAtribut) {
             return [self::SURAT_1, "Atribut ({$frekuensi}x)"];
         }
 
-        if (str_contains($namaLower, 'alfa') && $frekuensi >= self::FREKUENSI_ALFA) {
+        if (str_contains($namaLower, 'alfa') && $frekuensi >= $frekAlfa) {
             return [self::SURAT_1, "Alfa ({$frekuensi}x)"];
         }
 
@@ -171,11 +205,15 @@ class PelanggaranRulesEngine
      */
     private function tentukanBerdasarkanPoin(int $poinTotal): array
     {
-        if ($poinTotal >= self::THRESHOLD_SURAT_2_MIN && $poinTotal <= self::THRESHOLD_SURAT_2_MAX) {
+        $surat2Min = $this->getThreshold('surat_2_min_poin', self::THRESHOLD_SURAT_2_MIN);
+        $surat2Max = $this->getThreshold('surat_2_max_poin', self::THRESHOLD_SURAT_2_MAX);
+        $surat3Min = $this->getThreshold('surat_3_min_poin', self::THRESHOLD_SURAT_3_MIN);
+
+        if ($poinTotal >= $surat2Min && $poinTotal <= $surat2Max) {
             return [self::SURAT_2, "Pelanggaran Berat", 'Baru'];
         }
 
-        if ($poinTotal > self::THRESHOLD_SURAT_3_MIN) {
+        if ($poinTotal >= $surat3Min) {
             return [self::SURAT_3, "Sangat Berat", 'Menunggu Persetujuan'];
         }
 

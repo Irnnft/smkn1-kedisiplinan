@@ -258,6 +258,14 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
         Route::resource('jenis-pelanggaran', JenisPelanggaranController::class);
         Route::resource('kelas', App\Http\Controllers\KelasController::class)->parameters(['kelas' => 'kelas']);
         Route::resource('jurusan', JurusanController::class)->parameters(['jurusan' => 'jurusan']);
+        
+        // Rules Engine Settings Management
+        Route::get('/rules-engine-settings', [App\Http\Controllers\RulesEngineSettingsController::class, 'index'])->name('rules-engine-settings.index');
+        Route::post('/rules-engine-settings', [App\Http\Controllers\RulesEngineSettingsController::class, 'update'])->name('rules-engine-settings.update');
+        Route::post('/rules-engine-settings/reset-all', [App\Http\Controllers\RulesEngineSettingsController::class, 'resetAll'])->name('rules-engine-settings.reset-all');
+        Route::post('/rules-engine-settings/{key}/reset', [App\Http\Controllers\RulesEngineSettingsController::class, 'reset'])->name('rules-engine-settings.reset');
+        Route::get('/rules-engine-settings/{key}/history', [App\Http\Controllers\RulesEngineSettingsController::class, 'history'])->name('rules-engine-settings.history');
+        Route::post('/rules-engine-settings/preview', [App\Http\Controllers\RulesEngineSettingsController::class, 'preview'])->name('rules-engine-settings.preview');
     });
 
 
