@@ -278,6 +278,56 @@ class TindakLanjutService
     }
 
     /**
+     * Get all siswa for dropdown (with kelas relationship).
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllSiswaForDropdown()
+    {
+        return \App\Models\Siswa::with('kelas')->orderBy('nama_siswa')->get();
+    }
+
+    /**
+     * Get tindak lanjut detail untuk show dengan relationships.
+     *
+     * @param int $id
+     * @return \App\Models\TindakLanjut
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getTindakLanjutDetail(int $id)
+    {
+        return \App\Models\TindakLanjut::with([
+            'siswa.kelas.jurusan',
+            'penyetuju',
+            'suratPanggilan'
+        ])->findOrFail($id);
+    }
+
+    /**
+     * Get tindak lanjut untuk edit dengan relationships.
+     *
+     * @param int $id
+     * @return \App\Models\TindakLanjut
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getTindakLanjutForEdit(int $id)
+    {
+        return \App\Models\TindakLanjut::with('siswa')->findOrFail($id);
+    }
+
+    /**
+     * Get tindak lanjut by ID (simple find).
+     *
+     * @param int $id
+     * @return \App\Models\TindakLanjut
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getTindakLanjutById(int $id)
+    {
+        return \App\Models\TindakLanjut::findOrFail($id);
+    }
+
+    /**
      * Check if sanksi deskripsi contains skorsing.
      *
      * @param string|null $sanksiDeskripsi

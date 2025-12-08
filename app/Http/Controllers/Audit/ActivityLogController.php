@@ -74,16 +74,22 @@ class ActivityLogController extends Controller
 
     /**
      * Show detail log
+     * 
+     * FIXED: Changed parameter from Activity $activity to int $id
+     * to match route definition audit/activity/{id}
      */
-    public function show(Activity $activity)
+    public function show(int $id)
     {
         $user = auth()->user();
         if ($user->hasRole('Kepala Sekolah')) {
             return redirect()->route('dashboard.kepsek')->with('error', 'Akses fitur Audit & Log dibatasi untuk Kepala Sekolah.');
         }
 
+        // Manually find the activity log
+        $log = Activity::findOrFail($id);
+
         return view('kepala_sekolah.activity.show', [
-            'log' => $activity,
+            'log' => $log,
         ]);
     }
 

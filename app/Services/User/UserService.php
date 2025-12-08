@@ -4,6 +4,7 @@ namespace App\Services\User;
 
 use App\Data\User\UserData;
 use App\Repositories\Contracts\UserRepositoryInterface;
+use App\Services\User\UserNamingService;
 use App\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -36,41 +37,91 @@ class UserService
      * 
      * ALUR:
      * 1. Validate role_id exists
-     * 2. Hash password
-     * 3. Create user via repository
-     * 4. Return created user data
+     * 2. Create temporary user object for naming
+     * 3. Auto-generate nama, username if not provided
+     * 4. Hash password
+     * 5. Create user via repository
+     * 6. Handle role-specific assignments (kelas, jurusan, siswa)
+     * 7. Return created user data
      *
-     * @param UserData $data
-     * @return UserData
+     * @param array $data
+     * @return mixed
      * @throws \Exception
      */
-    public function createUser(UserData $data): UserData
+    public function createUser(array $data)
     {
         DB::beginTransaction();
 
         try {
             // Validate role exists
-            $role = Role::findOrFail($data->role_id);
+            $role = Role::findOrFail($data['role_id']);
+
+            // Create temporary user object for auto-naming
+            $tempUser = new \App\Models\User();
+            $tempUser->role_id = $data['role_id'];
+            $tempUser->role = $role;
+            
+            // Handle role-specific pre-assignments for naming
+            if ($role->nama_role === 'Wali Kelas' && isset($data['kelas_id'])) {
+                $tempUser->kelas_diampu_id = $data['kelas_id'];
+                $tempUser->load('kelasDiampu');
+            }
+            
+            if ($role->nama_role === 'Kaprodi' && isset($data['jurusan_id'])) {
+                $tempUser->jurusan_diampu_id = $data['jurusan_id'];
+                $tempUser->load('jurusanDiampu');
+            }
+
+            // Auto-generate nama and username using naming service
+            $nama = UserNamingService::generateNama($tempUser);
+            $username = UserNamingService::generateUsername($tempUser);
 
             // Siapkan data untuk disimpan
             $userData = [
-                'role_id' => $data->role_id,
-                'nama' => $data->nama,
-                'username' => $data->username,
-                'email' => $data->email,
-                'phone' => $data->phone,
-                'nip' => $data->nip,
-                'nuptk' => $data->nuptk,
-                'password' => Hash::make($data->password),
-                'is_active' => $data->is_active ?? true,
+                'role_id' => $data['role_id'],
+                'nama' => $nama,
+                'username' => $username,
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+                'nip' => $data['nip'] ?? null,
+                'nuptk' => $data['nuptk'] ?? null,
+                'password' => Hash::make($data['password']),
+                'is_active' => true,
             ];
 
             // Create via repository
             $createdUser = $this->userRepo->create($userData);
 
+            // Handle role-specific assignments
+            if ($role->nama_role === 'Wali Kelas' && isset($data['kelas_id'])) {
+                \App\Models\Kelas::where('id', $data['kelas_id'])
+                    ->update(['wali_kelas_user_id' => $createdUser->id]);
+            }
+
+            if ($role->nama_role === 'Kaprodi' && isset($data['jurusan_id'])) {
+                \App\Models\Jurusan::where('id', $data['jurusan_id'])
+                    ->update(['kaprodi_user_id' => $createdUser->id]);
+            }
+
+            if ($role->nama_role === 'Wali Murid' && isset($data['siswa_ids']) && is_array($data['siswa_ids'])) {
+                \App\Models\Siswa::whereIn('id', $data['siswa_ids'])
+                    ->update(['wali_murid_user_id' => $createdUser->id]);
+                    
+                // Re-generate nama using first siswa
+                if (count($data['siswa_ids']) > 0) {
+                    $createdUser->refresh();
+                    $newNama = UserNamingService::generateNama($createdUser);
+                    $newUsername = UserNamingService::generateUsername($createdUser);
+                    $this->userRepo->update($createdUser->id, [
+                        'nama' => $newNama,
+                        'username' => $newUsername,
+                    ]);
+                }
+            }
+
             DB::commit();
 
-            return UserData::from($createdUser);
+            return $createdUser;
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -242,6 +293,94 @@ class UserService
     public function getTeachers()
     {
         return $this->userRepo->getTeachers();
+    }
+
+    /**
+     * Get all roles for dropdown.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllRoles()
+    {
+        return Role::all();
+    }
+
+    /**
+     * Get all siswa for user linking (Wali Murid, Wali Kelas, Kaprodi).
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllSiswa()
+    {
+        return \App\Models\Siswa::with('kelas')->orderBy('nama_siswa')->get();
+    }
+
+    /**
+     * Get siswa IDs connected to a specific user.
+     * Used for Wali Murid (siswa.wali_murid_user_id), 
+     * Wali Kelas (kelas.wali_kelas_user_id), 
+     * Kaprodi (jurusan.kaprodi_user_id).
+     *
+     * @param int $userId
+     * @return array
+     */
+    public function getConnectedSiswaIds(int $userId): array
+    {
+        $user = $this->userRepo->find($userId);
+        $connectedIds = [];
+
+        if (!$user) {
+            return $connectedIds;
+        }
+
+        // Check if user is Wali Murid
+        $siswaAsWaliMurid = \App\Models\Siswa::where('wali_murid_user_id', $userId)
+            ->pluck('id')
+            ->toArray();
+        $connectedIds = array_merge($connectedIds, $siswaAsWaliMurid);
+
+        // Check if user is Wali Kelas
+        $kelasAsWaliKelas = \App\Models\Kelas::where('wali_kelas_user_id', $userId)->first();
+        if ($kelasAsWaliKelas) {
+            $siswaInKelas = \App\Models\Siswa::where('kelas_id', $kelasAsWaliKelas->id)
+                ->pluck('id')
+                ->toArray();
+            $connectedIds = array_merge($connectedIds, $siswaInKelas);
+        }
+
+        // Check if user is Kaprodi
+        $jurusanAsKaprodi = \App\Models\Jurusan::where('kaprodi_user_id', $userId)->first();
+        if ($jurusanAsKaprodi) {
+            $kelasInJurusan = \App\Models\Kelas::where('jurusan_id', $jurusanAsKaprodi->id)
+                ->pluck('id')
+                ->toArray();
+            $siswaInJurusan = \App\Models\Siswa::whereIn('kelas_id', $kelasInJurusan)
+                ->pluck('id')
+                ->toArray();
+            $connectedIds = array_merge($connectedIds, $siswaInJurusan);
+        }
+
+        return array_unique($connectedIds);
+    }
+
+    /**
+     * Get all kelas for dropdown (sorted).
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllKelas()
+    {
+        return \App\Models\Kelas::orderBy('nama_kelas')->get();
+    }
+
+    /**
+     * Get all jurusan for dropdown (sorted).
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllJurusan()
+    {
+        return \App\Models\Jurusan::orderBy('nama_jurusan')->get();
     }
 
     /**

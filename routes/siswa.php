@@ -14,20 +14,23 @@ use App\Http\Controllers\MasterData\SiswaController;
 */
 
 Route::middleware(['auth'])->group(function () {
-    // Siswa Resource Routes
-    Route::resource('siswa', SiswaController::class)
-        ->names([
-            'index' => 'siswa.index',
-            'create' => 'siswa.create',
-            'store' => 'siswa.store',
-            'show' => 'siswa.show',
-            'edit' => 'siswa.edit',
-            'update' => 'siswa.update',
-            'destroy' => 'siswa.destroy',
-        ]);
-
-    // Additional Siswa Routes
+    
+    // ===================================================================
+    // IMPORTANT: Specific routes MUST be defined BEFORE resource routes
+    // to prevent Laravel from matching them as resource parameters
+    // ===================================================================
+    
+    // Additional Siswa Routes (BEFORE resource routes)
     Route::prefix('siswa')->name('siswa.')->group(function () {
+        // Bulk Create
+        Route::get('/bulk-create', [SiswaController::class, 'bulkCreate'])
+            ->name('bulk-create')
+            ->middleware('can:create,App\Models\Siswa');
+
+        Route::post('/bulk-store', [SiswaController::class, 'bulkStore'])
+            ->name('bulk-store')
+            ->middleware('can:create,App\Models\Siswa');
+
         // Export/Import
         Route::get('/export', [SiswaController::class, 'export'])
             ->name('export')
@@ -50,4 +53,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/statistics', [SiswaController::class, 'statistics'])
             ->name('statistics');
     });
+
+    // Siswa Resource Routes (AFTER specific routes)
+    Route::resource('siswa', SiswaController::class)
+        ->names([
+            'index' => 'siswa.index',
+            'create' => 'siswa.create',
+            'store' => 'siswa.store',
+            'show' => 'siswa.show',
+            'edit' => 'siswa.edit',
+            'update' => 'siswa.update',
+            'destroy' => 'siswa.destroy',
+        ]);
 });

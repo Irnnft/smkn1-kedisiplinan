@@ -18,6 +18,22 @@
                 
                 <form action="{{ route('users.store') }}" method="POST">
                     @csrf
+                    
+                    {{-- Display Validation Errors --}}
+                    @if ($errors->any())
+                        <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                            <h5><i class="icon fas fa-ban"></i> Validasi Gagal!</h5>
+                            <ul class="mb-0">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    @endif
+                    
                     <div class="card-body">
                         
                         <!-- DATA AKUN -->
@@ -266,6 +282,7 @@
             const waliSection = document.getElementById('waliSection');
             const kelasSelect = document.getElementById('kelasSelect');
             const nipSection = document.getElementById('nipSection');
+            const siswaSection = document.getElementById('siswaSection');
 
             function toggleSections() {
                 const opt = roleSelect.options[roleSelect.selectedIndex];
@@ -285,6 +302,16 @@
                 } else {
                     waliSection.style.display = 'none';
                     if (kelasSelect) kelasSelect.value = '';
+                }
+
+                // Wali Murid
+                if (roleName === 'Wali Murid') {
+                    siswaSection.style.display = '';
+                } else {
+                    siswaSection.style.display = 'none';
+                    // Uncheck all checkboxes
+                    const checkboxes = document.querySelectorAll('.student-checkbox');
+                    checkboxes.forEach(cb => cb.checked = false);
                 }
 
                 // NIP/NUPTK Section - Hide untuk Wali Murid
@@ -322,5 +349,60 @@
             roleSelect.addEventListener('change', toggleSections);
             document.addEventListener('DOMContentLoaded', function(){ toggleSections(); disableAssignedJurusan(); disableAssignedKelas(); });
         })();
+        
+        // Filter functionality for Wali Murid student list
+        function resetFilters() {
+            document.getElementById('filterTingkat').value = '';
+            document.getElementById('filterJurusan').value = '';
+            document.getElementById('filterKelas').value = '';
+            document.getElementById('searchSiswa').value = '';
+            filterStudents();
+        }
+        
+        function filterStudents() {
+            const tingkat = document.getElementById('filterTingkat').value.toLowerCase();
+            const jurusan = document.getElementById('filterJurusan').value;
+            const kelas = document.getElementById('filterKelas').value;
+            const search = document.getElementById('searchSiswa').value.toLowerCase();
+            
+            const items = document.querySelectorAll('.student-item');
+            let visibleCount = 0;
+            
+            items.forEach(item => {
+                const itemTingkat = item.dataset.tingkat.toLowerCase();
+                const itemJurusan = item.dataset.jurusan;
+                const itemKelas = item.dataset.kelas;
+                const itemSearch = item.dataset.search;
+                
+                let show = true;
+                
+                if (tingkat && !itemTingkat.includes(tingkat)) show = false;
+                if (jurusan && itemJurusan !== jurusan) show = false;
+                if (kelas && itemKelas !== kelas) show = false;
+                if (search && !itemSearch.includes(search)) show = false;
+                
+                item.style.display = show ? '' : 'none';
+                if (show) visibleCount++;
+            });
+            
+            // Show/hide no result message
+            const noResultMsg = document.getElementById('noResultMsg');
+            if (noResultMsg) {
+                noResultMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+            }
+        }
+        
+        // Attach filter event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterTingkat = document.getElementById('filterTingkat');
+            const filterJurusan = document.getElementById('filterJurusan');
+            const filterKelas = document.getElementById('filterKelas');
+            const searchSiswa = document.getElementById('searchSiswa');
+            
+            if (filterTingkat) filterTingkat.addEventListener('change', filterStudents);
+            if (filterJurusan) filterJurusan.addEventListener('change', filterStudents);
+            if (filterKelas) filterKelas.addEventListener('change', filterStudents);
+            if (searchSiswa) searchSiswa.addEventListener('input', filterStudents);
+        });
     </script>
 @endpush

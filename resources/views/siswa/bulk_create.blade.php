@@ -15,7 +15,7 @@
 
     <div class="card">
         <div class="card-body">
-            <form action="{{ route('siswa.bulk.store') }}" method="POST" enctype="multipart/form-data" id="bulkCreateForm">
+            <form action="{{ route('siswa.bulk-store') }}" method="POST" enctype="multipart/form-data" id="bulkCreateForm">
                 @csrf
 
                 @if(session('error'))

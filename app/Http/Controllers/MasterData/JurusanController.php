@@ -226,15 +226,43 @@ class JurusanController extends Controller
 
     public function destroy(Jurusan $jurusan)
     {
-        // Prevent deletion if there are kelas or siswa
-        $kelasCount = $jurusan->kelas()->count();
-        $siswaCount = $jurusan->siswa()->count();
-        if ($kelasCount > 0 || $siswaCount > 0) {
-            return redirect()->route('jurusan.index')->with('error', 'Tidak dapat menghapus jurusan yang memiliki kelas atau siswa.');
-        }
+        try {
+            // Prevent deletion if there are kelas or siswa
+            $kelasCount = $jurusan->kelas()->count();
+            $siswaCount = $jurusan->siswa()->count();
+            
+            if ($kelasCount > 0 || $siswaCount > 0) {
+                return redirect()->route('jurusan.index')
+                    ->with('error', "Tidak dapat menghapus jurusan yang memiliki kelas ({$kelasCount}) atau siswa ({$siswaCount}).");
+            }
 
-        $jurusan->delete();
-        return redirect()->route('jurusan.index')->with('success', 'Jurusan dihapus.');
+            // Store kaprodi_user_id before deletion for cleanup
+            $kaprodiUserId = $jurusan->kaprodi_user_id;
+
+            // Delete jurusan
+            $jurusan->delete();
+
+            // Optionally delete kaprodi user if no other jurusan uses it
+            if ($kaprodiUserId) {
+                $user = User::find($kaprodiUserId);
+                if ($user) {
+                    // Check if this user is still kaprodi of any other jurusan
+                    $stillKaprodi = Jurusan::where('kaprodi_user_id', $kaprodiUserId)->exists();
+                    if (!$stillKaprodi) {
+                        $user->delete();
+                    }
+                }
+            }
+
+            return redirect()->route('jurusan.index')
+                ->with('success', 'Jurusan berhasil dihapus.');
+                
+        } catch (\Exception $e) {
+            \Log::error('Error deleting jurusan: ' . $e->getMessage());
+            
+            return redirect()->route('jurusan.index')
+                ->with('error', 'Gagal menghapus jurusan: ' . $e->getMessage());
+        }
     }
 
     /**

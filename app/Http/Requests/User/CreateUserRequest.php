@@ -29,14 +29,15 @@ class CreateUserRequest extends FormRequest
     {
         return [
             'role_id' => ['required', 'exists:roles,id'],
-            'nama' => ['required', 'string', 'max:255'],
-            'username' => ['required', 'string', 'max:50', 'unique:users,username'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
             'nip' => ['nullable', 'string', 'max:20'],
             'nuptk' => ['nullable', 'string', 'max:20'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'is_active' => ['boolean'],
+            'password' => ['required', 'string', 'min:6'],
+            'kelas_id' => ['nullable', 'exists:kelas,id'],
+            'jurusan_id' => ['nullable', 'exists:jurusan,id'],
+            'siswa_ids' => ['nullable', 'array'],
+            'siswa_ids.*' => ['exists:siswa,id'],
         ];
     }
 
@@ -47,14 +48,14 @@ class CreateUserRequest extends FormRequest
     {
         return [
             'role_id' => 'Role',
-            'nama' => 'Nama Lengkap',
-            'username' => 'Username',
             'email' => 'Email',
             'phone' => 'Nomor HP',
             'nip' => 'NIP',
             'nuptk' => 'NUPTK',
             'password' => 'Password',
-            'is_active' => 'Status Aktif',
+            'kelas_id' => 'Kelas',
+            'jurusan_id' => 'Jurusan',
+            'siswa_ids' => 'Siswa',
         ];
     }
 }

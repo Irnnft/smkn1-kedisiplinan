@@ -16,16 +16,16 @@ return new class extends Migration
     public function up(): void
     {
         // Definisi indexes yang akan ditambahkan
+        // NOTE: Kolom 'status' tidak ada di tabel siswa, jadi tidak dibuat indexnya
         $indexes = [
             ['column' => 'kelas_id', 'name' => 'idx_siswa_kelas_id'],
             ['column' => 'wali_murid_user_id', 'name' => 'idx_siswa_wali_murid_user_id'],
             ['column' => 'nisn', 'name' => 'idx_siswa_nisn'],
             ['column' => 'nama_siswa', 'name' => 'idx_siswa_nama_siswa'],
-            ['column' => 'status', 'name' => 'idx_siswa_status'],
         ];
 
         $compositeIndexes = [
-            ['columns' => ['kelas_id', 'status'], 'name' => 'idx_siswa_kelas_status'],
+            // Composite index removed karena kolom 'status' tidak ada
         ];
 
         // Add individual indexes (skip jika sudah ada)
@@ -55,8 +55,8 @@ return new class extends Migration
     public function down(): void
     {
         $indexes = [
-            'idx_siswa_kelas_status',
-            'idx_siswa_status',
+            // 'idx_siswa_kelas_status', // Removed - kolom status tidak ada
+            // 'idx_siswa_status', // Removed - kolom status tidak ada
             'idx_siswa_nama_siswa',
             'idx_siswa_nisn',
             'idx_siswa_wali_murid_user_id',

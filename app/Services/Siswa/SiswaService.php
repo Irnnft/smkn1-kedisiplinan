@@ -9,6 +9,7 @@ use App\Repositories\Contracts\SiswaRepositoryInterface;
 use App\Repositories\Contracts\UserRepositoryInterface;
 use App\Services\User\UserNamingService;
 use App\Models\Role;
+use App\Exceptions\BusinessValidationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -49,7 +50,7 @@ class SiswaService
      * @param SiswaData $siswaData
      * @param bool $createWali Apakah ingin membuat akun wali murid otomatis
      * @return array{siswa: SiswaData, wali_credentials: array|null}
-     * @throws \Exception
+     * @throws BusinessValidationException
      */
     public function createSiswa(SiswaData $siswaData, bool $createWali = false): array
     {
@@ -88,9 +89,14 @@ class SiswaService
                 'wali_credentials' => $waliCredentials,
             ];
 
-        } catch (\Exception $e) {
+        } catch (BusinessValidationException $e) {
             DB::rollBack();
             throw $e;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw new BusinessValidationException(
+                'Gagal membuat data siswa: ' . $e->getMessage()
+            );
         }
     }
 
@@ -215,6 +221,110 @@ class SiswaService
     }
 
     /**
+     * Dapatkan detail lengkap siswa untuk halaman show.
+     * 
+     * LOGIKA BISNIS:
+     * - Eager load semua relationships yang dibutuhkan
+     * - Hitung total poin pelanggaran
+     * - Return array dengan siswa model dan total poin
+     *
+     * @param int $siswaId
+     * @return array{siswa: \App\Models\Siswa, totalPoin: int}
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getSiswaDetail(int $siswaId): array
+    {
+        // Eager load semua relationships untuk menghindari N+1 queries
+        $siswa = \App\Models\Siswa::with([
+            'kelas.jurusan.kaprodi',
+            'kelas.waliKelas',
+            'waliMurid',
+            'riwayatPelanggaran.jenisPelanggaran.kategoriPelanggaran',
+            'riwayatPelanggaran.guruPencatat',
+            'tindakLanjut'
+        ])->findOrFail($siswaId);
+
+        // BUSINESS LOGIC: Hitung total poin pelanggaran
+        $totalPoin = $siswa->riwayatPelanggaran->sum(function($riwayat) {
+            return $riwayat->jenisPelanggaran->poin ?? 0;
+        });
+
+        return [
+            'siswa' => $siswa,
+            'totalPoin' => $totalPoin,
+        ];
+    }
+
+    /**
+     * Dapatkan data siswa untuk form edit.
+     * 
+     * Method ini mengambil siswa tanpa eager loading berlebihan,
+     * karena form edit hanya butuh data siswa itu sendiri.
+     *
+     * @param int $siswaId
+     * @return \App\Models\Siswa
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getSiswaForEdit(int $siswaId)
+    {
+        return \App\Models\Siswa::findOrFail($siswaId);
+    }
+
+    /**
+     * Dapatkan semua jurusan untuk dropdown filter.
+     * 
+     * Method ini menyediakan master data untuk UI.
+     * Sorted by nama_jurusan untuk UX yang lebih baik.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllJurusanForFilter()
+    {
+        return \App\Models\Jurusan::orderBy('nama_jurusan')->get();
+    }
+
+    /**
+     * Dapatkan semua kelas untuk dropdown filter.
+     * 
+     * Method ini menyediakan master data untuk UI.
+     * Sorted by nama_kelas untuk UX yang lebih baik.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllKelasForFilter()
+    {
+        return \App\Models\Kelas::orderBy('nama_kelas')->get();
+    }
+
+    /**
+     * Dapatkan semua kelas untuk form create/edit.
+     * 
+     * Method ini menyediakan master data untuk UI.
+     * Sorted by nama_kelas untuk UX yang lebih baik.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllKelas()
+    {
+        return \App\Models\Kelas::orderBy('nama_kelas')->get();
+    }
+
+    /**
+     * Dapatkan semua wali murid yang tersedia untuk form create/edit.
+     * 
+     * Method ini menyediakan master data untuk UI.
+     * Hanya user dengan role "Wali Murid", sorted by nama.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableWaliMurid()
+    {
+        return \App\Models\User::whereHas('role', function($q) {
+            $q->where('nama_role', 'Wali Murid');
+        })->orderBy('nama')->get();
+    }
+
+    /**
      * Helper method: Buat akun wali murid baru.
      * 
      * LOGIKA (dari controller lama baris 136-167):
@@ -261,7 +371,9 @@ class SiswaService
         $role = Role::where('nama_role', 'Wali Murid')->first();
         
         if (!$role) {
-            throw new \Exception('Role Wali Murid tidak ditemukan dalam database.');
+            throw new BusinessValidationException(
+                'Role Wali Murid tidak ditemukan dalam database. Silakan hubungi administrator.'
+            );
         }
 
         // Buat user baru via repository
@@ -282,5 +394,68 @@ class SiswaService
             'username' => $username,
             'password' => $password, // Plain text, untuk ditampilkan sekali saja
         ];
+    }
+
+    /**
+     * Bulk create siswa dari array data.
+     * 
+     * LOGIKA BISNIS:
+     * - Loop setiap row dan create siswa
+     * - Optionally create wali murid account untuk setiap siswa
+     * - Track success dan error count
+     * - Return hasil dengan credentials wali yang dibuat
+     *
+     * @param array $rows Array of ['nisn' => string, 'nama' => string, 'nomor_hp_wali_murid' => string|null]
+     * @param int $kelasId
+     * @param bool $createWaliAll
+     * @return array{success_count: int, wali_credentials: array}
+     * @throws \Exception
+     */
+    public function bulkCreateSiswa(array $rows, int $kelasId, bool $createWaliAll = false): array
+    {
+        DB::beginTransaction();
+        
+        try {
+            $successCount = 0;
+            $waliCredentials = [];
+            
+            foreach ($rows as $row) {
+                $waliMuridUserId = null;
+                
+                // Create wali murid account if requested
+                if ($createWaliAll) {
+                    $waliCred = $this->createWaliMuridAccount(
+                        $row['nisn'],
+                        $row['nama']
+                    );
+                    
+                    $waliMuridUserId = $waliCred['user_id'];
+                    $waliCredentials[] = $waliCred;
+                }
+                
+                // Create siswa
+                $siswaArray = [
+                    'kelas_id' => $kelasId,
+                    'wali_murid_user_id' => $waliMuridUserId,
+                    'nisn' => $row['nisn'],
+                    'nama_siswa' => $row['nama'],
+                    'nomor_hp_wali_murid' => $row['nomor_hp_wali_murid'] ?? null,
+                ];
+                
+                $this->siswaRepository->create($siswaArray);
+                $successCount++;
+            }
+            
+            DB::commit();
+            
+            return [
+                'success_count' => $successCount,
+                'wali_credentials' => $waliCredentials,
+            ];
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw $e;
+        }
     }
 }

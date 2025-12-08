@@ -42,7 +42,7 @@
         </div>
     </div>
 
-    <form action="{{ route('pelanggaran.store') }}" method="POST" enctype="multipart/form-data" id="formPelanggaran">
+    <form action="{{ route('riwayat.store') }}" method="POST" enctype="multipart/form-data" id="formPelanggaran">
         @csrf
         
         <div class="row">

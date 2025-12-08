@@ -8,8 +8,6 @@ use App\Data\TindakLanjut\TindakLanjutData;
 use App\Data\TindakLanjut\TindakLanjutFilterData;
 use App\Http\Requests\TindakLanjut\CreateTindakLanjutRequest;
 use App\Http\Requests\TindakLanjut\UpdateTindakLanjutRequest;
-use App\Models\TindakLanjut;
-use App\Models\Siswa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -63,10 +61,14 @@ class TindakLanjutController extends Controller
 
     /**
      * Tampilkan form create tindak lanjut.
+     * 
+     * ALUR:
+     * 1. Panggil service untuk master data
+     * 2. Return view
      */
     public function create(): View
     {
-        $siswa = Siswa::with('kelas')->orderBy('nama_siswa')->get();
+        $siswa = $this->tindakLanjutService->getAllSiswaForDropdown();
         
         return view('tindak_lanjut.create', compact('siswa'));
     }
@@ -98,34 +100,46 @@ class TindakLanjutController extends Controller
 
     /**
      * Tampilkan detail tindak lanjut.
+     * 
+     * ALUR:
+     * 1. Panggil service untuk get detail dengan relationships
+     * 2. Return view
      */
     public function show(int $id): View
     {
-        $tindakLanjut = TindakLanjut::with([
-            'siswa.kelas.jurusan',
-            'penyetuju',
-            'suratPanggilan'
-        ])->findOrFail($id);
+        $tindakLanjut = $this->tindakLanjutService->getTindakLanjutDetail($id);
 
         return view('tindak_lanjut.show', compact('tindakLanjut'));
     }
 
     /**
      * Tampilkan form edit tindak lanjut.
+     * 
+     * ALUR:
+     * 1. Panggil service untuk get tindak lanjut
+     * 2. Return view
      */
     public function edit(int $id): View
     {
-        $tindakLanjut = TindakLanjut::with('siswa')->findOrFail($id);
+        $tindakLanjut = $this->tindakLanjutService->getTindakLanjutForEdit($id);
         
         return view('tindak_lanjut.edit', compact('tindakLanjut'));
     }
 
     /**
      * Update tindak lanjut.
+     * 
+     * ALUR:
+     * 1. Validasi (via UpdateTindakLanjutRequest)
+     * 2. Panggil service untuk get existing record
+     * 3. Convert ke DTO
+     * 4. Panggil service untuk update
+     * 5. Redirect dengan success message
      */
     public function update(UpdateTindakLanjutRequest $request, int $id): RedirectResponse
     {
-        $existingTindakLanjut = TindakLanjut::findOrFail($id);
+        // Panggil service untuk get existing record
+        $existingTindakLanjut = $this->tindakLanjutService->getTindakLanjutById($id);
 
         // Convert validated request ke DTO
         $tindakLanjutData = TindakLanjutData::from([

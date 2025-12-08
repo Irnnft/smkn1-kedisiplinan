@@ -17,15 +17,17 @@ class RoleSeeder extends Seeder
         // 3. Kosongkan tabel dulu agar tidak duplikat
         DB::table('roles')->truncate();
 
-        // 4. Masukkan 7 peran (Aktor) kita
+        // 4. Masukkan SEMUA peran (Aktor) termasuk Developer dan Waka Sarana
         $roles = [
-            ['nama_role' => 'Operator Sekolah'],
-            ['nama_role' => 'Waka Kesiswaan'],
-            ['nama_role' => 'Kepala Sekolah'],
-            ['nama_role' => 'Kaprodi'],
-            ['nama_role' => 'Wali Kelas'],
-            ['nama_role' => 'Guru'],
-            ['nama_role' => 'Wali Murid'],
+            ['nama_role' => 'Developer'],           // Role khusus untuk development
+            ['nama_role' => 'Operator Sekolah'],    // Role utama untuk CRUD
+            ['nama_role' => 'Waka Kesiswaan'],      // Wakil Kepala Sekolah Kesiswaan
+            ['nama_role' => 'Waka Sarana'],         // Wakil Kepala Sekolah Sarana Prasarana
+            ['nama_role' => 'Kepala Sekolah'],      // Kepala Sekolah
+            ['nama_role' => 'Kaprodi'],             // Kepala Program Studi
+            ['nama_role' => 'Wali Kelas'],          // Wali Kelas
+            ['nama_role' => 'Guru'],                // Guru
+            ['nama_role' => 'Wali Murid'],          // Orang Tua/Wali Murid
         ];
 
         // 5. Masukkan data ke database

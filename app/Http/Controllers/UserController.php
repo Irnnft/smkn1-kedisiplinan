@@ -6,9 +6,6 @@ use App\Services\User\UserService;
 use App\Data\User\UserData;
 use App\Http\Requests\User\CreateUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
-use App\Models\Role;
-use App\Models\Kelas;
-use App\Models\Jurusan;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -52,7 +49,7 @@ class UserController extends Controller
         ];
 
         $users = $this->userService->getPaginatedUsers(20, $filters);
-        $roles = Role::all();
+        $roles = $this->userService->getAllRoles();
 
         return view('users.index', compact('users', 'roles'));
     }
@@ -60,15 +57,16 @@ class UserController extends Controller
     /**
      * Show create user form.
      * 
-     * CLEAN: Fetch master data (kelas, jurusan) for dropdowns
+     * CLEAN: Fetch master data via service
      */
     public function create(): View
     {
-        $roles = Role::all();
-        $kelas = Kelas::orderBy('nama_kelas')->get();
-        $jurusan = Jurusan::orderBy('nama_jurusan')->get();
+        $roles = $this->userService->getAllRoles();
+        $kelas = $this->userService->getAllKelas();
+        $jurusan = $this->userService->getAllJurusan();
+        $siswa = $this->userService->getAllSiswa();
         
-        return view('users.create', compact('roles', 'kelas', 'jurusan'));
+        return view('users.create', compact('roles', 'kelas', 'jurusan', 'siswa'));
     }
 
     /**
@@ -76,9 +74,11 @@ class UserController extends Controller
      */
     public function store(CreateUserRequest $request): RedirectResponse
     {
-        $userData = UserData::from($request->validated());
+        // Get validated data with additional fields
+        $validated = $request->validated();
         
-        $this->userService->createUser($userData);
+        // Pass all data including optional kelas_id, jurusan_id, siswa_ids to service
+        $this->userService->createUser($validated);
 
         return redirect()
             ->route('users.index')
@@ -97,16 +97,18 @@ class UserController extends Controller
     /**
      * Show edit user form.
      * 
-     * CLEAN: Fetch master data (kelas, jurusan) for dropdowns
+     * CLEAN: Fetch master data via service
      */
     public function edit(int $id): View
     {
         $user = $this->userService->getUser($id);
-        $roles = Role::all();
-        $kelas = Kelas::orderBy('nama_kelas')->get();
-        $jurusan = Jurusan::orderBy('nama_jurusan')->get();
+        $roles = $this->userService->getAllRoles();
+        $kelas = $this->userService->getAllKelas();
+        $jurusan = $this->userService->getAllJurusan();
+        $siswa = $this->userService->getAllSiswa();
+        $connectedSiswaIds = $this->userService->getConnectedSiswaIds($id);
         
-        return view('users.edit', compact('user', 'roles', 'kelas', 'jurusan'));
+        return view('users.edit', compact('user', 'roles', 'kelas', 'jurusan', 'siswa', 'connectedSiswaIds'));
     }
 
     /**

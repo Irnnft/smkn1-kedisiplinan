@@ -47,6 +47,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{id}/toggle-activation', [UserController::class, 'toggleActivation'])
             ->name('toggle-activation');
 
+        // Alias for legacy views that use 'toggle-active' instead of 'toggle-activation'
+        Route::post('/{id}/toggle-active', [UserController::class, 'toggleActivation'])
+            ->name('toggle-active');
+
         // Bulk operations
         Route::post('/bulk-activate', [UserController::class, 'bulkActivate'])
             ->name('bulk-activate');

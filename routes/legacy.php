@@ -87,12 +87,15 @@ Route::middleware(['auth'])->group(function () {
     /**
      * my-riwayat routes were referenced in admin.php but not fully defined
      * These allow users to view/edit/delete their own violation records
+     * 
+     * FIXED: Changed {id} to {riwayat} to match view parameter passing
+     * View passes: ['riwayat' => $r->id]
      */
     
-    Route::get('/riwayat/my/edit/{id}', [\App\Http\Controllers\Pelanggaran\RiwayatPelanggaranController::class, 'edit'])
+    Route::get('/riwayat/my/edit/{riwayat}', [\App\Http\Controllers\Pelanggaran\RiwayatPelanggaranController::class, 'edit'])
         ->name('my-riwayat.edit');
 
-    Route::delete('/riwayat/my/{id}', [\App\Http\Controllers\Pelanggaran\RiwayatPelanggaranController::class, 'destroy'])
+    Route::delete('/riwayat/my/{riwayat}', [\App\Http\Controllers\Pelanggaran\RiwayatPelanggaranController::class, 'destroy'])
         ->name('my-riwayat.destroy');
 
     Route::post('/riwayat/my', [\App\Http\Controllers\Pelanggaran\RiwayatPelanggaranController::class, 'store'])
@@ -128,7 +131,7 @@ Route::middleware(['auth'])->group(function () {
     // LEGACY: MY RIWAYAT UPDATE (Missing PUT/PATCH route)
     // ===================================================================
     
-    Route::match(['PUT', 'PATCH'], '/riwayat/my/{id}', [\App\Http\Controllers\Pelanggaran\RiwayatPelanggaranController::class, 'update'])
+    Route::match(['PUT', 'PATCH'], '/riwayat/my/{riwayat}', [\App\Http\Controllers\Pelanggaran\RiwayatPelanggaranController::class, 'update'])
         ->name('my-riwayat.update');
 
     // ===================================================================

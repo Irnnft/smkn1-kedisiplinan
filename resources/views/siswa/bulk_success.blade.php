@@ -41,7 +41,7 @@
                         <a href="{{ route('siswa.index') }}" class="btn btn-primary btn-lg">
                             <i class="fas fa-list mr-2"></i> Kembali ke Daftar Siswa
                         </a>
-                        <a href="{{ route('siswa.bulk.create') }}" class="btn btn-outline-primary btn-lg">
+                        <a href="{{ route('siswa.bulk-create') }}" class="btn btn-outline-primary btn-lg">
                             <i class="fas fa-plus mr-2"></i> Tambah Batch Lagi
                         </a>
                     </div>

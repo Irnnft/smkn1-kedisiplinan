@@ -21,7 +21,7 @@
             <a href="{{ route('siswa.index') }}" class="btn btn-outline-secondary btn-sm border rounded mr-2">
                 <i class="fas fa-arrow-left mr-1"></i> Kembali ke Data Siswa
             </a>
-            <a href="{{ route('siswa.bulk.create') }}" class="btn btn-outline-primary btn-sm border rounded">
+            <a href="{{ route('siswa.bulk-create') }}" class="btn btn-outline-primary btn-sm border rounded">
                 <i class="fas fa-copy mr-1"></i> Tambah Banyak
             </a>
         </div>

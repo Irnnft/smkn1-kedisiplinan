@@ -7,6 +7,7 @@ use App\Data\Pelanggaran\RiwayatPelanggaranFilterData;
 use App\Repositories\Contracts\RiwayatPelanggaranRepositoryInterface;
 use App\Repositories\Contracts\JenisPelanggaranRepositoryInterface;
 use App\Repositories\Contracts\SiswaRepositoryInterface;
+use App\Exceptions\BusinessValidationException;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -52,7 +53,7 @@ class PelanggaranService
      *
      * @param RiwayatPelanggaranData $data
      * @return RiwayatPelanggaranData
-     * @throws \Exception
+     * @throws BusinessValidationException
      */
     public function catatPelanggaran(RiwayatPelanggaranData $data): RiwayatPelanggaranData
     {
@@ -87,9 +88,14 @@ class PelanggaranService
 
             return RiwayatPelanggaranData::from($createdRiwayat);
 
-        } catch (\Exception $e) {
+        } catch (BusinessValidationException $e) {
             DB::rollBack();
             throw $e;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw new BusinessValidationException(
+                'Gagal mencatat pelanggaran: ' . $e->getMessage()
+            );
         }
     }
 
@@ -105,7 +111,7 @@ class PelanggaranService
      * @param RiwayatPelanggaranData $data
      * @param string|null $oldBuktiFotoPath Path lama untuk dihapus jika ada upload baru
      * @return RiwayatPelanggaranData
-     * @throws \Exception
+     * @throws BusinessValidationException
      */
     public function updatePelanggaran(
         int $id,
@@ -142,9 +148,14 @@ class PelanggaranService
 
             return RiwayatPelanggaranData::from($updatedRiwayat);
 
-        } catch (\Exception $e) {
+        } catch (BusinessValidationException $e) {
             DB::rollBack();
             throw $e;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            throw new BusinessValidationException(
+                'Gagal mengupdate pelanggaran: ' . $e->getMessage()
+            );
         }
     }
 
@@ -293,5 +304,93 @@ class PelanggaranService
     public function getJenisByCategory(string $filterCategory)
     {
         return $this->jenisRepo->getByFilterCategory($filterCategory);
+    }
+
+    /**
+     * Dapatkan semua jurusan untuk dropdown filter.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllJurusanForFilter()
+    {
+        return \App\Models\Jurusan::all();
+    }
+
+    /**
+     * Dapatkan semua kelas untuk dropdown filter.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllKelasForFilter()
+    {
+        return \App\Models\Kelas::all();
+    }
+
+    /**
+     * Dapatkan riwayat pelanggaran untuk edit dengan relationships.
+     *
+     * @param int $id
+     * @return \App\Models\RiwayatPelanggaran
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getRiwayatForEdit(int $id)
+    {
+        return \App\Models\RiwayatPelanggaran::with(['siswa', 'jenisPelanggaran'])
+            ->findOrFail($id);
+    }
+
+    /**
+     * Dapatkan riwayat pelanggaran by ID (simple find).
+     *
+     * @param int $id
+     * @return \App\Models\RiwayatPelanggaran
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
+    public function getRiwayatById(int $id)
+    {
+        return \App\Models\RiwayatPelanggaran::findOrFail($id);
+    }
+
+    /**
+     * Dapatkan semua siswa untuk form create pelanggaran.
+     * 
+     * ROLE-BASED:
+     * - Operator/Kepala Sekolah/Waka: Semua siswa
+     * - Wali Kelas: Siswa di kelasnya saja
+     * - Kaprodi: Siswa di jurusannya saja
+     *
+     * @param int|null $userId User ID untuk filter role-based
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAllSiswaForCreate(?int $userId = null)
+    {
+        $query = \App\Models\Siswa::with('kelas.jurusan')->orderBy('nama_siswa');
+
+        if ($userId) {
+            $user = \App\Models\User::find($userId);
+            
+            if ($user && $user->hasRole('Wali Kelas')) {
+                // Filter siswa di kelas wali kelas
+                $kelas = \App\Models\Kelas::where('wali_kelas_user_id', $userId)->first();
+                if ($kelas) {
+                    $query->where('kelas_id', $kelas->id);
+                } else {
+                    // Jika tidak ada kelas, return empty
+                    return collect([]);
+                }
+            } elseif ($user && $user->hasRole('Kaprodi')) {
+                // Filter siswa di jurusan kaprodi
+                $jurusan = \App\Models\Jurusan::where('kaprodi_user_id', $userId)->first();
+                if ($jurusan) {
+                    $kelasIds = \App\Models\Kelas::where('jurusan_id', $jurusan->id)->pluck('id');
+                    $query->whereIn('kelas_id', $kelasIds);
+                } else {
+                    // Jika tidak ada jurusan, return empty
+                    return collect([]);
+                }
+            }
+        }
+
+        return $query->get();
     }
 }

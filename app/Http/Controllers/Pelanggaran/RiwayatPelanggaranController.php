@@ -9,10 +9,6 @@ use App\Data\Pelanggaran\RiwayatPelanggaranFilterData;
 use App\Http\Requests\Pelanggaran\CatatPelanggaranRequest;
 use App\Http\Requests\Pelanggaran\UpdatePelanggaranRequest;
 use App\Http\Requests\Pelanggaran\FilterRiwayatRequest;
-use App\Models\JenisPelanggaran;
-use App\Models\Kelas;
-use App\Models\Jurusan;
-use App\Models\RiwayatPelanggaran;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -50,36 +46,78 @@ class RiwayatPelanggaranController extends Controller
     /**
      * Tampilkan daftar riwayat pelanggaran dengan filter.
      * 
+     * ROLE-BASED ACCESS:
+     * - Kepala Sekolah, Operator, Waka Kesiswaan: Lihat SEMUA riwayat
+     * - Wali Kelas: Lihat riwayat siswa di kelasnya saja
+     * - Kaprodi: Lihat riwayat siswa di jurusannya saja
+     * 
      * ALUR:
      * 1. Validasi filter (via FilterRiwayatRequest)
-     * 2. Convert ke RiwayatPelanggaranFilterData (DTO)
-     * 3. Panggil service
-     * 4. Return view
+     * 2. Apply role-based scope
+     * 3. Convert ke RiwayatPelanggaranFilterData (DTO)
+     * 4. Panggil service untuk data dan master data
+     * 5. Return view
      */
     public function index(FilterRiwayatRequest $request): View
     {
+        $user = auth()->user();
+        $filterData = $request->getFilterData();
+
+        // ROLE-BASED SCOPE: Apply filter berdasarkan role
+        if ($user->hasRole('Wali Kelas')) {
+            // Wali Kelas: hanya siswa di kelasnya
+            $kelas = \App\Models\Kelas::where('wali_kelas_user_id', $user->id)->first();
+            if ($kelas) {
+                $filterData['kelas_id'] = $kelas->id;
+            } else {
+                // Jika tidak ada kelas, set filter impossible
+                $filterData['kelas_id'] = -1;
+            }
+        } elseif ($user->hasRole('Kaprodi')) {
+            // Kaprodi: hanya siswa di jurusannya
+            $jurusan = \App\Models\Jurusan::where('kaprodi_user_id', $user->id)->first();
+            if ($jurusan) {
+                $filterData['jurusan_id'] = $jurusan->id;
+            } else {
+                // Jika tidak ada jurusan, set filter impossible
+                $filterData['jurusan_id'] = -1;
+            }
+        }
+        // Kepala Sekolah, Operator, Waka Kesiswaan: tidak ada filter tambahan (lihat semua)
+
         // Convert validated request data ke DTO
-        $filters = RiwayatPelanggaranFilterData::from($request->getFilterData());
+        $filters = RiwayatPelanggaranFilterData::from($filterData);
 
         // Panggil service untuk get filtered riwayat
         $riwayat = $this->pelanggaranService->getFilteredRiwayat($filters);
 
-        // Data untuk dropdown filter (TODO: pindah ke service jika kompleks)
-        $allJurusan = Jurusan::all();
-        $allKelas = Kelas::all();
-        $allPelanggaran = JenisPelanggaran::orderBy('nama_pelanggaran')->get();
+        // Panggil service untuk master data dropdown filter
+        $allJurusan = $this->pelanggaranService->getAllJurusanForFilter();
+        $allKelas = $this->pelanggaranService->getAllKelasForFilter();
+        $allPelanggaran = $this->pelanggaranService->getActiveJenisPelanggaran();
 
         return view('riwayat.index', compact('riwayat', 'allJurusan', 'allKelas', 'allPelanggaran'));
     }
 
     /**
      * Tampilkan form create pelanggaran.
+     * 
+     * ALUR:
+     * 1. Panggil service untuk master data (siswa, pelanggaran, kelas, jurusan)
+     * 2. Apply role-based filter untuk siswa
+     * 3. Return view
      */
     public function create(): View
     {
-        $jenisPelanggaran = $this->pelanggaranService->getActiveJenisPelanggaran();
+        $user = auth()->user();
         
-        return view('riwayat.create', compact('jenisPelanggaran'));
+        // Get data dengan role-based filter
+        $daftarSiswa = $this->pelanggaranService->getAllSiswaForCreate($user->id);
+        $daftarPelanggaran = $this->pelanggaranService->getActiveJenisPelanggaran();
+        $jurusan = $this->pelanggaranService->getAllJurusanForFilter();
+        $kelas = $this->pelanggaranService->getAllKelasForFilter();
+        
+        return view('riwayat.create', compact('daftarSiswa', 'daftarPelanggaran', 'jurusan', 'kelas'));
     }
 
     /**
@@ -123,17 +161,25 @@ class RiwayatPelanggaranController extends Controller
 
     /**
      * Tampilkan form edit pelanggaran.
+     * 
+     * ALUR:
+     * 1. Panggil service untuk get riwayat dengan relationships
+     * 2. Panggil service untuk master data
+     * 3. Return view
+     * 
+     * NOTE: Parameter name can be 'id' or 'riwayat' depending on route
+     * Laravel will inject the correct value based on route parameter name
      */
-    public function edit(int $id): View
+    public function edit(int $riwayat): View
     {
-        // Untuk show, kita perlu model lengkap dengan relationships
-        // UpdatePelanggaranRequest akan handle authorization
-        $riwayat = RiwayatPelanggaran::with(['siswa', 'jenisPelanggaran'])
-            ->findOrFail($id);
-        
+        // Panggil service untuk get riwayat dengan relationships
+        $riwayatData = $this->pelanggaranService->getRiwayatForEdit($riwayat);
         $jenisPelanggaran = $this->pelanggaranService->getActiveJenisPelanggaran();
 
-        return view('riwayat.edit', compact('riwayat', 'jenisPelanggaran'));
+        return view('riwayat.edit', [
+            'riwayat' => $riwayatData,
+            'jenisPelanggaran' => $jenisPelanggaran,
+        ]);
     }
 
     /**
@@ -141,15 +187,18 @@ class RiwayatPelanggaranController extends Controller
      * 
      * ALUR:
      * 1. Validasi + Authorization (via UpdatePelanggaranRequest)
-     * 2. Handle file upload jika ada
-     * 3. Convert ke RiwayatPelanggaranData (DTO)
-     * 4. Panggil service->updatePelanggaran()
-     * 5. Redirect dengan success message
+     * 2. Panggil service untuk get existing record
+     * 3. Handle file upload jika ada
+     * 4. Convert ke RiwayatPelanggaranData (DTO)
+     * 5. Panggil service->updatePelanggaran()
+     * 6. Redirect dengan success message
+     * 
+     * NOTE: Parameter name can be 'id' or 'riwayat' depending on route
      */
-    public function update(UpdatePelanggaranRequest $request, int $id): RedirectResponse
+    public function update(UpdatePelanggaranRequest $request, int $riwayat): RedirectResponse
     {
-        // Get existing record untuk old file path
-        $existingRiwayat = RiwayatPelanggaran::findOrFail($id);
+        // Panggil service untuk get existing record
+        $existingRiwayat = $this->pelanggaranService->getRiwayatById($riwayat);
         $oldBuktiFotoPath = $existingRiwayat->bukti_foto_path;
 
         // Handle file upload
@@ -161,7 +210,7 @@ class RiwayatPelanggaranController extends Controller
 
         // Convert validated request ke DTO
         $riwayatData = RiwayatPelanggaranData::from([
-            'id' => $id,
+            'id' => $riwayat,
             'siswa_id' => $existingRiwayat->siswa_id,
             'jenis_pelanggaran_id' => $request->jenis_pelanggaran_id,
             'guru_pencatat_user_id' => $existingRiwayat->guru_pencatat_user_id,
@@ -173,7 +222,7 @@ class RiwayatPelanggaranController extends Controller
         // Panggil service
         // Service akan: update data + reconcile tindak lanjut (poin/frekuensi berubah)
         $this->pelanggaranService->updatePelanggaran(
-            $id,
+            $riwayat,
             $riwayatData,
             $buktiFotoPath ? $oldBuktiFotoPath : null
         );
@@ -187,25 +236,29 @@ class RiwayatPelanggaranController extends Controller
      * Hapus pelanggaran.
      * 
      * ALUR:
-     * 1. Authorization manual (karena tidak ada FormRequest untuk delete)
-     * 2. Panggil service->deletePelanggaran()
-     * 3. Service akan reconcile tindak lanjut
-     * 4. Redirect dengan success message
+     * 1. Panggil service untuk get riwayat
+     * 2. Authorization manual (karena tidak ada FormRequest untuk delete)
+     * 3. Panggil service->deletePelanggaran()
+     * 4. Service akan reconcile tindak lanjut
+     * 5. Redirect dengan success message
+     * 
+     * NOTE: Parameter name can be 'id' or 'riwayat' depending on route
      */
-    public function destroy(int $id): RedirectResponse
+    public function destroy(int $riwayat): RedirectResponse
     {
-        $riwayat = RiwayatPelanggaran::findOrFail($id);
+        // Panggil service untuk get riwayat
+        $riwayatData = $this->pelanggaranService->getRiwayatById($riwayat);
 
         // Manual authorization check (same logic as UpdatePelanggaranRequest)
         $user = auth()->user();
         
         if (!$user->hasRole('Operator Sekolah')) {
-            if ($riwayat->guru_pencatat_user_id !== $user->id) {
+            if ($riwayatData->guru_pencatat_user_id !== $user->id) {
                 abort(403, 'AKSES DITOLAK: Anda hanya dapat mengelola riwayat yang Anda catat.');
             }
 
-            if ($riwayat->created_at) {
-                $created = \Carbon\Carbon::parse($riwayat->created_at);
+            if ($riwayatData->created_at) {
+                $created = \Carbon\Carbon::parse($riwayatData->created_at);
                 if (\Carbon\Carbon::now()->greaterThan($created->copy()->addDays(3))) {
                     abort(403, 'Batas waktu hapus telah lewat (lebih dari 3 hari sejak pencatatan).');
                 }
@@ -215,9 +268,9 @@ class RiwayatPelanggaranController extends Controller
         // Panggil service
         // Service akan: hapus file + hapus record + reconcile (deleteIfNoSurat = true)
         $this->pelanggaranService->deletePelanggaran(
-            $id,
-            $riwayat->siswa_id,
-            $riwayat->bukti_foto_path
+            $riwayat,
+            $riwayatData->siswa_id,
+            $riwayatData->bukti_foto_path
         );
 
         return redirect()
@@ -227,7 +280,15 @@ class RiwayatPelanggaranController extends Controller
 
     /**
      * Tampilkan riwayat yang dicatat oleh user saat ini.
-     * Operator dapat lihat semua, role lain hanya yang mereka catat.
+     * 
+     * REUSABILITY: Method ini REUSES logic dari index()
+     * - Menggunakan service method yang SAMA: getFilteredRiwayat()
+     * - Perbedaan: Inject guru_pencatat_user_id untuk non-operator
+     * - Operator: Lihat SEMUA riwayat (sama seperti index)
+     * - Non-Operator: Lihat HANYA riwayat yang mereka catat
+     * 
+     * DRY PRINCIPLE: Don't Repeat Yourself
+     * Tidak ada duplikasi logic, hanya perbedaan filter scope.
      */
     public function myIndex(FilterRiwayatRequest $request): View
     {
@@ -236,11 +297,13 @@ class RiwayatPelanggaranController extends Controller
         // Build filter dengan scope berdasarkan role
         $filterData = $request->getFilterData();
         
-        // Non-operator hanya lihat yang mereka catat
+        // LOGIC REUSE: Inject user_id filter untuk non-operator
+        // Operator tidak perlu filter ini (lihat semua)
         if (!$user->hasRole('Operator Sekolah')) {
             $filterData['guru_pencatat_user_id'] = $user->id;
         }
 
+        // REUSE: Panggil service method yang SAMA seperti index()
         $filters = RiwayatPelanggaranFilterData::from($filterData);
         $riwayat = $this->pelanggaranService->getFilteredRiwayat($filters);
 
