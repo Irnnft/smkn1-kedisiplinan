@@ -121,6 +121,9 @@ class FrequencyRulesController extends Controller
             'is_active' => true
         ]);
         
+        // CRITICAL: Clear cache so new pelanggaran appears in dropdown immediately
+        \Illuminate\Support\Facades\Cache::forget('jenis_pelanggaran:active');
+        
         return redirect()
             ->route('frequency-rules.show', $jenisPelanggaranId)
             ->with('success', 'Frequency rule berhasil ditambahkan');
@@ -180,6 +183,9 @@ class FrequencyRulesController extends Controller
                 'has_frequency_rules' => false,
                 'is_active' => false
             ]);
+            
+            // CRITICAL: Clear cache so pelanggaran is removed from dropdown
+            \Illuminate\Support\Facades\Cache::forget('jenis_pelanggaran:active');
         }
         
         return redirect()

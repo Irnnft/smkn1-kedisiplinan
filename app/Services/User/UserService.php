@@ -135,7 +135,8 @@ class UserService
      * ALUR:
      * 1. Validate role_id exists (if changed)
      * 2. Update user data via repository
-     * 3. Return updated user data
+     * 3. Update password if provided
+     * 4. Return updated user data
      *
      * @param int $userId
      * @param UserData $data
@@ -171,6 +172,12 @@ class UserService
             if ($data->username) {
                 $updateData['username'] = $data->username;
                 $updateData['username_changed_at'] = now();
+            }
+
+            // CRITICAL FIX: Update password jika ada
+            if ($data->password) {
+                $updateData['password'] = Hash::make($data->password);
+                $updateData['password_changed_at'] = now();
             }
 
             // Update via repository

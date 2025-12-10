@@ -183,4 +183,34 @@ class Siswa extends Model
             $q->whereIn('status', ['Baru', 'Menunggu Persetujuan', 'Disetujui', 'Ditangani']);
         });
     }
+    
+    // =====================================================================
+    // ------------------ PERFORMANCE OPTIMIZATIONS ------------------
+    // =====================================================================
+    
+    /**
+     * Accessor: Get total poin pelanggaran for this siswa.
+     * 
+     * USAGE IN QUERY (Eager Load):
+     * Siswa::withSum(['riwayatPelanggaran' => function($q) {
+     *     $q->join('jenis_pelanggaran', 'riwayat_pelanggaran.jenis_pelanggaran_id', '=', 'jenis_pelanggaran.id')
+     *       ->select(DB::raw('COALESCE(SUM(jenis_pelanggaran.poin), 0)'));
+     * }], 'poin')
+     * 
+     * This avoids N+1 by calculating points in single query with JOIN
+     * 
+     * @return int
+     */
+    public function getTotalPoinAttribute(): int
+    {
+        // If already loaded via withSum/eager loading, use that
+        if (isset($this->attributes['total_poin'])) {
+            return (int) $this->attributes['total_poin'];
+        }
+        
+        // Fallback: Calculate on-demand (lazy loading - avoid in loops!)
+        return (int) $this->riwayatPelanggaran()
+            ->join('jenis_pelanggaran', 'riwayat_pelanggaran.jenis_pelanggaran_id', '=', 'jenis_pelanggaran.id')
+            ->sum('jenis_pelanggaran.poin');
+    }
 }

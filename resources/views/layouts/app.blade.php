@@ -288,16 +288,25 @@
                 </a>
             </li>
 
+
             @if($isDev || in_array($role, ['Waka Kesiswaan', 'Kepala Sekolah']))
             <li class="nav-item">
-                <a href="{{ route('data-jurusan.index') }}" class="nav-link {{ Request::is('data-jurusan*') ? 'active' : '' }}">
+                @if(in_array($role, ['Kepala Sekolah', 'Waka Kesiswaan']))
+                    <a href="{{ route('kepala-sekolah.data.jurusan') }}" class="nav-link {{ Request::is('kepala-sekolah/data/jurusan*') || Request::is('jurusan*') ? 'active' : '' }}">
+                @else
+                    <a href="{{ route('data-jurusan.index') }}" class="nav-link {{ Request::is('data-jurusan*') || Request::is('jurusan*') ? 'active' : '' }}">
+                @endif
                     <i class="nav-icon fas fa-layer-group text-primary"></i>
                     <p>Data Jurusan</p>
                 </a>
             </li>
 
             <li class="nav-item">
-                <a href="{{ route('data-kelas.index') }}" class="nav-link {{ Request::is('data-kelas*') ? 'active' : '' }}">
+                @if(in_array($role, ['Kepala Sekolah', 'Waka Kesiswaan']))
+                    <a href="{{ route('kepala-sekolah.data.kelas') }}" class="nav-link {{ Request::is('kepala-sekolah/data/kelas*') || Request::is('kelas*') ? 'active' : '' }}">
+                @else
+                    <a href="{{ route('data-kelas.index') }}" class="nav-link {{ Request::is('data-kelas*') || Request::is('kelas*') ? 'active' : '' }}">
+                @endif
                     <i class="nav-icon fas fa-school text-success"></i>
                     <p>Data Kelas</p>
                 </a>

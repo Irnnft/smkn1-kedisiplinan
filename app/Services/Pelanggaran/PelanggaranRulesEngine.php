@@ -324,18 +324,51 @@ class PelanggaranRulesEngine
     /**
      * Get siswa yang perlu pembinaan berdasarkan akumulasi poin.
      * 
+     * OPTIMIZATION: Fetches all data in 2-3 queries instead of N+1
+     * - Query 1: Eager load siswa with kelas and jurusan
+     * - Query 2: Batch calculate total points using subquery
+     * - Query 3: Fetch rules once
+     * - Process in-memory using PHP collections
+     * 
      * @param int|null $poinMin Filter minimum poin (optional)
      * @param int|null $poinMax Filter maximum poin (optional)
      * @return \Illuminate\Support\Collection
      */
     public function getSiswaPerluPembinaan(?int $poinMin = null, ?int $poinMax = null)
     {
-        // Get all siswa with their total poin
+        // OPTIMIZATION 1: Fetch pembinaan rules ONCE (not per student)
+        $rules = \App\Models\PembinaanInternalRule::orderBy('display_order')->get();
+        
+        // OPTIMIZATION 2: Batch calculate points using JOIN and GROUP BY
+        // This replaces N individual queries with 1 query
+        $siswaWithPoints = Siswa::leftJoin('riwayat_pelanggaran', 'siswa.id', '=', 'riwayat_pelanggaran.siswa_id')
+            ->leftJoin('jenis_pelanggaran', 'riwayat_pelanggaran.jenis_pelanggaran_id', '=', 'jenis_pelanggaran.id')
+            ->selectRaw('siswa.id, COALESCE(SUM(jenis_pelanggaran.poin), 0) as total_poin')
+            ->groupBy('siswa.id');
+        
+        // Apply poin filters at DB level for performance
+        if ($poinMin !== null) {
+            $siswaWithPoints->havingRaw('total_poin >= ?', [$poinMin]);
+        }
+        if ($poinMax !== null) {
+            $siswaWithPoints->havingRaw('total_poin <= ?', [$poinMax]);
+        }
+        
+        // Only students with poin > 0
+        $siswaWithPoints->havingRaw('total_poin > 0');
+        
+        // Get the results as a map: siswa_id => total_poin
+        $poinMap = $siswaWithPoints->pluck('total_poin', 'id');
+        
+        // OPTIMIZATION 3: Eager load siswa with relations in one query
         $siswaList = Siswa::with(['kelas', 'kelas.jurusan'])
+            ->whereIn('id', $poinMap->keys())
             ->get()
-            ->map(function ($siswa) {
-                $totalPoin = $this->hitungTotalPoinAkumulasi($siswa->id);
-                $rekomendasi = $this->getPembinaanInternalRekomendasi($totalPoin);
+            ->map(function ($siswa) use ($poinMap, $rules) {
+                $totalPoin = $poinMap[$siswa->id] ?? 0;
+                
+                // OPTIMIZATION 4: Process rekomendasi in-memory using pre-fetched rules
+                $rekomendasi = $this->getPembinaanInternalRekomendasiOptimized($totalPoin, $rules);
                 
                 return [
                     'siswa' => $siswa,
@@ -343,21 +376,67 @@ class PelanggaranRulesEngine
                     'rekomendasi' => $rekomendasi,
                 ];
             })
-            ->filter(function ($item) use ($poinMin, $poinMax) {
-                // Filter by poin range if provided
-                if ($poinMin !== null && $item['total_poin'] < $poinMin) {
-                    return false;
-                }
-                if ($poinMax !== null && $item['total_poin'] > $poinMax) {
-                    return false;
-                }
-                // Only include siswa with poin > 0
-                return $item['total_poin'] > 0;
-            })
             ->sortByDesc('total_poin')
             ->values();
 
         return $siswaList;
+    }
+    
+    /**
+     * OPTIMIZED VERSION: Process recommendation using pre-fetched rules collection
+     * This eliminates the N queries to pembinaan_internal_rules table
+     * 
+     * @param int $totalPoin
+     * @param \Illuminate\Support\Collection $rules Pre-fetched rules collection
+     * @return array
+     */
+    protected function getPembinaanInternalRekomendasiOptimized(int $totalPoin, $rules): array
+    {
+        if ($rules->isEmpty()) {
+            return [
+                'pembina_roles' => [],
+                'keterangan' => 'Tidak ada pembinaan',
+                'range_text' => 'N/A',
+            ];
+        }
+
+        // Cari rule yang match dengan total poin
+        $matchedRule = null;
+        
+        foreach ($rules as $rule) {
+            if ($totalPoin >= $rule->poin_min) {
+                if ($rule->poin_max !== null && $totalPoin <= $rule->poin_max) {
+                    $matchedRule = $rule;
+                    break;
+                }
+                
+                if ($rule->poin_max === null) {
+                    $matchedRule = $rule;
+                    break;
+                }
+                
+                $nextRule = $rules->where('display_order', '>', $rule->display_order)->first();
+                
+                if (!$nextRule || $totalPoin < $nextRule->poin_min) {
+                    $matchedRule = $rule;
+                    break;
+                }
+            }
+        }
+
+        if (!$matchedRule) {
+            return [
+                'pembina_roles' => [],
+                'keterangan' => 'Tidak ada pembinaan',
+                'range_text' => 'N/A',
+            ];
+        }
+
+        return [
+            'pembina_roles' => $matchedRule->pembina_roles,
+            'keterangan' => $matchedRule->keterangan,
+            'range_text' => $matchedRule->getRangeText(),
+        ];
     }
 
     /**

@@ -16,7 +16,54 @@ class PembinaanInternalRulesController extends Controller
     {
         $rules = PembinaanInternalRule::orderBy('display_order')->get();
         
-        return view('pembinaan-internal-rules.index', compact('rules'));
+        // SMART DEFAULTS for new rule
+        $suggestedPoinMin = 0;
+        $suggestedDisplayOrder = 1;
+        
+        if ($rules->isNotEmpty()) {
+            // Calculate suggested poin_min
+            $highestMax = $rules->max('poin_max');
+            
+            if ($highestMax !== null) {
+                // Recommended: Start from highest max + 1
+                $suggestedPoinMin = $highestMax + 1;
+            } else {
+                // If highest rule is open-ended (no max), find the highest poin_min
+                $highestMin = $rules->max('poin_min');
+                
+                // Check for gaps between rules
+                $sortedRules = $rules->sortBy('poin_min');
+                $largestGap = 0;
+                $gapStart = 0;
+                
+                foreach ($sortedRules as $index => $rule) {
+                    if ($index > 0) {
+                        $prevRule = $sortedRules[$index - 1];
+                        $prevMax = $prevRule->poin_max ?? PHP_INT_MAX;
+                        $currentMin = $rule->poin_min;
+                        
+                        $gap = $currentMin - $prevMax - 1;
+                        
+                        if ($gap > $largestGap && $gap > 10) { // Only consider gaps > 10 points
+                            $largestGap = $gap;
+                            $gapStart = $prevMax + 1;
+                        }
+                    }
+                }
+                
+                // If large gap found, suggest filling it; otherwise suggest after highest
+                if ($largestGap > 10) {
+                    $suggestedPoinMin = $gapStart;
+                } else {
+                    $suggestedPoinMin = $highestMin + 50; // Default offset
+                }
+            }
+            
+            // Suggested display order = max + 1
+            $suggestedDisplayOrder = $rules->max('display_order') + 1;
+        }
+        
+        return view('pembinaan-internal-rules.index', compact('rules', 'suggestedPoinMin', 'suggestedDisplayOrder'));
     }
 
     /**

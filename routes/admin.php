@@ -18,21 +18,32 @@ use App\Http\Controllers\Audit\ActivityLogController;
 
 Route::middleware(['auth'])->group(function () {
     
+    
     // ===================================================================
     // FREQUENCY RULES (Business Rules Engine)
     // ===================================================================
     
-    Route::resource('frequency-rules', FrequencyRulesController::class)
-        ->names([
-            'index' => 'frequency-rules.index',
-            'create' => 'frequency-rules.create',
-            'store' => 'frequency-rules.store',
-            'show' => 'frequency-rules.show',
-            'edit' => 'frequency-rules.edit',
-            'update' => 'frequency-rules.update',
-            'destroy' => 'frequency-rules.destroy',
-        ])
-        ->middleware('role:Operator Sekolah,Kepala Sekolah');
+    Route::middleware('role:Operator Sekolah,Kepala Sekolah,Waka Kesiswaan')->group(function () {
+        // Index: list all jenis pelanggaran
+        Route::get('/frequency-rules', [FrequencyRulesController::class, 'index'])
+            ->name('frequency-rules.index');
+        
+        // Show: view rules for specific jenis pelanggaran  
+        Route::get('/frequency-rules/{jenisPelanggaran}', [FrequencyRulesController::class, 'show'])
+            ->name('frequency-rules.show');
+        
+        // Store: create new rule for specific jenis pelanggaran
+        Route::post('/frequency-rules/{jenisPelanggaran}', [FrequencyRulesController::class, 'store'])
+            ->name('frequency-rules.store');
+        
+        // Update: update existing rule
+        Route::put('/frequency-rules/rule/{rule}', [FrequencyRulesController::class, 'update'])
+            ->name('frequency-rules.update');
+        
+        // Delete: delete rule
+        Route::delete('/frequency-rules/rule/{rule}', [FrequencyRulesController::class, 'destroy'])
+            ->name('frequency-rules.destroy');
+    });
 
     // ===================================================================
     // PEMBINAAN INTERNAL RULES
@@ -48,7 +59,7 @@ Route::middleware(['auth'])->group(function () {
             'update' => 'pembinaan-internal-rules.update',
             'destroy' => 'pembinaan-internal-rules.destroy',
         ])
-        ->middleware('role:Operator Sekolah,Kepala Sekolah');
+        ->middleware('role:Operator Sekolah,Kepala Sekolah,Waka Kesiswaan');
 
     // ===================================================================
     // RULES ENGINE SETTINGS
@@ -107,6 +118,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [\App\Http\Controllers\Report\ReportController::class, 'index'])
                 ->name('index');
 
+            Route::get('/preview', [\App\Http\Controllers\Report\ReportController::class, 'preview'])
+                ->name('preview');
+
             Route::get('/pelanggaran', [\App\Http\Controllers\Report\ReportController::class, 'pelanggaranReport'])
                 ->name('pelanggaran');
 
@@ -122,8 +136,24 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{siswa}', [\App\Http\Controllers\Report\SiswaPerluPembinaanController::class, 'show'])
                 ->name('show');
 
+            Route::get('/export/csv', [\App\Http\Controllers\Report\SiswaPerluPembinaanController::class, 'exportCsv'])
+                ->name('export-csv');
+
             Route::get('/export/excel', [\App\Http\Controllers\Report\SiswaPerluPembinaanController::class, 'exportExcel'])
                 ->name('export.excel');
+        });
+
+        // Read-only access to master data
+        Route::prefix('data')->name('data.')->group(function () {
+            Route::get('/jurusan', [\App\Http\Controllers\MasterData\JurusanController::class, 'indexForMonitoring'])
+                ->name('jurusan');
+            Route::get('/jurusan/{jurusan}', [\App\Http\Controllers\MasterData\JurusanController::class, 'showForMonitoring'])
+                ->name('jurusan.show');
+            
+            Route::get('/kelas', [\App\Http\Controllers\MasterData\KelasController::class, 'indexForMonitoring'])
+                ->name('kelas');
+            Route::get('/kelas/{kelas}', [\App\Http\Controllers\MasterData\KelasController::class, 'showForMonitoring'])
+                ->name('kelas.show');
         });
     });
 

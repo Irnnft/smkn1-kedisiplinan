@@ -99,8 +99,9 @@
                         <div class="scroll-area bg-white border rounded p-2" id="studentListContainer">
                                 @foreach($daftarSiswa as $siswa)
                                 @php
-                                    $tingkat = explode(' ', $siswa->kelas->nama_kelas ?? '')[0];
-                                    $jurusanId = $siswa->kelas->jurusan_id ?? '';
+                                    // LIGHTWEIGHT: $siswa is stdClass, not Model (flat properties)
+                                    $tingkat = $siswa->tingkat ?? explode(' ', $siswa->nama_kelas ?? '')[0] ?? '';
+                                    $jurusanId = $siswa->jurusan_id ?? '';
                                     $searchText = strtolower($siswa->nama_siswa . ' ' . $siswa->nisn);
                                     $initial = strtoupper(substr($siswa->nama_siswa, 0, 1));
                                 @endphp
@@ -116,7 +117,7 @@
                                     <div style="line-height: 1.2; width: 100%;">
                                         <div class="font-weight-bold text-dark">{{ $siswa->nama_siswa }}</div>
                                         <div class="d-flex justify-content-between align-items-center mt-1">
-                                            <small class="text-muted"><i class="fas fa-users mr-1"></i> {{ $siswa->kelas->nama_kelas ?? '-' }}</small>
+                                            <small class="text-muted"><i class="fas fa-users mr-1"></i> {{ $siswa->nama_kelas ?? '-' }}</small>
                                             <small class="text-muted badge badge-light border">{{ $siswa->nisn }}</small>
                                         </div>
                                     </div>

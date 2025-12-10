@@ -169,7 +169,7 @@
 <div class="modal fade" id="modalTambahRule" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <form action="{{ route('pembinaan-internal-rules.store') }}" method="POST">
+            <form action="{{ route('pembinaan-internal-rules.store') }}" method="POST" id="formTambahRule">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Aturan Pembinaan Internal</h5>
@@ -178,7 +178,114 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    @include('pembinaan-internal-rules.partials.form')
+                    <!-- Range Poin -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new_poin_min">Poin Minimum <span class="text-danger">*</span></label>
+                                <input type="number" 
+                                       class="form-control @error('poin_min') is-invalid @enderror" 
+                                       id="new_poin_min" 
+                                       name="poin_min" 
+                                       value="{{ old('poin_min', $suggestedPoinMin) }}" 
+                                       min="0"
+                                       required>
+                                @error('poin_min')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-success">
+                                    <i class="fas fa-lightbulb"></i> Rekomendasi: {{ $suggestedPoinMin }} (berdasarkan aturan yang ada)
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="new_poin_max">Poin Maximum</label>
+                                <input type="number" 
+                                       class="form-control @error('poin_max') is-invalid @enderror" 
+                                       id="new_poin_max" 
+                                       name="poin_max" 
+                                       value="{{ old('poin_max') }}" 
+                                       min="0">
+                                @error('poin_max')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="form-text text-muted">Batas atas range poin. Kosongkan untuk open-ended</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pembina Roles -->
+                    <div class="form-group">
+                        <label>Pembina yang Terlibat <span class="text-danger">*</span></label>
+                        <div class="border rounded p-3">
+                            @php
+                                $availableRoles = ['Wali Kelas', 'Kaprodi', 'Waka Kesiswaan', 'Kepala Sekolah'];
+                                $selectedRoles = old('pembina_roles', []);
+                            @endphp
+                            
+                            @foreach($availableRoles as $role)
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" 
+                                       class="custom-control-input new-pembina-checkbox" 
+                                       id="new_pembina_{{ str_replace(' ', '_', $role) }}" 
+                                       name="pembina_roles[]" 
+                                       value="{{ $role }}"
+                                       {{ in_array($role, $selectedRoles) ? 'checked' : '' }}>
+                                <label class="custom-control-label" for="new_pembina_{{ str_replace(' ', '_', $role) }}">
+                                    {{ $role }}
+                                </label>
+                            </div>
+                            @endforeach
+                        </div>
+                        @error('pembina_roles')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
+                        @enderror
+                        <small class="form-text text-muted">Pilih minimal 1 pembina yang akan terlibat dalam pembinaan</small>
+                    </div>
+
+                    <!-- Keterangan -->
+                    <div class="form-group">
+                        <label for="new_keterangan">Keterangan <span class="text-danger">*</span></label>
+                        <textarea class="form-control @error('keterangan') is-invalid @enderror" 
+                                  id="new_keterangan" 
+                                  name="keterangan" 
+                                  rows="3" 
+                                  maxlength="500"
+                                  required>{{ old('keterangan') }}</textarea>
+                        @error('keterangan')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="form-text text-muted">Deskripsi jenis pembinaan (contoh: Pembinaan ringan, konseling)</small>
+                    </div>
+
+                    <!-- Display Order -->
+                    <div class="form-group">
+                        <label for="new_display_order">Urutan Tampilan</label>
+                        <input type="number" 
+                               class="form-control @error('display_order') is-invalid @enderror" 
+                               id="new_display_order" 
+                               name="display_order" 
+                               value="{{ old('display_order', $suggestedDisplayOrder) }}" 
+                               min="1">
+                        @error('display_order')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                        <small class="form-text text-success">
+                            <i class="fas fa-lightbulb"></i> Rekomendasi: {{ $suggestedDisplayOrder }} (urutan berikutnya)
+                        </small>
+                    </div>
+
+                    <!-- Example Box -->
+                    <div class="alert alert-info">
+                        <strong><i class="fas fa-lightbulb"></i> Contoh:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>0-50 poin:</strong> Wali Kelas → Pembinaan ringan, konseling</li>
+                            <li><strong>55-100 poin:</strong> Wali Kelas + Kaprodi → Pembinaan sedang, monitoring ketat</li>
+                            <li><strong>105-300 poin:</strong> Wali Kelas + Kaprodi + Waka → Pembinaan intensif, evaluasi berkala</li>
+                            <li><strong>305+ poin:</strong> Semua pembina → Pembinaan kritis, pertemuan dengan orang tua</li>
+                        </ul>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -196,6 +303,22 @@ $(document).ready(function() {
     setTimeout(function() {
         $('.alert').fadeOut('slow');
     }, 5000);
+    
+    // Reset form when create modal is closed
+    $('#modalTambahRule').on('hidden.bs.modal', function () {
+        // Reset form to default values
+        $('#formTambahRule')[0].reset();
+        
+        // Reset to suggested values
+        $('#new_poin_min').val('{{ $suggestedPoinMin }}');
+        $('#new_display_order').val('{{ $suggestedDisplayOrder }}');
+        
+        // Uncheck all checkboxes
+        $('.new-pembina-checkbox').prop('checked', false);
+        
+        // Clear textarea
+        $('#new_keterangan').val('');
+    });
 });
 </script>
 @endpush

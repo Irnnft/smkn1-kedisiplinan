@@ -265,9 +265,9 @@ class JurusanController extends Controller
         }
     }
 
-    /**
-     * Generate kode_jurusan from a name by taking initials (up to 3 chars)
-     */
+     /**
+      * Generate kode_jurusan from a name by taking initials (up to 3 chars)
+      */
     protected function generateKode(string $nama): string
     {
         $words = preg_split('/\s+/', trim($nama));
@@ -282,5 +282,73 @@ class JurusanController extends Controller
         }
         return $letters;
     }
+    
+    /**
+     * Index view for monitoring (Kepala Sekolah & Waka Kesiswaan)
+     * Shows jurusan with enriched statistics, not CRUD interface
+     */
+    
+    /**
+     * Index view for monitoring (Kepala Sekolah & Waka Kesiswaan)
+     * Shows jurusan with enriched statistics, not CRUD interface
+     * 
+     * CLEAN ARCHITECTURE: Uses raw counts instead of loading all students
+     * PERFORMANCE OPTIMIZED: Minimal model hydration
+     */
+    public function indexForMonitoring()
+    {
+        // OPTIMIZATION: Use withCount instead of loading all siswa models
+        $jurusanList = Jurusan::withCount(['kelas', 'siswa'])
+            ->with('kaprodi')  // Only load kaprodi relationship
+            ->orderBy('nama_jurusan')
+            ->get();
+        
+        return view('kepala_sekolah.jurusan.index', compact('jurusanList'));
+    }
+    
+    /**
+     * Show view for monitoring (Kepala Sekolah & Waka Kesiswaan)
+     * 
+     * CLEAN ARCHITECTURE: Uses Service Layer for business logic
+     * PERFORMANCE: ZERO siswa Model hydration!
+     * SEPARATION OF CONCERNS: Controller only orchestrates
+     */
+    public function showForMonitoring(Jurusan $jurusan)
+    {
+        // ARCHITECTURE: Inject Service
+        $statsService = app(\App\Services\MasterData\JurusanStatisticsService::class);
+        
+        // PERFORMANCE CRITICAL: Only load relationships we DISPLAY
+        // DO NOT load kelas.siswa - we only need COUNT!
+        $jurusan->load([
+            'kaprodi',
+            'kelas' => function($query) {
+                $query->withCount('siswa')  // Count only, no Model loading!
+                      ->with('waliKelas');   // For display in table
+            }
+        ]);
+        
+        // CLEAN CODE: Delegate business logic to Service
+        $statistics = $statsService->getJurusanStatistics($jurusan);
+        
+        // OPTIMIZATION: Pre-calculate pelanggaran per kelas (batch)
+        $pelanggaranPerKelas = $statsService->getPelanggaranCountPerKelas($jurusan->kelas->pluck('id'));
+        
+        // Attach pelanggaran count to kelas for view
+        foreach ($jurusan->kelas as $kelas) {
+            $kelas->pelanggaran_count = $pelanggaranPerKelas[$kelas->id] ?? 0;
+        }
+        
+        // CLEAN: Extract statistics
+        $totalSiswa = $statistics['total_siswa'];
+        $totalPelanggaran = $statistics['total_pelanggaran'];
+        $siswaPerluPembinaan = $statistics['siswa_perlu_pembinaan'];
+        
+        return view('kepala_sekolah.jurusan.show', compact(
+            'jurusan',
+            'totalSiswa',
+            'totalPelanggaran',
+            'siswaPerluPembinaan'
+        ));
+    }
 }
-

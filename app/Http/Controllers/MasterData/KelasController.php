@@ -137,7 +137,9 @@ class KelasController extends Controller
 
     public function show(Kelas $kelas)
     {
-        $kelas->load(['jurusan', 'waliKelas', 'siswa']);
+        // PERFORMANCE: Eager load to prevent N+1
+        $kelas->load(['jurusan', 'waliKelas', 'siswa.waliMurid']);
+        
         return view('kelas.show', ['kelas' => $kelas]);
     }
 
@@ -201,6 +203,53 @@ class KelasController extends Controller
         $kelas->delete();
         return redirect()->route('kelas.index')->with('success','Kelas dihapus.');
     }
+    
+    /**
+     * Index view for monitoring (Kepala Sekolah & Waka Kesiswaan)
+     */
+    public function indexForMonitoring()
+    {
+        $kelasList = Kelas::with(['jurusan', 'waliKelas', 'siswa'])
+            ->orderBy('nama_kelas')
+            ->get();
+        
+        return view('kepala_sekolah.kelas.index', compact('kelasList'));
+    }
+    
+    
+    /**
+     * Show view for monitoring (Kepala Sekolah & Waka Kesiswaan)
+     * 
+     * CLEAN ARCHITECTURE: Uses Service Layer
+     * PERFORMANCE: Minimal Model hydration
+     */
+    public function showForMonitoring(Kelas $kelas)
+    {
+        // ARCHITECTURE: Service Layer for business logic
+        $statsService = app(\App\Services\MasterData\KelasStatisticsService::class);
+        
+        // PERFORMANCE: Only load relationships we DISPLAY
+        $kelas->load(['jurusan', 'waliKelas']);
+        
+        // CLEAN CODE: Delegate calculations to Service
+        $statistics = $statsService->getKelasStatistics($kelas);
+        
+        // Get siswa list with points (for display)
+        $siswaList = $statsService->getSiswaWithPoints($kelas->id);
+        
+        // Extract statistics
+        $totalSiswa = $statistics['total_siswa'];
+        $totalPelanggaran = $statistics['total_pelanggaran'];
+        $siswaPerluPembinaan = $statistics['siswa_perlu_pembinaan'];
+        $avgPoin = $statistics['avg_poin'];
+        
+        return view('kepala_sekolah.kelas.show', compact(
+            'kelas',
+            'totalSiswa',
+            'totalPelanggaran',
+            'siswaPerluPembinaan',
+            'avgPoin',
+            'siswaList'
+        ));
+    }
 }
-
-

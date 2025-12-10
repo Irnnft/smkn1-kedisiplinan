@@ -138,44 +138,89 @@
 <div class="modal fade" id="modalAddRule" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <form action="{{ route('frequency-rules.store', $jenisPelanggaran->id) }}" method="POST">
+            <form action="{{ route('frequency-rules.store', $jenisPelanggaran->id) }}" method="POST" id="formAddRule">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title">Tambah Frequency Rule</h5>
                     <button type="button" class="close" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
+                    @php
+                        // Calculate smart defaults
+                        $existingRules = $jenisPelanggaran->frequencyRules;
+                        $suggestedFreqMin = 1;
+                        $suggestedDisplayOrder = 1;
+                        
+                        if ($existingRules->isNotEmpty()) {
+                            $highestMax = $existingRules->max('frequency_max');
+                            if ($highestMax !== null) {
+                                $suggestedFreqMin = $highestMax + 1;
+                            } else {
+                                // Open-ended rule exists, suggest after highest min
+                                $highestMin = $existingRules->max('frequency_min');
+                                $suggestedFreqMin = $highestMin + 1;
+                            }
+                            $suggestedDisplayOrder = $existingRules->max('display_order') + 1;
+                        }
+                    @endphp
+                    
                     <div class="alert alert-info alert-sm">
                         <i class="fas fa-info-circle"></i> 
-                        <strong>Frekuensi:</strong> Berapa kali pelanggaran harus terjadi untuk rule ini berlaku.
-                        <br><strong>Poin 0:</strong> Bisa digunakan untuk sanksi tanpa poin (hanya pembinaan).
+                        <strong>Tentang Frekuensi:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Range (Min-Max):</strong> Rule trigger untuk beberapa frekuensi. Contoh: min=1, max=3 → trigger di 1x, 2x, OR 3x</li>
+                            <li><strong>Exact (Min=Max):</strong> Rule trigger pada frekuensi spesifik. Contoh: min=3, max=3 → trigger ONLY di 3x</li>
+                            <li><strong>Open-ended (Max kosong):</strong> Rule trigger dari frekuensi min ke atas. Contoh: min=7, max=(kosong) → trigger di 7x, 8x, 9x, ...</li>
+                        </ul>
+                        <div class="mt-2 p-2 bg-light rounded">
+                            <strong>💡 Tip:</strong> Untuk sanksi progresif, gunakan range. Untuk sanksi specific, set min=max.
+                        </div>
+                    </div>
+                    
+                    <!-- Exact Frequency Helper -->
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="exactFrequencyMode">
+                            <label class="custom-control-label" for="exactFrequencyMode">
+                                <strong>Mode Frekuensi Exact</strong>
+                                <br><small class="text-muted">Aktifkan untuk rule yang trigger pada frekuensi spesifik (min=max)</small>
+                            </label>
+                        </div>
                     </div>
                     
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Frekuensi Min</label>
-                                <input type="number" name="frequency_min" class="form-control" value="1" min="1">
-                                <small class="text-muted">Default: 1 (setiap kejadian)</small>
+                                <label>Frekuensi Min <span class="text-danger">*</span></label>
+                                <input type="number" name="frequency_min" id="add_frequency_min" class="form-control" value="{{ old('frequency_min', $suggestedFreqMin) }}" min="1" required>
+                                <small class="form-text text-success">
+                                    <i class="fas fa-lightbulb"></i> Rekomendasi: {{ $suggestedFreqMin }} (dari rule yang ada)
+                                </small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Frekuensi Max <small class="text-muted">(opsional)</small></label>
-                                <input type="number" name="frequency_max" class="form-control" min="1" placeholder="Kosongkan untuk unlimited">
-                                <small class="text-muted">Contoh: 1-3x, 4-10x, 11+x</small>
+                                <input type="number" name="frequency_max" id="add_frequency_max" class="form-control" min="1" placeholder="Kosongkan untuk unlimited">
+                                <small class="form-text text-muted" id="maxHelpText">Contoh: 1-3x, 4-10x, 11+x</small>
+                                <small class="form-text text-info" id="exactHelpText" style="display:none;">
+                                    <i class="fas fa-info-circle"></i> Mode exact: Max akan sama dengan Min
+                                </small>
                             </div>
                         </div>
                     </div>
+                    
                     <div class="form-group">
                         <label>Poin <span class="text-danger">*</span></label>
                         <input type="number" name="poin" class="form-control" required min="0" value="0">
                         <small class="text-muted">Isi 0 jika hanya pembinaan tanpa poin</small>
                     </div>
+                    
                     <div class="form-group">
                         <label>Sanksi / Keterangan <span class="text-danger">*</span></label>
                         <textarea name="sanksi_description" class="form-control" rows="3" required placeholder="Contoh: Dipotong rambutnya di sekolah, Pembinaan oleh wali kelas, dll"></textarea>
                     </div>
+                    
                     <div class="form-group">
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" name="trigger_surat" value="1" class="custom-control-input" id="trigger_surat_add">
@@ -185,6 +230,7 @@
                             </label>
                         </div>
                     </div>
+                    
                     <div class="form-group">
                         <label>Pembina yang Terlibat <span class="text-danger">*</span></label>
                         <div class="border rounded p-3">
@@ -217,6 +263,25 @@
                             </div>
                         </div>
                         <small class="text-muted">Pilih satu atau lebih pembina yang akan menangani sanksi ini</small>
+                    </div>
+                    
+                    <!-- Display Order -->
+                    <div class="form-group">
+                        <label>Urutan Tampilan</label>
+                        <input type="number" name="display_order" class="form-control" value="{{ $suggestedDisplayOrder }}" min="1">
+                        <small class="form-text text-success">
+                            <i class="fas fa-lightbulb"></i> Rekomendasi: {{ $suggestedDisplayOrder }}
+                        </small>
+                    </div>
+                    
+                    <!-- Examples -->
+                    <div class="alert alert-secondary">
+                        <strong><i class="fas fa-examples"></i> Contoh Penggunaan:</strong>
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Progressive (range):</strong> Frek 1-3 → Teguran (10 poin), Frek 4-6 → Surat (30 poin), Frek 7+ → Panggil ortu (80 poin)</li>
+                            <li><strong>Exact trigger:</strong> Frek 3 (min=3, max=3) → Skorsing 1 hari</li>
+                            <li><strong>Single action:</strong> Frek 1 (min=1, max=1) → Langsung potong rambut (untuk rambut panjang)</li>
+                        </ul>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -315,6 +380,45 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Exact Frequency Mode Toggle
+    $('#exactFrequencyMode').change(function() {
+        const isExact = $(this).is(':checked');
+        const minInput = $('#add_frequency_min');
+        const maxInput = $('#add_frequency_max');
+        
+        if (isExact) {
+            // Exact mode: max = min
+            maxInput.prop('readonly', true);
+            maxInput.addClass('bg-light');
+            $('#maxHelpText').hide();
+            $('#exactHelpText').show();
+            
+            // Sync max with min
+            maxInput.val(minInput.val());
+        } else {
+            // Range mode: max is editable
+            maxInput.prop('readonly', false);
+            maxInput.removeClass('bg-light');
+            $('#maxHelpText').show();
+            $('#exactHelpText').hide();
+        }
+    });
+    
+    //When min changes in exact mode, update max
+    $('#add_frequency_min').on('input', function() {
+        if ($('#exactFrequencyMode').is(':checked')) {
+            $('#add_frequency_max').val($(this).val());
+        }
+    });
+    
+    // Reset form when modal closes
+    $('#modalAddRule').on('hidden.bs.modal', function() {
+        $('#formAddRule')[0].reset();
+        $('#exactFrequencyMode').prop('checked', false).trigger('change');
+        // Reset to suggested defaults
+        $('#add_frequency_min').val('{{ $suggestedFreqMin ?? 1 }}');
+    });
+    
     // Edit rule
     $('.btn-edit-rule').click(function() {
         const id = $(this).data('id');

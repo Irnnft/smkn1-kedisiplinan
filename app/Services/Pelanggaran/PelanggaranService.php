@@ -354,17 +354,20 @@ class PelanggaranService
     /**
      * Dapatkan semua siswa untuk form create pelanggaran.
      * 
+     * PERFORMANCE: Uses lightweight DB query instead of loading full Models
+     * 
      * ROLE-BASED:
      * - Operator/Kepala Sekolah/Waka: Semua siswa
      * - Wali Kelas: Siswa di kelasnya saja
      * - Kaprodi: Siswa di jurusannya saja
      *
      * @param int|null $userId User ID untuk filter role-based
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Support\Collection<stdClass> NOT Eloquent Models!
      */
     public function getAllSiswaForCreate(?int $userId = null)
     {
-        $query = \App\Models\Siswa::with('kelas.jurusan')->orderBy('nama_siswa');
+        $kelasId = null;
+        $jurusanId = null;
 
         if ($userId) {
             $user = \App\Models\User::find($userId);
@@ -372,25 +375,22 @@ class PelanggaranService
             if ($user && $user->hasRole('Wali Kelas')) {
                 // Filter siswa di kelas wali kelas
                 $kelas = \App\Models\Kelas::where('wali_kelas_user_id', $userId)->first();
-                if ($kelas) {
-                    $query->where('kelas_id', $kelas->id);
-                } else {
-                    // Jika tidak ada kelas, return empty
+                if (!$kelas) {
                     return collect([]);
                 }
+                $kelasId = $kelas->id;
+                
             } elseif ($user && $user->hasRole('Kaprodi')) {
                 // Filter siswa di jurusan kaprodi
                 $jurusan = \App\Models\Jurusan::where('kaprodi_user_id', $userId)->first();
-                if ($jurusan) {
-                    $kelasIds = \App\Models\Kelas::where('jurusan_id', $jurusan->id)->pluck('id');
-                    $query->whereIn('kelas_id', $kelasIds);
-                } else {
-                    // Jika tidak ada jurusan, return empty
+                if (!$jurusan) {
                     return collect([]);
                 }
+                $jurusanId = $jurusan->id;
             }
         }
 
-        return $query->get();
+        // PERFORMANCE: Use lightweight repository method (stdClass, not Models)
+        return app(\App\Repositories\SiswaRepository::class)->getForDropdown($kelasId, $jurusanId);
     }
 }

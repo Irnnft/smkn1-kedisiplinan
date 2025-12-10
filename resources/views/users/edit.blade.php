@@ -234,24 +234,6 @@
                                 Digunakan untuk tanda tangan surat resmi dan dokumen administrasi
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Password</label>
-                            @if($user->hasChangedPassword())
-                                <input type="text" class="form-control" value="••••••••" disabled>
-                                <small class="text-success">
-                                    <i class="fas fa-check-circle"></i> Password sudah diubah oleh user, tidak akan di-generate ulang.
-                                </small>
-                            @else
-                                <input type="text" class="form-control" value="••••••••" disabled>
-                                <small class="text-muted">Password akan di-generate otomatis saat konfigurasi berubah (jika user belum pernah mengubahnya).</small>
-                            @endif
-                        </div>
-                    </div>
                 </div>
 
                 <hr>
