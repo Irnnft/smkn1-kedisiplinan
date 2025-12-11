@@ -1,408 +1,411 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah User Baru')
+{{-- 1. SCRIPT LOGIC (PALING ATAS) --}}
+@push('scripts')
+<script>
+    (function(){
+        // --- LOGIC TOGGLE SECTION ---
+        const roleSelect = document.getElementById('roleSelect');
+        const kaprodiSection = document.getElementById('kaprodiSection');
+        const jurusanSelect = document.getElementById('jurusanSelect');
+        const waliSection = document.getElementById('waliSection');
+        const kelasSelect = document.getElementById('kelasSelect');
+        const nipSection = document.getElementById('nipSection');
+        const siswaSection = document.getElementById('siswaSection');
 
-@section('styles')
-    <link rel="stylesheet" href="{{ asset('css/pages/users/create.css') }}">
-@endsection
+        function toggleSections() {
+            const opt = roleSelect.options[roleSelect.selectedIndex];
+            const roleName = opt ? opt.dataset.roleName : '';
+            
+            // Reset Display
+            kaprodiSection.style.display = 'none';
+            waliSection.style.display = 'none';
+            siswaSection.style.display = 'none';
+            if (nipSection) nipSection.style.display = '';
 
+            // Logic Display
+            if (roleName === 'Kaprodi') {
+                kaprodiSection.style.display = '';
+            } else if (roleName === 'Wali Kelas') {
+                waliSection.style.display = '';
+            } else if (roleName === 'Wali Murid') {
+                siswaSection.style.display = '';
+                if (nipSection) nipSection.style.display = 'none';
+            }
+        }
+
+        function disableAssigned() {
+            if (jurusanSelect) {
+                Array.from(jurusanSelect.options).forEach(opt => {
+                    if (opt.dataset.kaprodiId) opt.disabled = true;
+                });
+            }
+            if (kelasSelect) {
+                Array.from(kelasSelect.options).forEach(opt => {
+                    if (opt.dataset.waliId) opt.disabled = true;
+                });
+            }
+        }
+
+        roleSelect.addEventListener('change', toggleSections);
+        document.addEventListener('DOMContentLoaded', function(){ toggleSections(); disableAssigned(); });
+    })();
+    
+    // --- LOGIC FILTER SISWA ---
+    function filterStudents() {
+        const tingkat = document.getElementById('filterTingkat').value.toLowerCase();
+        const jurusan = document.getElementById('filterJurusan').value;
+        const kelas = document.getElementById('filterKelas').value;
+        const search = document.getElementById('searchSiswa').value.toLowerCase();
+        
+        const items = document.querySelectorAll('.student-radio-item');
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+            const iTingkat = item.dataset.tingkat.toLowerCase();
+            const iJurusan = item.dataset.jurusan;
+            const iKelas = item.dataset.kelas;
+            const iSearch = item.dataset.search;
+            
+            let show = true;
+            if (tingkat && !iTingkat.includes(tingkat)) show = false;
+            if (jurusan && iJurusan !== jurusan) show = false;
+            if (kelas && iKelas !== kelas) show = false;
+            if (search && !iSearch.includes(search)) show = false;
+            
+            item.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+        
+        const noMsg = document.getElementById('noResultMsg');
+        if(noMsg) noMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+    }
+
+    function resetFilters() {
+        ['filterTingkat', 'filterJurusan', 'filterKelas', 'searchSiswa'].forEach(id => {
+            document.getElementById(id).value = '';
+        });
+        filterStudents();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        ['filterTingkat', 'filterJurusan', 'filterKelas', 'searchSiswa'].forEach(id => {
+            const el = document.getElementById(id);
+            if(el) el.addEventListener(id === 'searchSiswa' ? 'input' : 'change', filterStudents);
+        });
+    });
+</script>
+@endpush
+
+{{-- 2. CONTENT FORM --}}
 @section('content')
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card card-primary">
-                <div class="card-header">
-                    <h3 class="card-title"><i class="fas fa-user-plus mr-1"></i> Form Tambah Pengguna</h3>
-                </div>
-                
-                <form action="{{ route('users.store') }}" method="POST">
-                    @csrf
-                    
-                    {{-- Display Validation Errors --}}
-                    @if ($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
-                            <h5><i class="icon fas fa-ban"></i> Validasi Gagal!</h5>
-                            <ul class="mb-0">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                    @endif
-                    
-                    <div class="card-body">
-                        
-                        <!-- DATA AKUN -->
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            <strong>Informasi:</strong> Nama, Username, dan Password akan di-generate otomatis oleh sistem berdasarkan role dan konfigurasi yang Anda pilih.
-                        </div>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: { colors: { primary: '#4f46e5', slate: { 800: '#1e293b', 900: '#0f172a' } } }
+        },
+        corePlugins: { preflight: false }
+    }
+</script>
 
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Role (Jabatan) <span class="text-danger">*</span></label>
-                                    <select name="role_id" id="roleSelect" class="form-control @error('role_id') is-invalid @enderror" required>
-                                        <option value="">-- Pilih Role --</option>
+<div class="page-container p-4">
+    
+    <div class="mb-1 border-b border-slate-200 pb-1">
+        <h1 class="text-2xl font-bold text-slate-800">Registrasi Pengguna</h1>
+        <p class="text-slate-500 text-sm mt-1">Tambahkan akun baru untuk Guru, Staff, atau Wali Murid ke dalam sistem.</p>
+    </div>
+
+    <form action="{{ route('users.store') }}" method="POST">
+        @csrf
+
+        <div class="row">
+            <div class="col-lg-8">
+                
+                {{-- Alert Error --}}
+                @if ($errors->any())
+                    <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-exclamation-circle text-red-500"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-700 font-bold">Terdapat kesalahan input:</p>
+                                <ul class="list-disc list-inside text-xs text-red-600 mt-1">
+                                    @foreach ($errors->all() as $error) <li>{{ $error }}</li> @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                        <h3 class="text-sm font-bold text-slate-700 m-0 uppercase tracking-wide flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-primary"></span>
+                            1. Informasi Akun
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="form-group mb-0">
+                                <label class="form-label-modern">Jabatan (Role) <span class="text-red-500">*</span></label>
+                                <div class="relative">
+                                    <select name="role_id" id="roleSelect" class="form-input-modern w-full appearance-none pr-8" required>
+                                        <option value="">-- Pilih --</option>
                                         @foreach($roles as $role)
                                             @php
-                                                $roleName = $role->nama_role ?? 'N/A';
-                                                $isKepsek = $roleName === 'Kepala Sekolah';
-                                                $disabled = ($isKepsek && isset($kepsekExists) && $kepsekExists) ? 'disabled' : '';
+                                                $disabled = ($role->nama_role === 'Kepala Sekolah' && isset($kepsekExists) && $kepsekExists) ? 'disabled' : '';
                                             @endphp
-                                            <option value="{{ $role->id }}" data-role-name="{{ $roleName }}" {{ old('role_id') == $role->id ? 'selected' : '' }} {{ $disabled }}>{{ $roleName }}@if($isKepsek && isset($kepsekExists) && $kepsekExists) — (dipegang oleh: {{ $kepsekUsername ?? '—' }})@endif</option>
+                                            <option value="{{ $role->id }}" data-role-name="{{ $role->nama_role }}" {{ old('role_id') == $role->id ? 'selected' : '' }} {{ $disabled }}>
+                                                {{ $role->nama_role }} @if($disabled) (Sudah Terisi) @endif
+                                            </option>
                                         @endforeach
                                     </select>
-                                    @error('role_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Email <span class="text-danger">*</span></label>
-                                    <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" placeholder="Alamat Email" value="{{ old('email') }}" required>
-                                    @error('email') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                    <small class="text-muted d-block">
-                                        Email ini dapat diubah oleh user nantinya di halaman "Akun Saya".
-                                    </small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Nomor HP / Kontak (Opsional)</label>
-                                    <input type="text" name="phone" class="form-control @error('phone') is-invalid @enderror" placeholder="Contoh: 0812xxxxxxx" value="{{ old('phone') }}">
-                                    @error('phone') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                    <small class="text-muted d-block">
-                                        Untuk Wali Murid, kontak utama tetap diambil dari data siswa (nomor HP wali murid).
-                                    </small>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label>Password <span class="text-danger">*</span></label>
-                                    <input type="text" name="password" class="form-control" value="123456" required>
-                                    <small class="text-muted">Default: 123456</small>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TANDA PENGENAL KEPEGAWAIAN -->
-                        <div id="nipSection">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <h5 class="mb-3"><i class="fas fa-id-card mr-1"></i> Tanda Pengenal Kepegawaian (Opsional)</h5>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>NIP / NI PPPK (18 digit)</label>
-                                        <input type="text" name="nip" class="form-control @error('nip') is-invalid @enderror" placeholder="Contoh: 197303222000122002" value="{{ old('nip') }}" maxlength="18">
-                                        @error('nip') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                        <small class="text-muted d-block">
-                                            Nomor Induk Pegawai (PNS) atau NI PPPK (Pegawai Kontrak)
-                                        </small>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="form-group">
-                                        <label>NUPTK (18 digit)</label>
-                                        <input type="text" name="nuptk" class="form-control @error('nuptk') is-invalid @enderror" placeholder="Contoh: 123456789012345678" value="{{ old('nuptk') }}" maxlength="18">
-                                        @error('nuptk') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                        <small class="text-muted d-block">
-                                            Nomor Unik Pendidik dan Tenaga Kependidikan
-                                        </small>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
+                                        <i class="fas fa-chevron-down text-xs"></i>
                                     </div>
                                 </div>
                             </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle mr-1"></i>
-                                        Digunakan untuk tanda tangan surat resmi dan dokumen administrasi
+
+                            <div class="form-group mb-0">
+                                <label class="form-label-modern">Email Address <span class="text-red-500">*</span></label>
+                                <input type="email" name="email" class="form-input-modern w-full" placeholder="user@sekolah.id" value="{{ old('email') }}" required>
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label class="form-label-modern">No. Handphone <span class="text-slate-400 text-xs font-normal">(Opsional)</span></label>
+                                <input type="text" name="phone" class="form-input-modern w-full" placeholder="08..." value="{{ old('phone') }}">
+                            </div>
+
+                            <div class="form-group mb-0">
+                                <label class="form-label-modern">Password Awal</label>
+                                <div class="relative">
+                                    <input type="text" name="password" class="form-input-modern w-full bg-slate-50 text-slate-500 font-mono" value="123456" readonly>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
+                                        <i class="fas fa-lock text-xs"></i>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- AREA KHUSUS WALI KELAS -->
-                        <div id="waliSection" style="display:none; margin-top: 1rem;">
-                            <div class="form-group">
-                                <label>Kelas yang diampu (Wali Kelas)</label>
-                                <select name="kelas_id" id="kelasSelect" class="form-control @error('kelas_id') is-invalid @enderror">
+                <div id="nipSection" class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
+                        <h3 class="text-sm font-bold text-slate-700 m-0 uppercase tracking-wide flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            2. Data Kepegawaian
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="form-label-modern">NIP / NI PPPK</label>
+                                <input type="text" name="nip" class="form-input-modern w-full" placeholder="18 Digit..." value="{{ old('nip') }}" maxlength="18">
+                            </div>
+                            <div>
+                                <label class="form-label-modern">NUPTK</label>
+                                <input type="text" name="nuptk" class="form-input-modern w-full" placeholder="Nomor Unik..." value="{{ old('nuptk') }}" maxlength="18">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="mappingContainer">
+                    
+                    <div id="waliSection" style="display:none;" class="bg-white rounded-2xl shadow-sm border border-blue-200 mb-6">
+                        <div class="bg-blue-50 px-6 py-4 border-b border-blue-100">
+                            <h3 class="text-sm font-bold text-blue-800 m-0 uppercase tracking-wide">Mapping Wali Kelas</h3>
+                        </div>
+                        <div class="p-6">
+                            <label class="form-label-modern text-blue-700">Kelas Binaan</label>
+                            <div class="relative">
+                                <select name="kelas_id" id="kelasSelect" class="form-input-modern w-full border-blue-300 focus:ring-blue-200 appearance-none pr-8">
                                     <option value="">-- Pilih Kelas --</option>
                                     @foreach($kelas as $k)
-                                        <option value="{{ $k->id }}" data-wali-id="{{ $k->wali_kelas_user_id ?? '' }}" data-wali-name="{{ optional($k->waliKelas)->nama ?? '' }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}@if($k->wali_kelas_user_id) — (dipegang oleh: {{ optional($k->waliKelas)->username ?? '—' }})@endif</option>
+                                        @php $hasWali = $k->wali_kelas_user_id; @endphp
+                                        <option value="{{ $k->id }}" data-wali-id="{{ $hasWali ?? '' }}" {{ $hasWali ? 'disabled' : '' }}>
+                                            {{ $k->nama_kelas }} @if($hasWali) (Terisi) @endif
+                                        </option>
                                     @endforeach
                                 </select>
-                                @error('kelas_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                <small class="text-muted d-block mt-1">Pilih kelas jika akun ini adalah Wali Kelas. Kelas yang sudah mempunyai wali dinonaktifkan.</small>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-blue-500">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- AREA KHUSUS KAPRODI -->
-                        <div id="kaprodiSection" style="display: none; margin-top: 1rem;">
-                            <div class="form-group">
-                                <label>Jurusan yang diampu (Kaprodi)</label>
-                                <select name="jurusan_id" id="jurusanSelect" class="form-control @error('jurusan_id') is-invalid @enderror">
+                    <div id="kaprodiSection" style="display:none;" class="bg-white rounded-2xl shadow-sm border border-blue-200 mb-6">
+                        <div class="bg-blue-50 px-6 py-4 border-b border-blue-100">
+                            <h3 class="text-sm font-bold text-blue-800 m-0 uppercase tracking-wide">Mapping Kaprodi</h3>
+                        </div>
+                        <div class="p-6">
+                            <label class="form-label-modern text-blue-700">Program Studi</label>
+                            <div class="relative">
+                                <select name="jurusan_id" id="jurusanSelect" class="form-input-modern w-full border-blue-300 focus:ring-blue-200 appearance-none pr-8">
                                     <option value="">-- Pilih Jurusan --</option>
                                     @foreach($jurusan as $j)
-                                        <option value="{{ $j->id }}" data-kaprodi-id="{{ $j->kaprodi_user_id ?? '' }}" data-kaprodi-name="{{ optional($j->kaprodi)->nama ?? '' }}" {{ old('jurusan_id') == $j->id ? 'selected' : '' }}>{{ $j->nama_jurusan }}@if($j->kaprodi_user_id) — (dipegang oleh: {{ optional($j->kaprodi)->username ?? '—' }})@endif</option>
+                                        @php $hasKaprodi = $j->kaprodi_user_id; @endphp
+                                        <option value="{{ $j->id }}" data-kaprodi-id="{{ $hasKaprodi ?? '' }}" {{ $hasKaprodi ? 'disabled' : '' }}>
+                                            {{ $j->nama_jurusan }} @if($hasKaprodi) (Terisi) @endif
+                                        </option>
                                     @endforeach
                                 </select>
-                                @error('jurusan_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
-                                <small class="text-muted d-block mt-1">Pilih jurusan jika akun ini adalah Kaprodi. Jurusan yang sudah mempunyai Kaprodi dinonaktifkan.</small>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-blue-500">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
                             </div>
                         </div>
+                    </div>
 
-                        <hr>
+                    <div id="siswaSection" style="display:none;" class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-6 overflow-hidden">
+                        <div class="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                            <h3 class="text-sm font-bold text-slate-700 m-0 uppercase tracking-wide flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                3. Hubungkan Siswa (Anak)
+                            </h3>
+                            <button type="button" class="text-xs text-blue-600 hover:text-blue-800 font-bold underline" onclick="resetFilters()">Reset Filter</button>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="flex flex-wrap gap-3 mb-5 p-1">
+                                <select id="filterTingkat" class="form-select-sm-modern">
+                                    <option value="">Semua Tingkat</option>
+                                    <option value="X">Kelas X</option>
+                                    <option value="XI">Kelas XI</option>
+                                    <option value="XII">Kelas XII</option>
+                                </select>
+                                <select id="filterJurusan" class="form-select-sm-modern">
+                                    <option value="">Semua Jurusan</option>
+                                    @foreach($jurusan as $j) <option value="{{ $j->id }}">{{ $j->nama_jurusan }}</option> @endforeach
+                                </select>
+                                <select id="filterKelas" class="form-select-sm-modern">
+                                    <option value="">Semua Kelas</option>
+                                    @foreach($kelas as $k) <option value="{{ $k->id }}" data-jurusan="{{ $k->jurusan_id }}">{{ $k->nama_kelas }}</option> @endforeach
+                                </select>
+                                <input type="text" id="searchSiswa" class="form-input-sm-modern flex-grow" placeholder="Cari Nama / NISN...">
+                            </div>
 
-                        <!-- ========================================== -->
-                        <!-- AREA KHUSUS WALI MURID (KONSEP BARU)        -->
-                        <!-- ========================================== -->
-                        <div id="siswaSection" style="display: none;">
-                            <div class="card border-primary">
-                                <div class="card-header bg-primary py-2">
-                                    <h3 class="card-title" style="font-size: 1rem;"><i class="fas fa-child mr-1"></i> Pilih Siswa (Anak)</h3>
-                                </div>
-                                <div class="card-body">
-                                    
-                                    <!-- 1. PANEL FILTER & PENCARIAN -->
-                                    <div class="filter-box">
-                                        <div class="row">
-                                            <div class="col-md-3 mb-2">
-                                                <label class="small text-muted">Tingkat</label>
-                                                <select id="filterTingkat" class="form-control form-control-sm">
-                                                    <option value="">- Semua -</option>
-                                                    <option value="X">Kelas X</option>
-                                                    <option value="XI">Kelas XI</option>
-                                                    <option value="XII">Kelas XII</option>
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3 mb-2">
-                                                <label class="small text-muted">Jurusan</label>
-                                                <select id="filterJurusan" class="form-control form-control-sm">
-                                                    <option value="">- Semua -</option>
-                                                    @foreach($jurusan as $j)
-                                                        <option value="{{ $j->id }}">{{ $j->nama_jurusan }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3 mb-2">
-                                                <label class="small text-muted">Kelas</label>
-                                                <select id="filterKelas" class="form-control form-control-sm">
-                                                    <option value="">- Semua -</option>
-                                                    @foreach($kelas as $k)
-                                                        <option value="{{ $k->id }}" data-jurusan="{{ $k->jurusan_id }}">{{ $k->nama_kelas }}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                            <div class="col-md-3 mb-2">
-                                                <label class="small text-muted">Cari Nama / NISN</label>
-                                                <input type="text" id="searchSiswa" class="form-control form-control-sm" placeholder="Ketik nama...">
-                                            </div>
-                                        </div>
-                                        <div class="text-right">
-                                            <button type="button" class="btn btn-xs btn-secondary" onclick="resetFilters()">
-                                                <i class="fas fa-undo"></i> Reset Filter
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- 2. DAFTAR SISWA (CHECKBOX LIST) -->
-                                    <div class="form-group">
-                                        <label>Daftar Siswa (Centang yang sesuai):</label>
-                                        <div class="student-list-container">
-                                            <!-- Loop semua siswa, tapi kita kontrol tampilannya via JS -->
-                                            @foreach($siswa as $s)
-                                                @php
-                                                    // Persiapan data attribut untuk filtering
-                                                    $tingkat = explode(' ', $s->kelas->nama_kelas ?? '')[0];
-                                                    $jurusanId = $s->kelas->jurusan_id ?? '';
-                                                    $kelasId = $s->kelas_id;
-                                                    $searchText = strtolower($s->nama_siswa . ' ' . $s->nisn);
-                                                @endphp
-                                                
-                                                <div class="student-item" 
-                                                     data-tingkat="{{ $tingkat }}"
-                                                     data-jurusan="{{ $jurusanId }}"
-                                                     data-kelas="{{ $kelasId }}"
-                                                     data-search="{{ $searchText }}">
-                                                    
-                                                    <label class="d-flex align-items-center">
-                                                        <input type="checkbox" name="siswa_ids[]" value="{{ $s->id }}" class="student-checkbox">
-                                                        <div>
-                                                            <span class="font-weight-bold text-primary">{{ $s->nama_siswa }}</span>
-                                                            <small class="d-block text-muted">
-                                                                {{ $s->kelas->nama_kelas ?? 'No Kelas' }} | NISN: {{ $s->nisn }}
-                                                            </small>
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            @endforeach
+                            <div class="student-scroll-area">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="studentGrid">
+                                    @foreach($siswa as $s)
+                                        <div class="student-radio-item"
+                                             data-tingkat="{{ explode(' ', $s->kelas->nama_kelas ?? '')[0] }}" 
+                                             data-jurusan="{{ $s->kelas->jurusan_id ?? '' }}" 
+                                             data-kelas="{{ $s->kelas_id }}" 
+                                             data-search="{{ strtolower($s->nama_siswa . ' ' . $s->nisn) }}">
                                             
-                                            <!-- Pesan jika tidak ada hasil -->
-                                            <div id="noResultMsg" style="display:none; padding: 20px; text-align: center; color: #888;">
-                                                <i class="fas fa-search"></i> Tidak ada siswa yang cocok dengan filter.
-                                            </div>
+                                            <label class="flex items-center p-3 bg-white border border-slate-200 rounded-xl cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all h-full relative group shadow-sm hover:shadow-md">
+                                                <input type="checkbox" name="siswa_ids[]" value="{{ $s->id }}" class="form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mr-3 transition duration-150 ease-in-out">
+                                                <div class="overflow-hidden">
+                                                    <p class="text-sm font-bold text-slate-700 truncate group-hover:text-blue-700 transition-colors">{{ $s->nama_siswa }}</p>
+                                                    <p class="text-xs text-slate-500 truncate">{{ $s->nisn }} • <span class="bg-slate-100 px-1 rounded">{{ $s->kelas->nama_kelas ?? '-' }}</span></p>
+                                                </div>
+                                            </label>
                                         </div>
-                                        <small class="text-muted mt-1 d-block">* Daftar di atas otomatis diperbarui saat Anda mengubah filter.</small>
-                                    </div>
-
+                                    @endforeach
+                                </div>
+                                <div id="noResultMsg" class="text-center py-8 text-slate-400 text-sm hidden">
+                                    <i class="fas fa-search mb-2 text-2xl opacity-50"></i><br>
+                                    Siswa tidak ditemukan.
                                 </div>
                             </div>
                         </div>
-                        <!-- END AREA WALI MURID -->
-
                     </div>
 
-                    <div class="card-footer d-flex justify-content-between">
-                        <a href="{{ route('users.index') }}" class="btn btn-default">Kembali</a>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i> Simpan User</button>
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+                
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 mb-4 sticky top-6 z-10">
+                    <div class="p-6">
+                        <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-3 flex items-center gap-2">
+                            <i class="fas fa-check-circle text-emerald-500"></i> Konfirmasi
+                        </h4>
+                        <p class="text-xs text-slate-500 mb-6 leading-relaxed">
+                            Pastikan data yang Anda masukkan sudah benar. Password default untuk akun baru adalah <strong>123456</strong>.
+                        </p>
+                        
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 mb-3 flex items-center justify-center gap-2">
+                            <i class="fas fa-save"></i> Simpan User
+                        </button>
+                        
+                        <a href="{{ route('users.index') }}" class="w-full block text-center bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-3 px-4 rounded-xl transition-colors text-sm">
+                            Batal
+                        </a>
                     </div>
-                </form>
+                </div>
+
             </div>
         </div>
-    </div>
+    </form>
 </div>
 @endsection
 
-@push('scripts')
-    <script>
-        (function(){
-            const roleSelect = document.getElementById('roleSelect');
-            const kaprodiSection = document.getElementById('kaprodiSection');
-            const jurusanSelect = document.getElementById('jurusanSelect');
-            const waliSection = document.getElementById('waliSection');
-            const kelasSelect = document.getElementById('kelasSelect');
-            const nipSection = document.getElementById('nipSection');
-            const siswaSection = document.getElementById('siswaSection');
+{{-- 3. STYLE CSS --}}
+@section('styles')
+<style>
+    /* Styling Manual untuk komponen form yang Modern & Clean */
+    
+    .form-label-modern {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+        letter-spacing: 0.025em;
+    }
 
-            function toggleSections() {
-                const opt = roleSelect.options[roleSelect.selectedIndex];
-                const roleName = opt ? opt.dataset.roleName : '';
-                
-                // Kaprodi
-                if (roleName === 'Kaprodi') {
-                    kaprodiSection.style.display = '';
-                } else {
-                    kaprodiSection.style.display = 'none';
-                    if (jurusanSelect) jurusanSelect.value = '';
-                }
+    .form-input-modern {
+        display: block;
+        width: 100%;
+        padding: 0.75rem 1rem; /* Lebih tinggi dan lega */
+        font-size: 0.875rem;
+        line-height: 1.25;
+        color: #1e293b;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #e2e8f0; /* Border sangat halus */
+        border-radius: 0.75rem; /* Rounded modern */
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
 
-                // Wali Kelas
-                if (roleName === 'Wali Kelas') {
-                    waliSection.style.display = '';
-                } else {
-                    waliSection.style.display = 'none';
-                    if (kelasSelect) kelasSelect.value = '';
-                }
+    .form-input-modern:focus {
+        border-color: #6366f1; /* Primary indigo/blue */
+        outline: 0;
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
 
-                // Wali Murid
-                if (roleName === 'Wali Murid') {
-                    siswaSection.style.display = '';
-                } else {
-                    siswaSection.style.display = 'none';
-                    // Uncheck all checkboxes
-                    const checkboxes = document.querySelectorAll('.student-checkbox');
-                    checkboxes.forEach(cb => cb.checked = false);
-                }
+    /* Small Input untuk Filter */
+    .form-select-sm-modern, .form-input-sm-modern {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.5rem;
+        color: #475569;
+        background-color: #fff;
+    }
+    .form-select-sm-modern:focus, .form-input-sm-modern:focus {
+        border-color: #6366f1;
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
+    }
 
-                // NIP/NUPTK Section - Hide untuk Wali Murid
-                if (nipSection) {
-                    if (roleName === 'Wali Murid') {
-                        nipSection.style.display = 'none';
-                    } else {
-                        nipSection.style.display = '';
-                    }
-                }
-            }
-
-            function disableAssignedJurusan() {
-                if (!jurusanSelect) return;
-                for (let i = 0; i < jurusanSelect.options.length; i++) {
-                    const opt = jurusanSelect.options[i];
-                    const kaprodiId = opt.dataset.kaprodiId || '';
-                    if (kaprodiId && kaprodiId !== '') {
-                        opt.disabled = true;
-                    }
-                }
-            }
-
-            function disableAssignedKelas() {
-                if (!kelasSelect) return;
-                for (let i = 0; i < kelasSelect.options.length; i++) {
-                    const opt = kelasSelect.options[i];
-                    const waliId = opt.dataset.waliId || '';
-                    if (waliId && waliId !== '') {
-                        opt.disabled = true;
-                    }
-                }
-            }
-
-            roleSelect.addEventListener('change', toggleSections);
-            document.addEventListener('DOMContentLoaded', function(){ toggleSections(); disableAssignedJurusan(); disableAssignedKelas(); });
-        })();
-        
-        // Filter functionality for Wali Murid student list
-        function resetFilters() {
-            document.getElementById('filterTingkat').value = '';
-            document.getElementById('filterJurusan').value = '';
-            document.getElementById('filterKelas').value = '';
-            document.getElementById('searchSiswa').value = '';
-            filterStudents();
-        }
-        
-        function filterStudents() {
-            const tingkat = document.getElementById('filterTingkat').value.toLowerCase();
-            const jurusan = document.getElementById('filterJurusan').value;
-            const kelas = document.getElementById('filterKelas').value;
-            const search = document.getElementById('searchSiswa').value.toLowerCase();
-            
-            const items = document.querySelectorAll('.student-item');
-            let visibleCount = 0;
-            
-            items.forEach(item => {
-                const itemTingkat = item.dataset.tingkat.toLowerCase();
-                const itemJurusan = item.dataset.jurusan;
-                const itemKelas = item.dataset.kelas;
-                const itemSearch = item.dataset.search;
-                
-                let show = true;
-                
-                if (tingkat && !itemTingkat.includes(tingkat)) show = false;
-                if (jurusan && itemJurusan !== jurusan) show = false;
-                if (kelas && itemKelas !== kelas) show = false;
-                if (search && !itemSearch.includes(search)) show = false;
-                
-                item.style.display = show ? '' : 'none';
-                if (show) visibleCount++;
-            });
-            
-            // Show/hide no result message
-            const noResultMsg = document.getElementById('noResultMsg');
-            if (noResultMsg) {
-                noResultMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-            }
-        }
-        
-        // Attach filter event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            const filterTingkat = document.getElementById('filterTingkat');
-            const filterJurusan = document.getElementById('filterJurusan');
-            const filterKelas = document.getElementById('filterKelas');
-            const searchSiswa = document.getElementById('searchSiswa');
-            
-            if (filterTingkat) filterTingkat.addEventListener('change', filterStudents);
-            if (filterJurusan) filterJurusan.addEventListener('change', filterStudents);
-            if (filterKelas) filterKelas.addEventListener('change', filterStudents);
-            if (searchSiswa) searchSiswa.addEventListener('input', filterStudents);
-        });
-    </script>
-@endpush
+    /* Scroll Area untuk Siswa */
+    .student-scroll-area {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 5px;
+    }
+    .student-scroll-area::-webkit-scrollbar { width: 5px; }
+    .student-scroll-area::-webkit-scrollbar-track { background: #f8fafc; }
+    .student-scroll-area::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    .student-scroll-area::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+</style>
+@endsection

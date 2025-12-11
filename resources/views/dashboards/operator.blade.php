@@ -1,7 +1,5 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Operator')
-
 @section('content')
 
 <script src="https://cdn.tailwindcss.com"></script>

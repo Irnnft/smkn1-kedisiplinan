@@ -1,4 +1,31 @@
 {{-- Filter Form Partial for Users Management --}}
+
+<script>
+    function toggleFilter() {
+        const content = document.getElementById('filterContent');
+        const arrow = document.getElementById('filterArrow');
+        
+        if (content.classList.contains('hidden')) {
+            // Buka
+            content.classList.remove('hidden');
+            arrow.style.transform = 'rotate(0deg)';
+        } else {
+            // Tutup
+            content.classList.add('hidden');
+            arrow.style.transform = 'rotate(-180deg)';
+        }
+    }
+
+    // (Opsional) Auto-close di HP biar gak menuhin layar
+    if (window.innerWidth < 768) {
+        // Cek dulu apakah user sedang memfilter? Kalau sedang filter jangan ditutup
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.has('cari') && !urlParams.has('role_id')) {
+            toggleFilter(); // Tutup default di HP
+        }
+    }
+</script>
+
 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
     
     <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center cursor-pointer transition-colors hover:bg-blue-50/50 group" onclick="toggleFilter()">
@@ -9,10 +36,6 @@
             </span>
             Filter & Pencarian
         </h3>
-
-        <button type="button" class="text-slate-400 transition-transform duration-300" id="filterArrow">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
-        </button>
     </div>
 
     <div id="filterContent" class="transition-all duration-300 ease-in-out">
@@ -76,28 +99,3 @@
     </div>
 </div>
 
-<script>
-    function toggleFilter() {
-        const content = document.getElementById('filterContent');
-        const arrow = document.getElementById('filterArrow');
-        
-        if (content.classList.contains('hidden')) {
-            // Buka
-            content.classList.remove('hidden');
-            arrow.style.transform = 'rotate(0deg)';
-        } else {
-            // Tutup
-            content.classList.add('hidden');
-            arrow.style.transform = 'rotate(-180deg)';
-        }
-    }
-
-    // (Opsional) Auto-close di HP biar gak menuhin layar
-    if (window.innerWidth < 768) {
-        // Cek dulu apakah user sedang memfilter? Kalau sedang filter jangan ditutup
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.has('cari') && !urlParams.has('role_id')) {
-            toggleFilter(); // Tutup default di HP
-        }
-    }
-</script>

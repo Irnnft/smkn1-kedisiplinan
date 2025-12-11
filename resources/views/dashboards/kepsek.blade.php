@@ -1,326 +1,254 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Kepala Sekolah')
-
 @section('content')
-<div class="container-fluid">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: { primary: '#4f46e5', slate: { 800: '#1e293b', 900: '#0f172a' } },
+                screens: { 'xs': '375px' }
+            }
+        },
+        corePlugins: { preflight: false }
+    }
+</script>
+
+<style>
+    .dashboard-theme {
+        font-family: 'Inter', system-ui, -apple-system, sans-serif;
+        background-color: #f8fafc;
+        min-height: 100vh;
+    }
+    .dashboard-theme a { text-decoration: none !important; }
     
-    <!-- 1. STATISTIK RINGKAS (KPI CARDS) -->
-    <div class="row mb-3">
-        <div class="col-12">
-            <h5 class="text-dark font-weight-bold">
-                <i class="fas fa-chart-pie text-primary mr-2"></i> Ringkasan Eksekutif
-            </h5>
-        </div>
-    </div>
+    /* Efek Hover Gacor (Lift + Shadow) */
+    .hover-lift {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    }
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    }
 
-    <div class="row">
-        <!-- Total Siswa -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-info">
-                <div class="inner">
-                    <h3>{{ $totalSiswa }}</h3>
-                    <p>Total Siswa</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-user-graduate"></i>
-                </div>
-                <a href="{{ route('siswa.index') }}" class="small-box-footer">Lihat Daftar <i class="fas fa-arrow-circle-right"></i></a>
-            </div>
-        </div>
+    /* Tabel Bersih */
+    .clean-table { border-collapse: separate; border-spacing: 0; width: 100%; }
+    .clean-table th { background-color: #f8fafc; font-weight: 700; color: #64748b; padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .clean-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    .clean-table tr:last-child td { border-bottom: none; }
+</style>
+
+<div class="dashboard-theme p-3 md:p-6">
+
+    <div class="relative rounded-2xl bg-gradient-to-r from-slate-800 to-blue-900 p-5 md:p-6 shadow-lg mb-8 overflow-hidden text-white flex flex-col md:flex-row items-center justify-between gap-4 border border-blue-800/50">
         
-        <!-- Pelanggaran Bulan Ini -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-warning">
-                <div class="inner">
-                    <h3>{{ $pelanggaranBulanIni }}</h3>
-                    <p>Pelanggaran Bulan Ini</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-exclamation-triangle"></i>
-                </div>
-                <a href="{{ route('riwayat.index', ['bulan' => now()->month]) }}" class="small-box-footer">Detail <i class="fas fa-arrow-circle-right"></i></a>
+        <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 opacity-10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-40 h-40 bg-cyan-400 opacity-10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
+
+        <div class="relative z-10 w-full md:w-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-[10px] font-medium text-blue-200 mb-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Executive Panel
             </div>
+            <h1 class="text-xl md:text-2xl font-bold leading-tight">
+                Selamat Datang, Kepala Sekolah! 👋
+            </h1>
+            <p class="text-blue-100 text-xs md:text-sm opacity-80 mt-1">
+                Ringkasan eksekutif kedisiplinan & persetujuan dokumen.
+            </p>
         </div>
 
-        <!-- Pelanggaran Semester -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box bg-secondary">
-                <div class="inner">
-                    <h3>{{ $pelanggaranSemesterIni }}</h3>
-                    <p>Pelanggaran Tahun Ini</p>
-                </div>
-                <div class="icon">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <a href="{{ route('riwayat.index') }}" class="small-box-footer">Laporan <i class="fas fa-arrow-circle-right"></i></a>
+        <div class="hidden xs:flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 shadow-inner min-w-[140px]">
+            <div class="bg-blue-500/20 p-2 rounded-lg text-blue-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
             </div>
-        </div>
-
-        <!-- Menunggu Persetujuan (ALERT) -->
-        <div class="col-lg-3 col-6">
-            <div class="small-box {{ $listPersetujuan->count() > 0 ? 'bg-danger' : 'bg-success' }}">
-                <div class="inner">
-                    <h3>{{ $listPersetujuan->count() }}</h3>
-                    <p>{{ $listPersetujuan->count() > 0 ? 'Menunggu Tanda Tangan' : 'Semua Aman' }}</p>
-                </div>
-                <div class="icon">
-                    <i class="fas {{ $listPersetujuan->count() > 0 ? 'fa-file-signature' : 'fa-check-circle' }}"></i>
-                </div>
-                @if($listPersetujuan->count() > 0)
-                    <a href="#approval-section" class="small-box-footer">Proses <i class="fas fa-arrow-circle-right"></i></a>
-                @endif
+            <div>
+                <span class="block text-2xl font-bold leading-none tracking-tight">{{ date('d') }}</span>
+                <span class="block text-[10px] uppercase tracking-wider text-blue-200">{{ date('F Y') }}</span>
             </div>
         </div>
     </div>
 
-    <!-- 2. TREN PELANGGARAN (GRAFIK 7 HARI TERAKHIR) -->
-    <div class="row mt-3">
-        <div class="col-md-8">
-            <div class="card card-outline card-primary shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title font-weight-bold">
-                        <i class="fas fa-chart-area mr-2"></i> Tren Pelanggaran (7 Hari Terakhir)
-                    </h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        
+        <a href="{{ route('siswa.index') }}" class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden block">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Populasi</span>
+                <div class="text-blue-500 bg-blue-50 p-2 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
-                <div class="card-body">
-                    <div id="trend-chart" style="height: 300px;"></div>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalSiswa }}</h3>
+            <p class="text-xs text-slate-500">Total Siswa</p>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+        </a>
+
+        <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Bulan Ini</span>
+                <div class="text-amber-500 bg-amber-50 p-2 rounded-lg group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" x2="12" y1="18" y2="12"/><line x1="9" x2="15" y1="15" y2="15"/></svg>
                 </div>
-                <div class="card-footer text-muted text-sm">
-                    <p>Data pelanggaran per hari untuk memonitor tren positif/negatif</p>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $pelanggaranBulanIni }}</h3>
+            <p class="text-xs text-slate-500">Kasus Baru</p>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-amber-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+        </div>
+
+        <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Semester Ini</span>
+                <div class="text-slate-500 bg-slate-100 p-2 rounded-lg group-hover:bg-slate-600 group-hover:text-white transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
                 </div>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $pelanggaranSemesterIni }}</h3>
+            <p class="text-xs text-slate-500">Total Akumulasi</p>
+            <div class="absolute bottom-0 left-0 w-full h-1 bg-slate-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+        </div>
+
+        <a href="#approval-section" class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden block {{ $listPersetujuan->count() > 0 ? 'border-l-4 border-l-rose-500' : 'border-l-4 border-l-emerald-500' }}">
+            <div class="flex items-center justify-between mb-3">
+                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Approval</span>
+                <div class="p-2 rounded-lg transition-colors duration-300 {{ $listPersetujuan->count() > 0 ? 'text-rose-500 bg-rose-50 group-hover:bg-rose-500 group-hover:text-white' : 'text-emerald-500 bg-emerald-50 group-hover:bg-emerald-500 group-hover:text-white' }}">
+                    @if($listPersetujuan->count() > 0)
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+                    @else
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    @endif
+                </div>
+            </div>
+            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $listPersetujuan->count() }}</h3>
+            <p class="text-xs text-slate-500">Menunggu Tanda Tangan</p>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col h-full">
+            <h3 class="text-base font-bold text-slate-700 mb-1">Tren Pelanggaran 7 Hari</h3>
+            <p class="text-xs text-slate-400 mb-6">Monitoring harian intensitas kasus.</p>
+            
+            <div class="relative h-64 w-full flex-1">
+                <canvas id="trend-chart"></canvas>
             </div>
         </div>
 
-        <!-- 3. TOP JENIS PELANGGARAN -->
-        <div class="col-md-4">
-            <div class="card card-outline card-warning shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title font-weight-bold">
-                        <i class="fas fa-list-ol mr-2"></i> Top Pelanggaran
-                    </h3>
-                </div>
-                <div class="card-body p-0">
-                    @if($topViolations->isEmpty())
-                        <div class="text-center p-3 text-muted">
-                            <p>Tidak ada data pelanggaran</p>
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 h-full">
+            <h3 class="text-base font-bold text-slate-700 mb-1">Top 5 Kasus</h3>
+            <p class="text-xs text-slate-400 mb-6">Jenis pelanggaran paling sering terjadi.</p>
+
+            <div class="flex flex-col gap-3">
+                @forelse($topViolations as $index => $v)
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center justify-center w-6 h-6 rounded-full {{ $index == 0 ? 'bg-rose-100 text-rose-600' : 'bg-white text-slate-500 border border-slate-200' }} text-xs font-bold">
+                                {{ $index + 1 }}
+                            </span>
+                            <span class="text-sm font-medium text-slate-700 truncate max-w-[140px]" title="{{ $v->jenisPelanggaran->nama_pelanggaran ?? 'N/A' }}">
+                                {{ $v->jenisPelanggaran->nama_pelanggaran ?? 'N/A' }}
+                            </span>
                         </div>
-                    @else
-                        <ul class="list-group list-group-flush">
-                            @foreach($topViolations as $v)
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                <span>{{ $v->jenisPelanggaran->nama_pelanggaran ?? 'N/A' }}</span>
-                                <span class="badge badge-danger badge-pill">{{ $v->jumlah }}</span>
-                            </li>
-                            @endforeach
-                        </ul>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 4. STATISTIK PER JURUSAN -->
-    <div class="row mt-3">
-        <div class="col-12">
-            <div class="card card-outline card-info shadow-sm">
-                <div class="card-header">
-                    <h3 class="card-title font-weight-bold">
-                        <i class="fas fa-sitemap mr-2"></i> Ringkasan per Jurusan
-                    </h3>
-                </div>
-                <div class="card-body table-responsive">
-                    @if($jurusanStats->isEmpty())
-                        <p class="text-muted text-center">Tidak ada data jurusan</p>
-                    @else
-                        <table class="table table-sm table-striped">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th>Jurusan</th>
-                                    <th class="text-center">Jumlah Siswa</th>
-                                    <th class="text-center">Total Pelanggaran</th>
-                                    <th class="text-center">Tindakan Terbuka</th>
-                                    <th class="text-center">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($jurusanStats as $j)
-                                <tr>
-                                    <td class="font-weight-bold">{{ $j->nama }}</td>
-                                    <td class="text-center"><span class="badge badge-info">{{ $j->siswa_count }}</span></td>
-                                    <td class="text-center"><span class="badge badge-warning">{{ $j->pelanggaran_count }}</span></td>
-                                    <td class="text-center"><span class="badge badge-{{ $j->tindakan_terbuka > 0 ? 'danger' : 'success' }}">{{ $j->tindakan_terbuka }}</span></td>
-                                    <td class="text-center">
-                                        @if($j->pelanggaran_count == 0)
-                                            <span class="text-success"><i class="fas fa-check-circle"></i> Baik</span>
-                                        @elseif($j->tindakan_terbuka > 0)
-                                            <span class="text-danger"><i class="fas fa-exclamation-circle"></i> Perhatian</span>
-                                        @else
-                                            <span class="text-warning"><i class="fas fa-info-circle"></i> Terkontrol</span>
-                                        @endif
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 5. DAFTAR TUGAS (APPROVAL - PRIORITY) -->
-    <div class="row mt-3">
-        <div class="col-12" id="approval-section">
-            <div class="card card-outline {{ $listPersetujuan->count() > 0 ? 'card-danger' : 'card-success' }} shadow-sm">
-                <div class="card-header bg-{{ $listPersetujuan->count() > 0 ? 'danger' : 'success' }}">
-                    <h3 class="card-title font-weight-bold text-white">
-                        @if($listPersetujuan->count() > 0)
-                            <i class="fas fa-bell mr-2"></i> Perlu Tindakan Segera
-                        @else
-                            <i class="fas fa-check-double mr-2"></i> Status Approval
-                        @endif
-                    </h3>
-                    <div class="card-tools">
-                        <span class="badge badge-light">
-                            {{ $listPersetujuan->count() }} Pending
+                        <span class="text-xs font-bold px-2 py-1 rounded bg-white border border-slate-200 text-slate-600">
+                            {{ $v->jumlah }}
                         </span>
                     </div>
-                </div>
-                
-                <div class="card-body table-responsive p-0">
-                    @if($listPersetujuan->isEmpty())
-                        <div class="text-center p-5">
-                            <i class="fas fa-clipboard-check fa-4x text-gray-300 mb-3"></i>
-                            <h5 class="text-muted">Tidak ada dokumen yang memerlukan persetujuan.</h5>
-                            <p class="text-muted small">Semua proses berjalan lancar.</p>
-                        </div>
-                    @else
-                        <table class="table table-hover table-striped projects">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th style="width: 12%">Tanggal</th>
-                                    <th style="width: 18%">Siswa</th>
-                                    <th style="width: 20%">Pelanggaran</th>
-                                    <th style="width: 20%">Rekomendasi</th>
-                                    <th style="width: 15%">Dari</th>
-                                    <th style="width: 15%" class="text-center">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($listPersetujuan as $kasus)
-                                <tr>
-                                    <td>
-                                        <div class="font-weight-bold">{{ $kasus->created_at->format('d M Y') }}</div>
-                                        <small class="text-muted">{{ $kasus->created_at->diffForHumans() }}</small>
-                                    </td>
-                                    <td>
-                                        <h6 class="mb-0 font-weight-bold text-primary">{{ $kasus->siswa->nama_siswa }}</h6>
-                                        <small class="text-muted">{{ $kasus->siswa->kelas->nama_kelas ?? 'N/A' }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-danger mb-1">Kasus</span><br>
-                                        <small>{{ Str::limit($kasus->pemicu, 30) }}</small>
-                                    </td>
-                                    <td>
-                                        <div class="p-2 bg-light border-left border-danger rounded text-dark font-weight-bold text-sm">
-                                            {{ $kasus->sanksi_deskripsi ?? 'Belum ditentukan' }}
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <small class="text-muted">Oleh: <strong>{{ $kasus->user->nama ?? 'Operator' }}</strong></small>
-                                    </td>
-                                    <td class="text-center">
-                                        <a href="{{ route('kasus.edit', $kasus->id) }}" class="btn btn-primary btn-sm" title="Tinjau dan Setujui">
-                                            <i class="fas fa-eye mr-1"></i> Tinjau
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    @endif
-                </div>
+                @empty
+                    <p class="text-center text-xs text-slate-400 py-4">Belum ada data.</p>
+                @endforelse
             </div>
         </div>
     </div>
 
-    <!-- 7. SISWA PERLU PEMBINAAN (WIDGET) -->
-    @if($siswaPerluPembinaan->count() > 0)
-    <div class="row mt-3">
-        <div class="col-12">
-            <div class="card card-outline card-warning shadow-sm">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-user-check text-warning mr-2"></i> Siswa Perlu Pembinaan Internal (Top 5)
-                    </h5>
-                    <div class="card-tools">
-                        <a href="{{ route('kepala-sekolah.siswa-perlu-pembinaan.index') }}" class="btn btn-sm btn-warning">
-                            <i class="fas fa-list"></i> Lihat Semua
-                        </a>
-                    </div>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th width="10%">NIS</th>
-                                <th width="25%">Nama Siswa</th>
-                                <th width="15%">Kelas</th>
-                                <th width="10%" class="text-center">Total Poin</th>
-                                <th width="15%">Range</th>
-                                <th width="25%">Rekomendasi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($siswaPerluPembinaan as $item)
-                            <tr>
-                                <td>{{ $item['siswa']->nis }}</td>
-                                <td>
-                                    <a href="{{ route('siswa.show', $item['siswa']->id) }}" class="text-primary">
-                                        <strong>{{ $item['siswa']->nama_lengkap }}</strong>
-                                    </a>
-                                </td>
-                                <td>{{ $item['siswa']->kelas->nama_kelas ?? '-' }}</td>
-                                <td class="text-center">
-                                    <span class="badge badge-{{ $item['total_poin'] > 300 ? 'danger' : ($item['total_poin'] > 100 ? 'warning' : 'info') }}">
-                                        {{ $item['total_poin'] }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <small class="text-muted">{{ $item['rekomendasi']['range_text'] }}</small>
-                                </td>
-                                <td>
-                                    <small>{{ $item['rekomendasi']['keterangan'] }}</small>
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                <div class="card-footer text-muted">
-                    <small>
-                        <i class="fas fa-info-circle"></i> 
-                        Pembinaan internal adalah rekomendasi konseling, bukan trigger surat otomatis.
-                    </small>
-                </div>
-            </div>
+    <div id="approval-section" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-8">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+            <h3 class="text-base font-bold text-slate-700 m-0 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                Menunggu Persetujuan
+            </h3>
+            @if($listPersetujuan->count() > 0)
+                <span class="bg-rose-100 text-rose-600 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+                    {{ $listPersetujuan->count() }} Dokumen
+                </span>
+            @else
+                <span class="bg-emerald-100 text-emerald-600 px-3 py-1 rounded-full text-xs font-bold">
+                    Selesai
+                </span>
+            @endif
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="clean-table text-left">
+                <thead>
+                    <tr>
+                        <th class="pl-6">Tanggal</th>
+                        <th>Siswa</th>
+                        <th>Pelanggaran</th>
+                        <th>Rekomendasi</th>
+                        <th class="text-center pr-6">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    @forelse($listPersetujuan as $kasus)
+                    <tr class="hover:bg-slate-50 transition-colors group">
+                        <td class="pl-6">
+                            <div class="text-sm font-bold text-slate-700">{{ $kasus->created_at->format('d M Y') }}</div>
+                            <div class="text-xs text-slate-400">{{ $kasus->created_at->diffForHumans() }}</div>
+                        </td>
+                        <td>
+                            <div class="text-sm font-bold text-blue-600">{{ $kasus->siswa->nama_siswa }}</div>
+                            <div class="text-xs text-slate-500">{{ $kasus->siswa->kelas->nama_kelas ?? '-' }}</div>
+                        </td>
+                        <td>
+                            <div class="text-sm text-slate-600 truncate max-w-[200px]" title="{{ $kasus->pemicu }}">
+                                {{ Str::limit($kasus->pemicu, 30) }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="bg-slate-100 p-2 rounded text-xs font-medium text-slate-700 border-l-4 border-slate-400 inline-block">
+                                {{ $kasus->sanksi_deskripsi ?? 'Menunggu...' }}
+                            </div>
+                        </td>
+                        <td class="text-center pr-6">
+                            <a href="{{ route('kasus.edit', $kasus->id) }}" class="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition shadow-sm no-underline">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                Tinjau
+                            </a>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="text-center py-10 text-slate-400 text-sm">
+                            <div class="flex flex-col items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2 text-slate-200" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                Tidak ada dokumen yang perlu ditinjau.
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
-    @endif
 
 </div>
 
-<!-- Include Chart.js for trend visualization (optional) -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3/dist/chart.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Trend Chart Data
+        // Data dari Controller
         const trendLabels = {!! $trendData->pluck('tanggal')->map(fn($d) => \Carbon\Carbon::parse($d)->format('d M'))->toJson() !!};
         const trendValues = {!! $trendData->pluck('total')->toJson() !!};
 
         if (trendLabels.length > 0) {
             const ctx = document.getElementById('trend-chart').getContext('2d');
+            
+            // Gradient Modern
+            const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+            gradient.addColorStop(0, 'rgba(59, 130, 246, 0.5)'); // Blue start
+            gradient.addColorStop(1, 'rgba(59, 130, 246, 0.0)'); // Transparent end
+
             new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -328,14 +256,14 @@
                     datasets: [{
                         label: 'Pelanggaran',
                         data: trendValues,
-                        borderColor: '#ffc107',
-                        backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                        borderColor: '#3b82f6',
+                        backgroundColor: gradient,
                         borderWidth: 3,
                         fill: true,
                         tension: 0.4,
-                        pointRadius: 5,
-                        pointBackgroundColor: '#ffc107',
-                        pointBorderColor: '#fff',
+                        pointRadius: 4,
+                        pointBackgroundColor: '#ffffff',
+                        pointBorderColor: '#3b82f6',
                         pointBorderWidth: 2,
                     }]
                 },
@@ -343,17 +271,22 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false,
+                        }
                     },
                     scales: {
-                        y: { 
-                            beginAtZero: true,
-                            ticks: { stepSize: 1 }
-                        }
+                        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: '#f1f5f9' }, ticks: { stepSize: 1, color: '#94a3b8' } },
+                        x: { grid: { display: false }, ticks: { color: '#94a3b8' } }
                     }
                 }
             });
         }
     });
 </script>
+
 @endsection

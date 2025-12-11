@@ -1,7 +1,5 @@
 @extends('layouts.app')
 
-@section('title', 'Manajemen Pengguna')
-
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/pages/users/index.css') }}">
     <link rel="stylesheet" href="{{ asset('css/pages/users/filters.css') }}">
