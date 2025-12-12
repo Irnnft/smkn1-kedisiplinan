@@ -89,8 +89,16 @@ class PelanggaranService
             $totalPoin = $this->rulesEngine->hitungTotalPoinAkumulasi($data->siswa_id);
             $pembinaanRekomendasi = $this->rulesEngine->getPembinaanInternalRekomendasi($totalPoin);
             
-            // Kirim notifikasi jika ada pembina yang perlu diberitahu
-            if (!empty($pembinaanRekomendasi['pembina_roles'])) {
+            // SMART NOTIFICATION: Hanya kirim jika naik level (range berubah)
+            // Cek apakah ini pertama kali masuk range ini, atau naik dari range sebelumnya
+            $shouldNotify = $this->shouldSendPembinaanNotification(
+                $data->siswa_id,
+                $totalPoin,
+                $pembinaanRekomendasi
+            );
+            
+            // Kirim notifikasi jika ada pembina yang perlu diberitahu DAN ini level baru
+            if (!empty($pembinaanRekomendasi['pembina_roles']) && $shouldNotify) {
                 $siswa = $createdRiwayat->siswa;
                 $pembinaanRekomendasi['total_poin'] = $totalPoin;
                 
@@ -384,5 +392,46 @@ class PelanggaranService
         // NO FILTER - semua siswa ditampilkan untuk semua role
         // Kaprodi dan Wali Kelas tetap bisa mencatat pelanggaran siswa lain
         return app(\App\Repositories\SiswaRepository::class)->getForDropdown(null, null);
+    }
+
+    /**
+     * Check if pembinaan notification should be sent.
+     * 
+     * Only send when range changes (level up), not every time.
+     *
+     * @param int $siswaId
+     * @param int $currentPoin
+     * @param array $currentRekomendasi  
+     * @return bool
+     */
+    protected function shouldSendPembinaanNotification(
+        int $siswaId,
+        int $currentPoin,
+        array $currentRekomendasi
+    ): bool {
+        // Get siswa's last pembinaan notification
+        $lastNotification = \DB::table('notifications')
+            ->where('type', 'App\\Notifications\\PembinaanInternalNotification')
+            ->whereRaw("JSON_EXTRACT(data, '$.siswa_id') = ?", [$siswaId])
+            ->orderBy('created_at', 'desc')
+            ->first();
+
+        // If no previous notification, this is first time - SEND!
+        if (!$lastNotification) {
+            return true;
+        }
+
+        // Get previous range from last notification
+        $lastData = json_decode($lastNotification->data, true);
+        $lastRangeText = $lastData['range_text'] ?? null;
+        $currentRangeText = $currentRekomendasi['range_text'] ?? null;
+
+        // If range changed (level up) - SEND!
+        if ($lastRangeText !== $currentRangeText) {
+            return true;
+        }
+
+        // Same range - DON'T send duplicate
+        return false;
     }
 }
