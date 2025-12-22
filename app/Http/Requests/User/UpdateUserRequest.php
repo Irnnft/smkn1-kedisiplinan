@@ -61,6 +61,9 @@ class UpdateUserRequest extends FormRequest
             // Siswa linking for Wali Murid/Developer roles
             'siswa_ids' => ['nullable', 'array'],
             'siswa_ids.*' => ['exists:siswa,id'],
+            
+            // BUGFIX: Allow password change
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ];
     }
 
@@ -78,6 +81,8 @@ class UpdateUserRequest extends FormRequest
             'nip' => 'NIP',
             'nuptk' => 'NUPTK',
             'is_active' => 'Status Aktif',
+            'password' => 'Password Baru',
+            'password_confirmation' => 'Konfirmasi Password',
         ];
     }
 }

@@ -180,13 +180,9 @@
                             </div>
 
                             <div class="form-group mb-0">
-                                <label class="form-label-modern">Password Awal</label>
-                                <div class="relative">
-                                    <input type="text" name="password" class="form-input-modern w-full bg-slate-50 text-slate-500 font-mono" value="123456" readonly>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-3 text-slate-400">
-                                        <i class="fas fa-lock text-xs"></i>
-                                    </div>
-                                </div>
+                                <label class="form-label-modern">Password <span class="text-red-500">*</span></label>
+                                <input type="password" name="password" class="form-input-modern w-full" placeholder="Minimal 6 karakter" value="{{ old('password') }}" required minlength="6">
+                                <p class="text-xs text-slate-500 mt-1">Password default atau pilih password sendiri</p>
                             </div>
                         </div>
                     </div>

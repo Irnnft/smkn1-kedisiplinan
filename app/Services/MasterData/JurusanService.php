@@ -253,15 +253,9 @@ class JurusanService
             $username = $baseUsername . $i;
         }
         
-        // STEP 3: Generate password (lines 71, 207)
-        // Different logic for store vs update!
-        if ($fromUpdate) {
-            // Standardized password for update (line 207)
-            $password = 'smkn1.kaprodi.' . $cleanKode;
-        } else {
-            // Random password for initial create (line 71)
-            $password = Str::random(10);
-        }
+        // STEP 3: Generate password
+        // STANDARDIZED: Always use predictable format (consistent for all conditions)
+        $password = 'smkn1.kaprodi.' . $cleanKode;
         
         // STEP 4: Find Kaprodi role (lines 73, 208)
         $role = Role::findByName('Kaprodi');
