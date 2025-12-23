@@ -1,5 +1,4 @@
 @extends('layouts.app')
-
 @section('content')
 
 {{-- 1. TAILWIND CONFIG & SETUP --}}
