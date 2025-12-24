@@ -140,68 +140,74 @@
                         <th class="px-6 py-3 pr-8">Pembina</th>
                     </tr>
                 </thead>
-                <tbody>
-                    @forelse($siswaList as $item)
-                    <tr class="float-row group custom-float-row">
-                        <td class="px-6 py-4 pl-8">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-500 flex items-center justify-center font-bold text-xs shadow-sm border border-slate-200">
-                                    {{ $item['siswa']->nis }}
-                                </div>
-                                <div>
-                                    <a href="{{ route('siswa.show', $item['siswa']->id) }}" class="text-sm font-bold text-slate-700 hover:text-indigo-600 no-underline transition-colors">
-                                        {{ $item['siswa']->nama_lengkap }}
-                                    </a>
-                                    <div class="text-[10px] text-slate-400 font-mono mt-0.5">NIS: {{ $item['siswa']->nis }}</div>
-                                </div>
-                            </div>
-                        </td>
+                <tbody class="divide-y divide-slate-50">
+    @forelse($siswaList as $item)
+    <tr class="float-row group custom-float-row">
+        {{-- Kolom Siswa (Tanpa Inisial) --}}
+        <td class="px-6 py-4 pl-8">
+    <div class="flex flex-col min-w-0">
+        {{-- Ganti nama_lengkap menjadi nama_siswa --}}
+        <a href="{{ route('siswa.show', $item['siswa']->id) }}" 
+           class="text-sm font-bold text-slate-700 hover:text-indigo-600 no-underline transition-colors truncate">
+            {{ $item['siswa']->nama_siswa }}
+        </a>
+        <div class="flex items-center gap-2 mt-1">
+            {{-- Ganti nis menjadi nisn --}}
+            <span class="text-[10px] font-mono text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100">
+                NISN: {{ $item['siswa']->nisn }}
+            </span>
+        </div>
+    </div>
+</td>
 
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col">
-                                <span class="text-xs font-bold text-slate-700">{{ $item['siswa']->kelas->nama_kelas ?? '-' }}</span>
-                                <span class="text-[10px] text-slate-400 uppercase tracking-wide">{{ $item['siswa']->kelas->jurusan->nama_jurusan ?? '-' }}</span>
-                            </div>
-                        </td>
+        <td class="px-6 py-4">
+            <div class="flex flex-col">
+                <span class="text-xs font-bold text-slate-700">{{ $item['siswa']->kelas->nama_kelas ?? '-' }}</span>
+                <span class="text-[10px] text-slate-400 uppercase tracking-wide">{{ $item['siswa']->kelas->jurusan->nama_jurusan ?? '-' }}</span>
+            </div>
+        </td>
 
-                        <td class="px-6 py-4 text-center">
-                            @php 
-                                $p = $item['total_poin'];
-                                $badgeColor = $p > 300 ? 'bg-rose-100 text-rose-600' : ($p > 100 ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600');
-                            @endphp
-                            <span class="custom-badge-base {{$badgeColor}}">
-                                {{ $p }} Poin
-                            </span>
-                        </td>
+        <td class="px-6 py-4 text-center">
+            @php 
+                $p = $item['total_poin'];
+                $badgeColor = $p > 300 ? 'bg-rose-100 text-rose-600 border-rose-200' : 
+                             ($p > 100 ? 'bg-amber-100 text-amber-600 border-amber-200' : 
+                              'bg-indigo-100 text-indigo-600 border-indigo-200');
+            @endphp
+            <span class="custom-badge-base border {{$badgeColor}}">
+                {{ $p }} Poin
+            </span>
+        </td>
 
-                        <td class="px-6 py-4">
-                            <div class="flex flex-col gap-1 max-w-xs">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">{{ $item['rekomendasi']['range_text'] }}</span>
-                                <p class="text-[11px] text-slate-600 leading-relaxed italic m-0">"{{ $item['rekomendasi']['keterangan'] }}"</p>
-                            </div>
-                        </td>
+        <td class="px-6 py-4">
+            <div class="flex flex-col gap-1 max-w-xs">
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ $item['rekomendasi']['range_text'] }}</span>
+                <p class="text-[11px] text-slate-600 leading-relaxed italic m-0">"{{ $item['rekomendasi']['keterangan'] }}"</p>
+            </div>
+        </td>
 
-                        <td class="px-6 py-4 pr-8">
-                            <div class="flex flex-wrap gap-1">
-                                @foreach($item['rekomendasi']['pembina_roles'] as $role)
-                                    <span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-600 text-[9px] font-bold border border-indigo-100">
-                                        {{ $role }}
-                                    </span>
-                                @endforeach
-                            </div>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                            <div class="flex flex-col items-center opacity-60">
-                                <i class="fas fa-user-check text-3xl mb-2 text-slate-300"></i>
-                                <p class="text-sm">Tidak ada siswa yang sesuai kriteria pembinaan internal.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
+        <td class="px-6 py-4 pr-8">
+            <div class="flex flex-wrap gap-1">
+                @foreach($item['rekomendasi']['pembina_roles'] as $role)
+                    <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-600 text-[9px] font-bold border border-slate-200 uppercase tracking-tighter">
+                        {{ $role }}
+                    </span>
+                @endforeach
+            </div>
+        </td>
+    </tr>
+    @empty
+    {{-- State Kosong Tetap Sama --}}
+    <tr>
+        <td colspan="5" class="text-center py-12 text-slate-400 bg-white rounded-2xl border border-slate-100">
+            <div class="flex flex-col items-center opacity-60">
+                <i class="fas fa-user-shield text-3xl mb-2 text-slate-300"></i>
+                <p class="text-sm font-bold uppercase tracking-widest">Data Tidak Ditemukan</p>
+            </div>
+        </td>
+    </tr>
+    @endforelse
+</tbody>
             </table>
         </div>
 

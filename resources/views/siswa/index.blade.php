@@ -24,6 +24,37 @@
     }
 </script>
 <style>
+
+
+    /* CSS Utility untuk menyamakan bentuk tombol */
+    .btn-action-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.6rem 1.2rem;
+        color: white !important;
+        font-weight: 800;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+        border-radius: 0.75rem;
+        transition: all 0.2s ease;
+        border: none;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        text-decoration: none !important;
+        cursor: pointer;
+    }
+
+    .btn-action-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-action-custom:active {
+        transform: translateY(0);
+    }
+
+
     /* Custom CSS untuk memperindah tampilan dan memastikan kompatibilitas */
     .page-wrap { background: #f8fafc; min-height: 100vh; padding: 1.5rem; }
     
@@ -141,33 +172,36 @@
                 
                 <div class="flex flex-wrap items-center gap-3">
                     
-                    {{-- Tombol Tambah Siswa (Khusus Operator) --}}
-                    @if($isOperator)
-                        <a href="{{ route('siswa.create') }}" class="btn-primary">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                            Tambah Siswa
-                        </a>
-                        
-                        {{-- Tombol Bulk Delete --}}
-                        <button type="button" onclick="$('#bulkDeleteModal').modal('show')" 
-                                class="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
-                                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
-                            </svg>
-                            Hapus Per Kelas
-                        </button>
-                        
-                        {{-- Tombol Lihat Data Terhapus --}}
-                        <a href="{{ route('siswa.deleted') }}" 
-                           class="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg shadow transition">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
-                                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>
-                            </svg>
-                            Data Terhapus
-                        </a>
-                    @endif
+                    {{-- Container Tombol --}}
+<div class="flex flex-wrap items-center gap-3">
+    @if($isOperator)
+        {{-- Tombol Tambah Siswa --}}
+        <a href="{{ route('siswa.create') }}" class="btn-action-custom bg-indigo-600 hover:bg-indigo-700 shadow-indigo-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            <span>Tambah Siswa</span>
+        </a>
+        
+        {{-- Tombol Bulk Delete --}}
+        <button type="button" onclick="$('#bulkDeleteModal').modal('show')" 
+                class="btn-action-custom bg-rose-500 hover:bg-rose-600 shadow-rose-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+                <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            </svg>
+            <span>Hapus Per Kelas</span>
+        </button>
+        
+        {{-- Tombol Lihat Data Terhapus --}}
+        <a href="{{ route('siswa.deleted') }}" 
+           class="btn-action-custom bg-amber-500 hover:bg-amber-600 shadow-amber-200">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>
+            </svg>
+            <span>Data Terhapus</span>
+        </a>
+    @endif
+</div>
                 </div>
             </div>
 
