@@ -211,6 +211,9 @@
                                 <input type="checkbox" name="trigger_surat" value="1" id="trigger_surat_add" class="w-4 h-4 rounded text-indigo-600">
                                 <label for="trigger_surat_add" class="text-xs font-bold text-amber-600 mb-0">Trigger Surat Pemanggilan</label>
                             </div>
+                            <p class="text-[9px] text-amber-600 mt-1 leading-tight" id="trigger_surat_hint_add" style="display: none;">
+                                💡 <strong>Penting:</strong> Pembina yang dipilih di bawah akan menjadi penanda tangan surat. Hindari pilih "Semua Guru & Staff" jika trigger surat aktif.
+                            </p>
                         </div>
                     </div>
 
@@ -221,12 +224,16 @@
 
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
                         <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-widest">Pembina Terkait</label>
+                        <p class="text-[9px] text-slate-500 mb-2 leading-tight">Pembina yang dipilih akan menjadi <strong>penanda tangan surat</strong> jika "Trigger Surat" diaktifkan.</p>
                         <div class="grid grid-cols-2 gap-2">
                             @foreach(['Semua Guru & Staff', 'Wali Kelas', 'Kaprodi', 'Waka Kesiswaan', 'Waka Sarana', 'Kepala Sekolah'] as $role)
                                 <label class="flex items-center gap-2 text-xs text-slate-600 mb-0 cursor-pointer">
-                                    <input type="checkbox" name="pembina_roles[]" value="{{ $role }}" class="rounded text-indigo-600"> {{ $role }}
+                                    <input type="checkbox" name="pembina_roles[]" value="{{ $role }}" class="rounded text-indigo-600 pembina-checkbox-add"> {{ $role }}
                                 </label>
                             @endforeach
+                        </div>
+                        <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-[9px] text-red-600" id="warning_semua_guru_add" style="display: none;">
+                            ⚠️ <strong>Perhatian:</strong> "Semua Guru & Staff" tidak dapat menandatangani surat resmi. Pilih pembina spesifik untuk surat formal.
                         </div>
                     </div>
                 </div>
@@ -272,6 +279,9 @@
                                 <input type="checkbox" name="trigger_surat" value="1" id="edit_trigger_surat" class="w-4 h-4 rounded text-indigo-600">
                                 <label for="edit_trigger_surat" class="text-xs font-bold text-amber-600 mb-0">Trigger Surat</label>
                             </div>
+                            <p class="text-[9px] text-amber-600 mt-1 leading-tight" id="trigger_surat_hint_edit" style="display: none;">
+                                💡 <strong>Penting:</strong> Pembina yang dipilih akan menjadi penanda tangan surat.
+                            </p>
                         </div>
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
@@ -280,12 +290,16 @@
                     </div>
                     <div class="bg-white p-4 rounded-xl border border-slate-200">
                         <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-widest">Pembina</label>
+                        <p class="text-[9px] text-slate-500 mb-2 leading-tight">Pembina yang dipilih akan menjadi <strong>penanda tangan surat</strong> jika "Trigger Surat" diaktifkan.</p>
                         <div class="grid grid-cols-2 gap-2">
                             @foreach(['Semua Guru & Staff', 'Wali Kelas', 'Kaprodi', 'Waka Kesiswaan', 'Waka Sarana', 'Kepala Sekolah'] as $role)
                                 <label class="flex items-center gap-2 text-xs text-slate-600 mb-0 cursor-pointer">
                                     <input type="checkbox" name="pembina_roles[]" value="{{ $role }}" class="pembina-checkbox-edit rounded text-indigo-600"> {{ $role }}
                                 </label>
                             @endforeach
+                        </div>
+                        <div class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-[9px] text-red-600" id="warning_semua_guru_edit" style="display: none;">
+                            ⚠️ <strong>Perhatian:</strong> "Semua Guru & Staff" tidak dapat menandatangani surat resmi.
                         </div>
                     </div>
                 </div>
@@ -361,14 +375,53 @@ $(document).ready(function() {
         if ($('#exactFrequencyMode').is(':checked')) { $('#add_frequency_max').val($(this).val()); }
     });
 
+    // Toggle Helper Hint when Trigger Surat is checked
+    $('#trigger_surat_add').change(function() {
+        if ($(this).is(':checked')) {
+            $('#trigger_surat_hint_add').slideDown(200);
+            checkSemuaGuruWarning('add');
+        } else {
+            $('#trigger_surat_hint_add').slideUp(200);
+            $('#warning_semua_guru_add').slideUp(200);
+        }
+    });
+
+    $('#edit_trigger_surat').change(function() {
+        if ($(this).is(':checked')) {
+            $('#trigger_surat_hint_edit').slideDown(200);
+            checkSemuaGuruWarning('edit');
+        } else {
+            $('#trigger_surat_hint_edit').slideUp(200);
+            $('#warning_semua_guru_edit').slideUp(200);
+        }
+    });
+
+    // Warning untuk "Semua Guru & Staff" jika trigger surat aktif
+    function checkSemuaGuruWarning(mode) {
+        const triggerChecked = mode === 'add' ? $('#trigger_surat_add').is(':checked') : $('#edit_trigger_surat').is(':checked');
+        const semuaGuruChecked = $(`.pembina-checkbox-${mode}[value="Semua Guru & Staff"]`).is(':checked');
+        
+        if (triggerChecked && semuaGuruChecked) {
+            $(`#warning_semua_guru_${mode}`).slideDown(200);
+        } else {
+            $(`#warning_semua_guru_${mode}`).slideUp(200);
+        }
+    }
+
+    // Monitor perubahan checkbox pembina
+    $('.pembina-checkbox-add').change(function() {
+        checkSemuaGuruWarning('add');
+    });
+
     // Reset modal
     $('#modalAddRule').on('hidden.bs.modal', function() {
         $('#formAddRule')[0].reset();
         $('#exactFrequencyMode').prop('checked', false).trigger('change');
         $('#add_frequency_min').val('{{ $suggestedFreqMin ?? 1 }}');
+        $('#trigger_surat_hint_add, #warning_semua_guru_add').hide();
     });
 
-    // Edit rule trigger (Same logic as provided)
+    // Edit rule trigger
     $('.btn-edit-rule').click(function() {
         const id = $(this).data('id');
         $('#formEditRule').attr('action', `/frequency-rules/rule/${id}`);
@@ -377,11 +430,31 @@ $(document).ready(function() {
         $('#edit_poin').val($(this).data('poin'));
         $('#edit_sanksi').val($(this).data('sanksi'));
         $('#edit_display_order').val($(this).data('display-order'));
-        $('#edit_trigger_surat').prop('checked', $(this).data('trigger-surat') == 1);
         
+        const triggerSurat = $(this).data('trigger-surat') == 1;
+        $('#edit_trigger_surat').prop('checked', triggerSurat);
+        
+        // Show/hide hint
+        if (triggerSurat) {
+            $('#trigger_surat_hint_edit').show();
+        } else {
+            $('#trigger_surat_hint_edit').hide();
+        }
+        
+        // Populate pembina roles
         $('.pembina-checkbox-edit').prop('checked', false);
         const roles = $(this).data('pembina-roles');
-        roles.forEach(role => { $(`.pembina-checkbox-edit[value="${role}"]`).prop('checked', true); });
+        roles.forEach(role => { 
+            $(`.pembina-checkbox-edit[value="${role}"]`).prop('checked', true); 
+        });
+        
+        // Monitor checkbox pembina di edit modal
+        $('.pembina-checkbox-edit').off('change').on('change', function() {
+            checkSemuaGuruWarning('edit');
+        });
+        
+        // Check warning initially
+        checkSemuaGuruWarning('edit');
         
         $('#modalEditRule').modal('show');
     });

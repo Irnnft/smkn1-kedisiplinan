@@ -106,16 +106,43 @@ class TindakLanjutController extends Controller
             ]);
         }
 
-        // Siapkan data untuk view PDF
-        $dataForPdf = $this->preparePdfData($kasus);
+        // Convert logo to Base64 for DomPDF compatibility
+        $path = public_path('assets/images/logo_riau.png');
+        $logoBase64 = null;
+        if (file_exists($path)) {
+            $type = pathinfo($path, PATHINFO_EXTENSION);
+            $data = file_get_contents($path);
+            $logoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+        }
 
-        // Pilih template view dan generate PDF
-        $pdf = Pdf::loadView('surat.template_umum', $dataForPdf);
-        $pdf->setPaper('a4', 'portrait');
+        // **OPTIMIZED**: Gunakan pembina_roles langsung untuk template tanda tangan
+    // Mapping pembina_roles ke format yang dibutuhkan template
+    $pembinaRoles = $kasus->suratPanggilan->pembina_roles ?? ['Wali Kelas', 'Waka Kesiswaan', 'Kepala Sekolah'];
+    
+    // Convert pembina roles menjadi format yang dibutuhkan template
+    $pihakTerlibat = [
+        'wali_kelas' => in_array('Wali Kelas', $pembinaRoles),
+        'kaprodi' => in_array('Kaprodi', $pembinaRoles),
+        'waka_kesiswaan' => in_array('Waka Kesiswaan', $pembinaRoles) || in_array('Waka Sarana', $pembinaRoles),
+        'kepala_sekolah' => in_array('Kepala Sekolah', $pembinaRoles),
+    ];
 
-        // Return stream untuk ditampilkan di browser
-        return $pdf->stream('Surat_Panggilan_' . $kasus->siswa->nisn . '.pdf');
-    }
+    // Siapkan data untuk view PDF
+    $dataForPdf = [
+        'siswa' => $kasus->siswa,
+        'surat' => $kasus->suratPanggilan,
+        'logoBase64' => $logoBase64,
+        'pihakTerlibat' => $pihakTerlibat,
+    ];
+
+    // Generate PDF dengan view hardcoded
+    $pdf = Pdf::loadView('pdf.surat-panggilan', $dataForPdf);
+    // Set Paper F4 (Folio): 215mm x 330mm
+    $pdf->setPaper([0, 0, 609.4488, 935.433], 'portrait');
+
+    // Return stream untuk ditampilkan di browser
+    return $pdf->stream('Surat_Panggilan_' . $kasus->siswa->nisn . '.pdf');
+}
 
     /**
      * Validasi akses user terhadap kasus berdasarkan role.
@@ -168,24 +195,6 @@ class TindakLanjutController extends Controller
         if ($statusLama === 'Selesai') {
             $this->throwValidationError('status', 'FINAL: Kasus ini sudah ditutup (Selesai). Anda tidak dapat mengubah statusnya lagi.');
         }
-    }
-
-    /**
-     * Siapkan data untuk view PDF surat panggilan.
-     */
-    private function preparePdfData(TindakLanjut $kasus): array
-    {
-        return [
-            'kasus' => $kasus,
-            'siswa' => $kasus->siswa,
-            'surat' => $kasus->suratPanggilan,
-            'sekolah' => [
-                'nama' => 'SMK NEGERI 1 SIAK LUBUK DALAM',
-                'alamat' => 'Jl. Sultan Syarif Qasim, Lubuk Dalam, Siak',
-                'telp' => '(0764) 123456',
-                // 'kop' => public_path('images/kop_surat.png'),  // Opsional jika ada logo
-            ],
-        ];
     }
 
     /**

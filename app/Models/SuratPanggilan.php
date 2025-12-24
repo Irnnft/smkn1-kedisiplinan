@@ -31,6 +31,7 @@ class SuratPanggilan extends Model
         'nomor_surat',
         'tipe_surat',
         'pembina_data',
+        'pembina_roles',  // Field untuk template tanda tangan
         'tanggal_surat',
         'tanggal_pertemuan',
         'waktu_pertemuan',
@@ -47,6 +48,7 @@ class SuratPanggilan extends Model
         'tanggal_surat' => 'date',
         'tanggal_pertemuan' => 'date',
         'pembina_data' => 'array',
+        'pembina_roles' => 'array',  // Cast JSON ke array
     ];
 
     // =====================================================================

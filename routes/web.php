@@ -160,3 +160,4 @@ Route::middleware(['auth'])->group(function () {
 Route::fallback(function () {
     abort(404, 'Halaman tidak ditemukan');
 });
+

@@ -521,6 +521,7 @@ class PelanggaranRulesEngine
                     'tipe_surat' => $tipeSurat,
                     'tanggal_surat' => now(),
                     'pembina_data' => $pembinaData,
+                    'pembina_roles' => $pembinaRoles,  // ✅ CRITICAL: Untuk template tanda tangan
                     'tanggal_pertemuan' => $meetingSchedule['tanggal_pertemuan'],
                     'waktu_pertemuan' => $meetingSchedule['waktu_pertemuan'],
                     'keperluan' => $pemicu,
@@ -637,6 +638,7 @@ class PelanggaranRulesEngine
                 $kasusAktif->suratPanggilan()->update([
                     'tipe_surat' => $tipeSurat,
                     'pembina_data' => $pembinaData,
+                    'pembina_roles' => $pembinaRolesForSurat,
                     'keperluan' => 'Rekonsiliasi',
                 ]);
             } else {
@@ -650,6 +652,7 @@ class PelanggaranRulesEngine
                     'tipe_surat' => $tipeSurat,
                     'tanggal_surat' => now(),
                     'pembina_data' => $pembinaData,
+                    'pembina_roles' => $pembinaRolesForSurat,
                     'tanggal_pertemuan' => $meetingSchedule['tanggal_pertemuan'],
                     'waktu_pertemuan' => $meetingSchedule['waktu_pertemuan'],
                     'keperluan' => 'Rekonsiliasi',
@@ -720,6 +723,7 @@ class PelanggaranRulesEngine
                 $kasusAktif->suratPanggilan()->update([
                     'tipe_surat' => $tipeSuratBaru,
                     'pembina_data' => $pembinaData,
+                    'pembina_roles' => $pembinaRoles,
                     'keperluan' => $pemicuBaru,
                 ]);
             }
