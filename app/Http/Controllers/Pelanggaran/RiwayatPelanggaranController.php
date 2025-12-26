@@ -292,6 +292,19 @@ class RiwayatPelanggaranController extends Controller
         // Manual authorization check (same logic as UpdatePelanggaranRequest)
         $user = auth()->user();
         
+        // ======= PROTEKSI: Cek apakah siswa memiliki kasus aktif yang sedang ditangani =======
+        $kasusAktif = \App\Models\TindakLanjut::where('siswa_id', $riwayatData->siswa_id)
+            ->where('status', 'Ditangani')
+            ->first();
+        
+        if ($kasusAktif) {
+            return back()->with('error', 
+                'TIDAK DAPAT MENGHAPUS: Siswa ini memiliki kasus yang sedang ditangani. ' .
+                'Harap selesaikan kasus terlebih dahulu sebelum menghapus riwayat pelanggaran.'
+            );
+        }
+        // =====================================================================================
+        
         if (!$user->hasRole('Operator Sekolah')) {
             if ($riwayatData->guru_pencatat_user_id !== $user->id) {
                 abort(403, 'AKSES DITOLAK: Anda hanya dapat mengelola riwayat yang Anda catat.');

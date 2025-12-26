@@ -56,11 +56,16 @@ class TindakLanjut extends Model
         'siswa_id',
         'pemicu',
         'sanksi_deskripsi',
-        'pembina_roles',  // ✅ NEW: Untuk filtering dashboard
+        'pembina_roles',
         'denda_deskripsi',
         'status',
         'tanggal_tindak_lanjut',
         'penyetuju_user_id',
+        // Tracking fields
+        'ditangani_oleh_user_id',
+        'ditangani_at',
+        'diselesaikan_oleh_user_id',
+        'diselesaikan_at',
     ];
 
     /**
@@ -71,7 +76,9 @@ class TindakLanjut extends Model
     protected $casts = [
         'tanggal_tindak_lanjut' => 'date',
         'status' => \App\Enums\StatusTindakLanjut::class,
-        'pembina_roles' => 'array',  // ✅ NEW: Cast JSON ke array
+        'pembina_roles' => 'array',
+        'ditangani_at' => 'datetime',
+        'diselesaikan_at' => 'datetime',
     ];
 
     // =====================================================================
@@ -103,6 +110,22 @@ class TindakLanjut extends Model
     public function suratPanggilan(): HasOne
     {
         return $this->hasOne(SuratPanggilan::class, 'tindak_lanjut_id');
+    }
+
+    /**
+     * Relasi: User yang menangani kasus ini.
+     */
+    public function ditanganiOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'ditangani_oleh_user_id');
+    }
+
+    /**
+     * Relasi: User yang menyelesaikan kasus ini.
+     */
+    public function diselesaikanOleh(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'diselesaikan_oleh_user_id');
     }
 
     // =====================================================================

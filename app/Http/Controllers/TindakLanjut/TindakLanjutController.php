@@ -40,14 +40,42 @@ class TindakLanjutController extends Controller
 
     /**
      * Tampilkan daftar tindak lanjut dengan filter.
+     * 
+     * ROLE-BASED ACCESS:
+     * - Wali Kelas: hanya kasus siswa di kelasnya
+     * - Kaprodi: hanya kasus siswa di jurusannya
+     * - Waka Kesiswaan, Kepala Sekolah, Operator Sekolah: full access
      */
     public function index(Request $request): View
     {
+        $user = auth()->user();
+        $role = \App\Services\User\RoleService::effectiveRoleName($user);
+        
+        // Auto-apply role-based filter
+        $kelasId = $request->input('kelas_id');
+        $jurusanId = $request->input('jurusan_id');
+        
+        // Wali Kelas: hanya kasus siswa di kelasnya
+        if ($role === 'Wali Kelas') {
+            $kelasBinaan = $user->kelasDiampu;
+            if ($kelasBinaan) {
+                $kelasId = $kelasBinaan->id;
+            }
+        }
+        
+        // Kaprodi: hanya kasus siswa di jurusannya
+        if ($role === 'Kaprodi') {
+            $jurusanBinaan = $user->jurusanDiampu;
+            if ($jurusanBinaan) {
+                $jurusanId = $jurusanBinaan->id;
+            }
+        }
+        
         // Build filter data
         $filters = TindakLanjutFilterData::from([
             'siswa_id' => $request->input('siswa_id'),
-            'kelas_id' => $request->input('kelas_id'),
-            'jurusan_id' => $request->input('jurusan_id'),
+            'kelas_id' => $kelasId,
+            'jurusan_id' => $jurusanId,
             'status' => $request->input('status') ? \App\Enums\StatusTindakLanjut::from($request->input('status')) : null,
             'pending_approval_only' => $request->boolean('pending_approval'),
             'active_only' => $request->boolean('active_only'),
@@ -56,7 +84,7 @@ class TindakLanjutController extends Controller
 
         $tindakLanjut = $this->tindakLanjutService->getFilteredTindakLanjut($filters);
 
-        return view('tindak_lanjut.index', compact('tindakLanjut'));
+        return view('tindaklanjut.index', compact('tindakLanjut', 'role'));
     }
 
     /**
@@ -70,7 +98,7 @@ class TindakLanjutController extends Controller
     {
         $siswa = $this->tindakLanjutService->getAllSiswaForDropdown();
         
-        return view('tindak_lanjut.create', compact('siswa'));
+        return view('tindaklanjut.create', compact('siswa'));
     }
 
     /**
@@ -103,17 +131,17 @@ class TindakLanjutController extends Controller
      * 
      * ALUR:
      * 1. Panggil service untuk get detail dengan relationships
-     * 2. Return view
+     * 2. Return view berdasarkan context (approval vs detail umum)
      */
     public function show(int $id): View
     {
         $tindakLanjut = $this->tindakLanjutService->getTindakLanjutDetail($id);
         
         // Tambahkan ini untuk memastikan semua data relasi terbawa
-        $tindakLanjut->load(['siswa.kelas.jurusan', 'siswa.waliMurid']);
+        $tindakLanjut->load(['siswa.kelas.jurusan', 'siswa.kelas.waliKelas', 'siswa.waliMurid', 'penyetuju', 'suratPanggilan']);
 
-        return view('kepala_sekolah.approvals.show', [
-            'kasus' => $tindakLanjut
+        return view('tindaklanjut.show', [
+            'tindakLanjut' => $tindakLanjut
         ]);
     }
 
@@ -126,9 +154,12 @@ class TindakLanjutController extends Controller
      */
     public function edit(int $id): View
     {
-        $tindakLanjut = $this->tindakLanjutService->getTindakLanjutForEdit($id);
+        $kasus = $this->tindakLanjutService->getTindakLanjutForEdit($id);
         
-        return view('tindak_lanjut.edit', compact('tindakLanjut'));
+        // Eager load relationships yang dibutuhkan view
+        $kasus->load(['siswa.kelas.jurusan', 'siswa.kelas.waliKelas', 'suratPanggilan', 'penyetuju']);
+        
+        return view('tindaklanjut.edit', compact('kasus'));
     }
 
     /**
@@ -171,6 +202,11 @@ class TindakLanjutController extends Controller
      */
     public function approve(int $id): RedirectResponse
     {
+        $tindakLanjut = \App\Models\TindakLanjut::findOrFail($id);
+        
+        // Authorization via Gate
+        \Gate::authorize('approve', $tindakLanjut);
+        
         $this->tindakLanjutService->approveTindakLanjut($id, auth()->id());
 
         return redirect()
@@ -183,12 +219,17 @@ class TindakLanjutController extends Controller
      */
     public function reject(Request $request, int $id): RedirectResponse
     {
+        $tindakLanjut = \App\Models\TindakLanjut::findOrFail($id);
+        
+        // Authorization via Gate
+        \Gate::authorize('reject', $tindakLanjut);
+        
         $reason = $request->input('reason', '');
         
         $this->tindakLanjutService->rejectTindakLanjut($id, auth()->id(), $reason);
 
         return redirect()
-            ->route('tindak-lanjut.index')
+            ->route('tindak-lanjut.pending-approval')
             ->with('success', 'Tindak lanjut berhasil ditolak.');
     }
 
@@ -321,26 +362,32 @@ class TindakLanjutController extends Controller
     }
 
     /**
-     * Mulai tangani kasus (change status: Baru -> Sedang Ditangani).
+     * Mulai tangani kasus (change status: Baru/Disetujui -> Sedang Ditangani).
      */
     public function mulaiTangani(int $id): RedirectResponse
     {
         $kasus = \App\Models\TindakLanjut::findOrFail($id);
 
-        if ($kasus->status->value !== 'Baru') {
-            return back()->with('error', 'Kasus sudah dalam proses penanganan.');
+        // Hanya bisa mulai tangani jika status Baru atau Disetujui
+        if (!in_array($kasus->status->value, ['Baru', 'Disetujui'])) {
+            return back()->with('error', 'Kasus sudah dalam proses penanganan atau tidak bisa ditangani.');
         }
+
+        $oldStatus = $kasus->status->value;
 
         $kasus->update([
             'status' => 'Ditangani',
             'tanggal_tindak_lanjut' => now(),
+            // Tracking fields
+            'ditangani_oleh_user_id' => auth()->id(),
+            'ditangani_at' => now(),
         ]);
 
         // Log activity
         activity()
             ->performedOn($kasus)
             ->causedBy(auth()->user())
-            ->withProperties(['old_status' => 'Baru', 'new_status' => 'Ditangani'])
+            ->withProperties(['old_status' => $oldStatus, 'new_status' => 'Ditangani'])
             ->log('Status kasus diubah ke Sedang Ditangani');
 
         return back()->with('success', 'Kasus berhasil dimulai penanganannya!');
@@ -359,7 +406,9 @@ class TindakLanjutController extends Controller
 
         $kasus->update([
             'status' => 'Selesai',
-            'tanggal_tindak_lanjut' => now(),
+            // Tracking fields
+            'diselesaikan_oleh_user_id' => auth()->id(),
+            'diselesaikan_at' => now(),
         ]);
 
         // Log activity

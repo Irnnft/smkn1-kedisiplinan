@@ -121,6 +121,79 @@
                 </div>
             </div>
 
+            {{-- KOTAK 2.5: TRACKING PENANGANAN (hanya tampil jika status bukan Baru) --}}
+            @if($kasus->status->value !== 'Baru')
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-5 py-3 bg-gradient-to-r from-cyan-50 to-slate-50 border-b border-slate-100">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-cyan-600 m-0 flex items-center gap-2">
+                        <i class="fas fa-history"></i> Riwayat Penanganan
+                    </h3>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {{-- Info Penanganan --}}
+                        @if($kasus->ditangani_at)
+                        <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-play-circle"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Ditangani Oleh</div>
+                                    <div class="font-bold text-slate-700">{{ $kasus->ditanganiOleh->username ?? 'N/A' }}</div>
+                                    <div class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <i class="fas fa-clock text-[10px]"></i> 
+                                        {{ $kasus->ditangani_at->format('d M Y, H:i') }} WIB
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 mt-0.5">
+                                        ({{ $kasus->ditangani_at->diffForHumans() }})
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        {{-- Info Penyelesaian --}}
+                        @if($kasus->diselesaikan_at)
+                        <div class="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Diselesaikan Oleh</div>
+                                    <div class="font-bold text-slate-700">{{ $kasus->diselesaikanOleh->username ?? 'N/A' }}</div>
+                                    <div class="text-xs text-slate-500 mt-1 flex items-center gap-1">
+                                        <i class="fas fa-clock text-[10px]"></i> 
+                                        {{ $kasus->diselesaikan_at->format('d M Y, H:i') }} WIB
+                                    </div>
+                                    <div class="text-[10px] text-slate-400 mt-0.5">
+                                        ({{ $kasus->diselesaikan_at->diffForHumans() }})
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @elseif($kasus->status->value === 'Ditangani')
+                        <div class="p-4 rounded-xl bg-amber-50/50 border border-amber-100 border-dashed">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-1">Status</div>
+                                    <div class="font-bold text-amber-700">Menunggu Penyelesaian</div>
+                                    <div class="text-xs text-amber-600/80 mt-1">
+                                        Klik tombol "Selesaikan Kasus" untuk menyelesaikan
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endif
+
             {{-- KOTAK 3: SURAT PANGGILAN --}}
             @if($kasus->suratPanggilan)
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
@@ -201,7 +274,7 @@
                             <span>Cetak Surat</span>
                         </a>
 
-                        @if($kasus->status->value === 'Baru')
+                        @if(in_array($kasus->status->value, ['Baru', 'Disetujui']))
                         <form action="{{ route('tindak-lanjut.mulai-tangani', $kasus->id) }}" method="POST" 
                               onsubmit="return confirm('Mulai menangani kasus ini?')" class="ml-auto">
                             @csrf
