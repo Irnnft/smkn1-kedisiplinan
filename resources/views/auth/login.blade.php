@@ -99,14 +99,14 @@
                     @csrf
 
                     <div>
-                        <label for="username" class="block text-sm font-semibold text-slate-700 mb-2">Username / Email</label>
+                        <label for="username" class="block text-sm font-semibold text-slate-700 mb-2">Username / Email / NIP / NUPTK / No. HP</label>
                         <div class="relative group">
                             <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                             </div>
                             <input type="text" id="username" name="username" value="{{ old('username') }}" required autofocus 
-                                class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-300 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all font-medium"
-                                placeholder="Masukkan username">
+                                class="w-full pl-12 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all font-medium"
+                                placeholder="Masukkan username, email, NIP, NUPTK, atau No. HP">
                         </div>
                     </div>
 

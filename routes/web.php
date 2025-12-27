@@ -31,14 +31,35 @@ Route::middleware('guest')->group(function () {
 });
 
 // ===================================================================
-// AUTHENTICATED ROUTES
+// AUTHENTICATED ROUTES (Profile Completion - Excluded from middleware)
 // ===================================================================
 
 Route::middleware(['auth'])->group(function () {
     
-    // Logout
+    // Logout (always accessible)
     Route::post('/logout', [LoginController::class, 'logout'])
         ->name('logout');
+
+    // ===================================================================
+    // PROFILE COMPLETION ROUTES (First Login)
+    // Rute ini dikecualikan dari middleware profile.completed
+    // ===================================================================
+    
+    Route::get('/profile/complete', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'show'])
+        ->name('profile.complete.show');
+
+    Route::post('/profile/complete', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'store'])
+        ->name('profile.complete.store');
+
+    Route::get('/profile/complete/skip', [\App\Http\Controllers\Auth\ProfileCompletionController::class, 'skip'])
+        ->name('profile.complete.skip');
+});
+
+// ===================================================================
+// AUTHENTICATED ROUTES (Protected by profile.completed)
+// ===================================================================
+
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // DASHBOARD ROUTES (Role-based with Controllers)

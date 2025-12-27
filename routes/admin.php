@@ -16,7 +16,7 @@ use App\Http\Controllers\Audit\ActivityLogController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     
     // ===================================================================

@@ -15,7 +15,7 @@ use App\Http\Controllers\MasterData\JenisPelanggaranController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // RIWAYAT PELANGGARAN ROUTES

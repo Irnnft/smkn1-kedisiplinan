@@ -13,10 +13,31 @@ use App\Http\Controllers\TindakLanjut\TindakLanjutController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
-    // TINDAK LANJUT CRUD ROUTES
+    // STATIC ROUTES (HARUS SEBELUM RESOURCE!)
+    // ===================================================================
+    // Ini penting karena jika resource didefinisikan duluan,
+    // route /pending-approval akan ditangkap sebagai /tindak-lanjut/{id}
+    
+    Route::prefix('tindak-lanjut')->name('tindak-lanjut.')->group(function () {
+        // List pending approval (for approvers)
+        Route::get('/pending-approval', [TindakLanjutController::class, 'pendingApproval'])
+            ->name('pending-approval')
+            ->middleware('role:Kepala Sekolah,Waka Kesiswaan,Kaprodi');
+
+        // My approvals (yang saya setujui/tolak)
+        Route::get('/my-approvals', [TindakLanjutController::class, 'myApprovals'])
+            ->name('my-approvals');
+
+        // Statistics
+        Route::get('/statistics', [TindakLanjutController::class, 'statistics'])
+            ->name('statistics');
+    });
+
+    // ===================================================================
+    // TINDAK LANJUT CRUD ROUTES (RESOURCE)
     // ===================================================================
     
     Route::resource('tindak-lanjut', TindakLanjutController::class)
@@ -31,37 +52,21 @@ Route::middleware(['auth'])->group(function () {
         ]);
 
     // ===================================================================
-    // APPROVAL WORKFLOW ROUTES
+    // APPROVAL WORKFLOW ROUTES (WITH ID PARAMETER)
     // ===================================================================
     
-    Route::prefix('tindak-lanjut')->name('tindak-lanjut.')->group(function () {
-        // Approve tindak lanjut
-        Route::post('/{id}/approve', [TindakLanjutController::class, 'approve'])
-            ->name('approve')
-            ->middleware('can:approve,App\Models\TindakLanjut');
+    Route::prefix('tindak-lanjut/{id}')->name('tindak-lanjut.')->group(function () {
+        // Approve tindak lanjut (authorization done in controller)
+        Route::post('/approve', [TindakLanjutController::class, 'approve'])
+            ->name('approve');
 
-        // Reject tindak lanjut
-        Route::post('/{id}/reject', [TindakLanjutController::class, 'reject'])
-            ->name('reject')
-            ->middleware('can:reject,App\Models\TindakLanjut');
+        // Reject tindak lanjut (authorization done in controller)
+        Route::post('/reject', [TindakLanjutController::class, 'reject'])
+            ->name('reject');
 
-        // Complete/close tindak lanjut
-        Route::post('/{id}/complete', [TindakLanjutController::class, 'complete'])
-            ->name('complete')
-            ->middleware('can:complete,App\Models\TindakLanjut');
-
-        // List pending approval (for approvers)
-        Route::get('/pending-approval', [TindakLanjutController::class, 'pendingApproval'])
-            ->name('pending-approval')
-            ->middleware('role:Kepala Sekolah,Waka Kesiswaan,Kaprodi');
-
-        // My approvals (yang saya setujui/tolak)
-        Route::get('/my-approvals', [TindakLanjutController::class, 'myApprovals'])
-            ->name('my-approvals');
-
-        // Statistics
-        Route::get('/statistics', [TindakLanjutController::class, 'statistics'])
-            ->name('statistics');
+        // Complete/close tindak lanjut (authorization done in controller)
+        Route::post('/complete', [TindakLanjutController::class, 'complete'])
+            ->name('complete');
     });
 
     // ===================================================================
@@ -85,7 +90,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/cetak-surat', [TindakLanjutController::class, 'cetakSurat'])
             ->name('cetak-surat');
         
-        // Mulai Tangani (Change status: Baru -> Sedang Ditangani)
+        // Mulai Tangani (Change status: Disetujui -> Sedang Ditangani)
         Route::put('/mulai-tangani', [TindakLanjutController::class, 'mulaiTangani'])
             ->name('mulai-tangani');
         

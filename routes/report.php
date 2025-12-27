@@ -15,7 +15,7 @@ use App\Http\Controllers\Report\SiswaPerluPembinaanController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // GENERAL REPORTS

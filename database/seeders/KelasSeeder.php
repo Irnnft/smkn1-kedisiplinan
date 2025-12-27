@@ -2,46 +2,48 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Jurusan; // <-- 1. IMPORT JURUSAN
-use App\Models\User;    // <-- 2. IMPORT USER
-use App\Models\Kelas;   // <-- 3. IMPORT KELAS
-use Illuminate\Support\Facades\DB;
+use App\Models\Kelas;
+use App\Models\Jurusan;
 
+/**
+ * Kelas Seeder
+ * 
+ * Seed data kelas SMK Negeri 1
+ */
 class KelasSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // 1. Kosongkan tabel dulu
-        DB::table('kelas')->truncate();
+        // Mapping kelas: nama_kelas => kode_jurusan
+        $kelasData = [
+            ['nama_kelas' => 'X AKL 1', 'tingkat' => 'X', 'kode' => 'AKL'],
+            ['nama_kelas' => 'XI AKL 1', 'tingkat' => 'XI', 'kode' => 'AKL'],
+            ['nama_kelas' => 'XII AKL 1', 'tingkat' => 'XII', 'kode' => 'AKL'],
+            ['nama_kelas' => 'X APHP 1', 'tingkat' => 'X', 'kode' => 'APHP'],
+            ['nama_kelas' => 'XI APHP 1', 'tingkat' => 'XI', 'kode' => 'APHP'],
+            ['nama_kelas' => 'X ATP 1', 'tingkat' => 'X', 'kode' => 'ATP'],
+            ['nama_kelas' => 'XI ATP 1', 'tingkat' => 'XI', 'kode' => 'ATP'],
+            ['nama_kelas' => 'XI ATP 2', 'tingkat' => 'XI', 'kode' => 'ATP'],
+            ['nama_kelas' => 'X ATU 1', 'tingkat' => 'X', 'kode' => 'ATU'],
+            ['nama_kelas' => 'X TEB 1', 'tingkat' => 'X', 'kode' => 'TEB'],
+        ];
 
-        // 2. Ambil data induk (parent)
-        $jurusanATP = Jurusan::where('nama_jurusan', 'Agribisnis Tanaman Perkebunan (ATP)')->first();
-        $waliKelasTes = User::where('username', 'walikelas.tes')->first();
-
-        // 3. Pastikan data induk ada sebelum membuat data anak
-        if ($jurusanATP && $waliKelasTes) {
-            Kelas::create([
-                'jurusan_id' => $jurusanATP->id,
-                'wali_kelas_user_id' => $waliKelasTes->id,
-                'nama_kelas' => 'XII ATP 1' // Kelas contoh
-            ]);
+        foreach ($kelasData as $kelas) {
+            $jurusan = Jurusan::where('kode_jurusan', $kelas['kode'])->first();
+            
+            if ($jurusan) {
+                Kelas::updateOrCreate(
+                    ['nama_kelas' => $kelas['nama_kelas']],
+                    [
+                        'nama_kelas' => $kelas['nama_kelas'],
+                        'tingkat' => $kelas['tingkat'],
+                        'jurusan_id' => $jurusan->id,
+                    ]
+                );
+            }
         }
-        
-        // Anda bisa tambahkan kelas lain di sini jika perlu
-        // Contoh:
-        // $jurusanAKL = Jurusan::where('nama_jurusan', 'like', 'Akuntansi%')->first();
-        // $waliKelasLain = User::where('username', 'guru')->first(); // Ambil guru umum
-        // if ($jurusanAKL && $waliKelasLain) {
-        //     Kelas::create([
-        //         'jurusan_id' => $jurusanAKL->id,
-        //         'wali_kelas_user_id' => $waliKelasLain->id,
-        //         'nama_kelas' => 'X AKL 1'
-        //     ]);
-        // }
+
+        $this->command->info('✓ Kelas seeded: ' . count($kelasData) . ' kelas');
     }
 }

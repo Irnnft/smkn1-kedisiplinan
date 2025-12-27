@@ -1,0 +1,85 @@
+@startuml State_Siswa_User
+' ============================================================================
+' STATE DIAGRAM - SISWA & USER LIFECYCLE
+' ============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #37474F
+    FontColor #212121
+    ArrowColor #455A64
+    StartColor #4CAF50
+    EndColor #F44336
+}
+
+' ============================================================================
+' SISWA LIFECYCLE
+' ============================================================================
+
+title **STD-03: State Diagram - Siswa & User Lifecycle**
+
+state "Siswa Lifecycle" as SISWA_STATE {
+    [*] --> SiswaAktif : Operator\ntambah siswa
+    
+    state SiswaAktif #E8F5E9 {
+        SiswaAktif : deleted_at = null
+        SiswaAktif : ---
+        SiswaAktif : do/ Dapat dicatat pelanggaran
+        SiswaAktif : do/ Muncul di daftar
+        SiswaAktif : do/ Dapat naik kelas
+    }
+    
+    SiswaAktif --> SiswaAktif : Update data
+    SiswaAktif --> SiswaAktif : Naik kelas\n(ubah kelas_id)
+    
+    SiswaAktif --> SiswaTidakAktif : Soft delete\n(keluar/pindah)
+    
+    state SiswaTidakAktif #FFEBEE {
+        SiswaTidakAktif : deleted_at != null
+        SiswaTidakAktif : ---
+        SiswaTidakAktif : entry/ Set alasan_keluar
+        SiswaTidakAktif : do/ Hidden dari daftar
+        SiswaTidakAktif : do/ Riwayat tetap ada
+    }
+    
+    SiswaTidakAktif --> SiswaAktif : Restore
+    
+    SiswaTidakAktif --> [*] : Force delete\n(permanent)
+}
+
+--
+
+' ============================================================================
+' USER LIFECYCLE
+' ============================================================================
+
+state "User Lifecycle" as USER_STATE {
+    [*] --> UserAktif : Operator\nbuat user
+    
+    state UserAktif #E8F5E9 {
+        UserAktif : is_active = true
+        UserAktif : ---
+        UserAktif : entry/ Set password default
+        UserAktif : do/ Dapat login
+        UserAktif : do/ Akses sesuai role
+    }
+    
+    UserAktif --> UserTidakAktif : toggleActivation()
+    
+    state UserTidakAktif #FFEBEE {
+        UserTidakAktif : is_active = false
+        UserTidakAktif : ---
+        UserTidakAktif : entry/ Terminate session
+        UserTidakAktif : do/ Tidak bisa login
+        UserTidakAktif : do/ Hidden dari dropdown
+    }
+    
+    UserTidakAktif --> UserAktif : toggleActivation()
+}
+
+@enduml

@@ -45,6 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'username_changed_at',
         'password_changed_at',
+        'profile_completed_at',
         'last_login_at',
         'is_active',
     ];

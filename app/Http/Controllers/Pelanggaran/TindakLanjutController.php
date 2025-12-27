@@ -30,8 +30,13 @@ class TindakLanjutController extends Controller
      */
     public function edit($id)
     {
-        // Ambil data kasus beserta relasinya (Siswa, Surat)
-        $kasus = TindakLanjut::with(['siswa.kelas', 'suratPanggilan'])->findOrFail($id);
+        // Ambil data kasus beserta relasinya (Siswa, Surat, Tracking)
+        $kasus = TindakLanjut::with([
+            'siswa.kelas', 
+            'suratPanggilan.printLogs.user',
+            'ditanganiOleh',
+            'diselesaikanOleh',
+        ])->findOrFail($id);
 
         // Validasi akses berpasangan: pastikan user punya scope untuk melihat/kelola kasus ini
         $this->validateAccessToKasus($kasus);

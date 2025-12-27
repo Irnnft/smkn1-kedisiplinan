@@ -40,6 +40,9 @@ return Application::configure(basePath: dirname(__DIR__))
 
             Route::middleware('web')
                 ->group(base_path('routes/legacy.php'));
+
+            Route::middleware('web')
+                ->group(base_path('routes/pembinaan.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware) {
