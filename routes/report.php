@@ -60,6 +60,11 @@ Route::middleware(['auth', 'profile.completed'])->group(function () {
             ->name('index')
             ->middleware('role:Kepala Sekolah,Waka Kesiswaan,Kaprodi');
 
+        // Show detail kasus untuk approval
+        Route::get('/{tindakLanjut}', [ApprovalController::class, 'show'])
+            ->name('show')
+            ->middleware('role:Kepala Sekolah,Waka Kesiswaan,Kaprodi');
+
         // Approval history
         Route::get('/history', [ApprovalController::class, 'history'])
             ->name('history')

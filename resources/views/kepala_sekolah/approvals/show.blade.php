@@ -10,10 +10,13 @@
             extend: {
                 colors: {
                     primary: '#0f172a',
+                    accent: '#3b82f6',
+                    success: '#10b981',
+                    danger: '#f43f5e',
                     indigo: { 600: '#4f46e5', 50: '#eef2ff', 100: '#e0e7ff', 700: '#4338ca' },
-                    rose: { 50: '#fff1f2', 100: '#ffe4e6', 600: '#e11d48', 700: '#be123c' },
-                    emerald: { 50: '#ecfdf5', 100: '#d1fae5', 600: '#059669', 700: '#047857' }
-                }
+                    blue: { 50: '#eff6ff', 100: '#dbeafe', 600: '#2563eb' }
+                },
+                boxShadow: { 'soft': '0 4px 10px rgba(0,0,0,0.05)' }
             }
         },
         corePlugins: { preflight: false }
@@ -26,12 +29,10 @@
         {{-- HEADER --}}
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-slate-200">
             <div>
-                <div class="flex items-center gap-2 text-indigo-600 mb-1">
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em] bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Persetujuan Kasus</span>
-                </div>
                 <h1 class="text-2xl font-bold text-slate-800 m-0 tracking-tight flex items-center gap-3">
-                    <i class="fas fa-file-signature text-indigo-600"></i> Tinjau & Setujui Kasus
+                    <i class="fas fa-file-signature text-indigo-600"></i> Tinjauan Kasus
                 </h1>
+                <p class="text-slate-500 text-sm mt-1">Evaluasi detail kejadian dan berikan keputusan validasi.</p>
             </div>
             
             <a href="{{ route('tindak-lanjut.pending-approval') }}" class="px-4 py-2 rounded-lg bg-white text-slate-600 text-xs font-bold border border-slate-200 hover:bg-slate-50 no-underline">
@@ -251,18 +252,17 @@
         const id = "{{ $kasus->id }}";
         
         if (action === 'approve') {
-            form.action = "/tindak-lanjut/" + id + "/approve";
+            form.action = "{{ url('tindak-lanjut') }}/" + id + "/approve";
         } else {
-            form.action = "/tindak-lanjut/" + id + "/reject";
+            form.action = "{{ url('tindak-lanjut') }}/" + id + "/reject";
         }
     }
-
-    // Inisialisasi action saat pertama kali load
-    window.onload = function() {
-        updateAction('approve');
-    };
+    window.onload = function() { updateAction('approve'); };
 </script>
 
+@endsection
+
+@section('styles')
 <style>
     .page-wrap-custom { font-family: 'Inter', sans-serif; }
 </style>
