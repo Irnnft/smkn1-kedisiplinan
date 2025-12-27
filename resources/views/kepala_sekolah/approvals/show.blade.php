@@ -81,6 +81,7 @@
                             <span class="text-sm font-bold text-indigo-700 block">{{ $kasus->user->nama ?? 'Sistem' }}</span>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
 
@@ -186,6 +187,21 @@
                     </form>
                 </div>
             </div>
+            @else
+            {{-- Info jika status bukan Menunggu Persetujuan --}}
+            <div class="bg-slate-50 rounded-2xl border border-slate-200 p-6 text-center">
+                <i class="fas fa-info-circle text-3xl text-slate-300 mb-3"></i>
+                <p class="text-sm text-slate-500 font-medium">
+                    @if($kasus->status->value === 'Disetujui')
+                        Kasus ini telah <span class="font-bold text-emerald-600">disetujui</span>.
+                    @elseif($kasus->status->value === 'Ditolak')
+                        Kasus ini telah <span class="font-bold text-rose-600">ditolak</span>.
+                    @else
+                        Status kasus: <span class="font-bold">{{ $kasus->status->value }}</span>
+                    @endif
+                </p>
+            </div>
+            @endif
 
         </div>
     </div>
@@ -195,6 +211,7 @@
     function updateAction(action) {
         const form = document.getElementById('approvalForm');
         const id = "{{ $kasus->id }}";
+        
         if (action === 'approve') {
             form.action = "{{ url('tindak-lanjut') }}/" + id + "/approve";
         } else {

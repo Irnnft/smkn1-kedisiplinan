@@ -14,7 +14,7 @@ use App\Http\Controllers\MasterData\KelasController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // JURUSAN ROUTES

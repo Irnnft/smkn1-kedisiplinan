@@ -1,0 +1,266 @@
+@startuml Component_Diagram
+' ============================================================================
+' COMPONENT DIAGRAM - SISTEM INFORMASI KEDISIPLINAN SISWA SMK NEGERI 1
+' ============================================================================
+' Author: System Documentation
+' Version: 2.0 (PlantUML)
+' Date: 27 Desember 2024
+' ============================================================================
+
+' === GLOBAL STYLING ===
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+skinparam linetype ortho
+
+' === COMPONENT STYLING ===
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #37474F
+    FontColor #212121
+}
+
+' === PACKAGE STYLING ===
+skinparam package {
+    BackgroundColor #FAFAFA
+    BorderColor #9E9E9E
+    FontColor #424242
+}
+
+' === INTERFACE STYLING ===
+skinparam interface {
+    BackgroundColor #E3F2FD
+    BorderColor #1976D2
+}
+
+' === DATABASE STYLING ===
+skinparam database {
+    BackgroundColor #FFF8E1
+    BorderColor #FF8F00
+}
+
+title **COMPONENT DIAGRAM - Laravel Application Architecture**
+
+' ============================================================================
+' PRESENTATION LAYER
+' ============================================================================
+
+package "Presentation Layer" as PRES #E3F2FD {
+    
+    component "Blade Views" as BLADE {
+        [layouts/app.blade.php]
+        [dashboard/*]
+        [pelanggaran/*]
+        [tindaklanjut/*]
+        [masterdata/*]
+        [report/*]
+    }
+    
+    component "Frontend Assets" as ASSETS {
+        [TailwindCSS 4]
+        [Alpine.js 3]
+        [Lucide Icons]
+    }
+    
+    component "Vite 7.x" as VITE
+}
+
+' ============================================================================
+' APPLICATION LAYER
+' ============================================================================
+
+package "Application Layer" as APP #E8F5E9 {
+    
+    package "HTTP" as HTTP {
+        component "Routes" as ROUTES {
+            [web.php]
+            [pelanggaran.php]
+            [tindak_lanjut.php]
+            [siswa.php]
+            [master_data.php]
+        }
+        
+        component "Middleware" as MW {
+            [AuthMiddleware]
+            [RoleMiddleware]
+            [FirstLoginMiddleware]
+        }
+        
+        component "Controllers (17)" as CTRL {
+            [Dashboard Controllers (7)]
+            [MasterData Controllers (4)]
+            [Pelanggaran Controllers (2)]
+            [Pembinaan Controllers (1)]
+            [Report Controllers (3)]
+        }
+        
+        component "Form Requests" as FREQ {
+            [Validation Rules]
+            [Authorization]
+        }
+    }
+    
+    package "Business Logic" as BL {
+        component "Services (19)" as SVC {
+            [UserService]
+            [SiswaService]
+            [PelanggaranService]
+            [TindakLanjutService]
+            [SuratPanggilanService]
+        }
+        
+        component "Rules Engine" as RE {
+            [FrequencyRulesService]
+            [PembinaanRulesService]
+            [RulesEngineSettingsService]
+        }
+    }
+    
+    package "Support" as SUP {
+        component "DTOs" as DTO {
+            [Spatie Laravel Data]
+            [11 Data Classes]
+        }
+        
+        component "Helpers" as HLP {
+            [Utility Functions]
+        }
+    }
+}
+
+' ============================================================================
+' DATA LAYER
+' ============================================================================
+
+package "Data Layer" as DATA #FFF3E0 {
+    
+    component "Eloquent Models (16)" as MDL {
+        [User, Role]
+        [Jurusan, Kelas, Siswa]
+        [KategoriPelanggaran]
+        [JenisPelanggaran]
+        [FrequencyRule]
+        [RiwayatPelanggaran]
+        [TindakLanjut]
+        [SuratPanggilan]
+        [PembinaanStatus]
+        [RulesEngineSetting]
+    }
+    
+    component "Repositories (9)" as REPO {
+        [BaseRepository]
+        [SiswaRepository]
+        [UserRepository]
+        [TindakLanjutRepository]
+        [RiwayatPelanggaranRepository]
+    }
+    
+    component "Observers (4)" as OBS {
+        [JurusanObserver]
+        [KelasObserver]
+        [SiswaObserver]
+        [UserNameSyncObserver]
+    }
+    
+    component "Enums (4)" as ENUM {
+        [StatusTindakLanjut]
+        [StatusPembinaan]
+        [KategoriPelanggaranEnum]
+        [TingkatPelanggaran]
+    }
+    
+    database "MySQL/MariaDB" as DB {
+        [16 Tables]
+        [InnoDB]
+    }
+    
+    database "Cache" as CACHE {
+        [Redis/File]
+        [Session]
+    }
+}
+
+' ============================================================================
+' EXTERNAL PACKAGES
+' ============================================================================
+
+package "External Packages" as EXT #E8EAF6 {
+    
+    component "barryvdh/dompdf" as DOMPDF {
+        [PDF Generation]
+    }
+    
+    component "spatie/activitylog" as ACTLOG {
+        [Audit Trail]
+    }
+    
+    component "spatie/laravel-data" as SPDATA {
+        [Data Transfer Objects]
+    }
+    
+    component "blade-lucide-icons" as LUCIDE {
+        [SVG Icons]
+    }
+}
+
+' ============================================================================
+' INTERFACES
+' ============================================================================
+
+interface "HTTP Request" as I_HTTP
+interface "Eloquent ORM" as I_ORM
+interface "PDF Generator" as I_PDF
+interface "Activity Logger" as I_LOG
+
+' ============================================================================
+' CONNECTIONS
+' ============================================================================
+
+BLADE -down-> I_HTTP
+ASSETS -down-> VITE
+
+I_HTTP -down-> ROUTES
+ROUTES -down-> MW
+MW -down-> CTRL
+CTRL -down-> FREQ
+CTRL -down-> SVC
+
+SVC -down-> RE
+SVC -down-> DTO
+SVC -down-> REPO
+
+REPO -down-> I_ORM
+I_ORM -down-> MDL
+MDL -down-> OBS
+MDL -down-> ENUM
+MDL -down-> DB
+MDL -down-> CACHE
+
+SVC -right-> I_PDF
+I_PDF -right-> DOMPDF
+
+MDL -right-> I_LOG
+I_LOG -right-> ACTLOG
+
+DTO .down.> SPDATA
+BLADE .right.> LUCIDE
+
+' ============================================================================
+' LEGEND
+' ============================================================================
+
+legend right
+  <b>RINGKASAN KOMPONEN</b>
+  ----
+  <b>Presentation:</b> Blade + Tailwind + Alpine
+  <b>Controllers:</b> 17 controllers
+  <b>Services:</b> 19 services
+  <b>Models:</b> 16 Eloquent models
+  <b>Repositories:</b> 9 repositories
+  <b>Observers:</b> 4 observers
+  <b>Enums:</b> 4 enums
+  <b>External:</b> 4 packages
+endlegend
+
+@enduml

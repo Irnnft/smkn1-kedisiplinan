@@ -175,10 +175,46 @@ $waliId = $siswa->wali_murid_user_id;
             'range_text' => '',
         ];
 
+        // Get pembinaan status aktif untuk siswa ini (Perlu Pembinaan atau Sedang Dibina)
+        $pembinaanAktif = \App\Models\PembinaanStatus::forSiswa($siswaId)
+            ->active()
+            ->with(['rule', 'dibinaOleh'])
+            ->latest()
+            ->first();
+
+        // Get pembinaan terakhir yang SELESAI untuk siswa ini (untuk ditampilkan di profil)
+        $pembinaanSelesai = null;
+        if (!$pembinaanAktif) {
+            // Find rule yang match dengan poin saat ini
+            $matchingRule = \App\Models\PembinaanInternalRule::orderBy('display_order')
+                ->get()
+                ->first(fn($rule) => $rule->matchesPoin($totalPoin));
+            
+            if ($matchingRule) {
+                $pembinaanSelesai = \App\Models\PembinaanStatus::forSiswa($siswaId)
+                    ->forRule($matchingRule->id)
+                    ->completed()
+                    ->with(['rule', 'dibinaOleh', 'diselesaikanOleh'])
+                    ->latest('selesai_at')
+                    ->first();
+            }
+        }
+
+        // Jika sudah ada pembinaan selesai untuk range ini, kosongkan rekomendasi
+        if ($pembinaanSelesai) {
+            $pembinaanRekomendasi = [
+                'pembina_roles' => [],
+                'keterangan' => '',
+                'range_text' => '',
+            ];
+        }
+
         return [
             'siswa' => $siswa,
             'totalPoin' => $totalPoin,
             'pembinaanRekomendasi' => $pembinaanRekomendasi,
+            'pembinaanAktif' => $pembinaanAktif,
+            'pembinaanSelesai' => $pembinaanSelesai,
         ];
     }
 

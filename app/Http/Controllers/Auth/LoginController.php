@@ -31,8 +31,11 @@ class LoginController extends Controller
      * (Menangani: POST / )
      * 
      * User bisa login dengan:
-     * - Username + Password, atau
+     * - Username + Password
      * - Email + Password
+     * - NIP + Password
+     * - NUPTK + Password
+     * - Nomor HP + Password
      */
     public function login(Request $request): RedirectResponse
     {
@@ -45,26 +48,28 @@ class LoginController extends Controller
         // Cek apakah user mencentang "Ingat Saya"
         $remember = $request->has('remember');
 
-        $loginField = $request->username;
+        $loginField = trim($request->username);
         $password = $request->password;
 
-        // --- Tentukan apakah input adalah email atau username ---
-        // Cek apakah input mengandung karakter '@' (indikator email)
-        $isEmail = filter_var($loginField, FILTER_VALIDATE_EMAIL) !== false;
+        // --- Cari user berdasarkan berbagai identifier ---
+        // Prioritas: username > email > nip > nuptk > phone
+        $user = \App\Models\User::where('username', $loginField)
+            ->orWhere('email', $loginField)
+            ->orWhere('nip', $loginField)
+            ->orWhere('nuptk', $loginField)
+            ->orWhere('phone', $loginField)
+            ->first();
 
         // --- Coba Login ---
-        // Jika input adalah email, coba login dengan email
-        // Jika bukan email, coba login dengan username
         $attempted = false;
         
-        if ($isEmail) {
-            // Coba login dengan email
-            $attempted = Auth::attempt(['email' => $loginField, 'password' => $password], $remember);
-        }
-        
-        // Jika login dengan email gagal, atau input bukan email, coba dengan username
-        if (!$attempted) {
-            $attempted = Auth::attempt(['username' => $loginField, 'password' => $password], $remember);
+        if ($user) {
+            // Verifikasi password manual
+            if (\Illuminate\Support\Facades\Hash::check($password, $user->password)) {
+                // Login user secara manual
+                Auth::login($user, $remember);
+                $attempted = true;
+            }
         }
 
         if ($attempted) {
@@ -122,8 +127,8 @@ class LoginController extends Controller
 
         // --- GAGAL LOGIN ---
         return back()->withErrors([
-            'username' => 'Username/Email atau password salah.',
-        ])->onlyInput('username'); // Kembalikan ke form dengan data username/email
+            'username' => 'Login gagal. Periksa kembali username/email/NIP/NUPTK/No.HP dan password Anda.',
+        ])->onlyInput('username');
     }
 
     /**

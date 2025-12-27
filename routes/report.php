@@ -15,7 +15,7 @@ use App\Http\Controllers\Report\SiswaPerluPembinaanController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // GENERAL REPORTS
@@ -58,6 +58,11 @@ Route::middleware(['auth'])->group(function () {
         // List pending approvals
         Route::get('/', [ApprovalController::class, 'index'])
             ->name('index')
+            ->middleware('role:Kepala Sekolah,Waka Kesiswaan,Kaprodi');
+
+        // Show detail kasus untuk approval
+        Route::get('/{tindakLanjut}', [ApprovalController::class, 'show'])
+            ->name('show')
             ->middleware('role:Kepala Sekolah,Waka Kesiswaan,Kaprodi');
 
         // Approval history

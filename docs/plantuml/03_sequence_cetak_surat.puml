@@ -1,0 +1,147 @@
+@startuml Sequence_CetakSurat
+' ============================================================================
+' SEQUENCE DIAGRAM - PROSES CETAK SURAT PANGGILAN
+' ============================================================================
+' Author: System Documentation
+' Version: 1.0 (PlantUML)
+' Date: 27 Desember 2024
+' ============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+
+skinparam sequence {
+    ArrowColor #455A64
+    ArrowFontColor #37474F
+    LifeLineBorderColor #78909C
+    LifeLineBackgroundColor #ECEFF1
+    ParticipantBorderColor #37474F
+    ParticipantBackgroundColor #FFFFFF
+    ActorBorderColor #1976D2
+    ActorBackgroundColor #E3F2FD
+    BoxBorderColor #9E9E9E
+    BoxBackgroundColor #FAFAFA
+}
+
+autonumber
+
+title **SD-05: Proses Cetak Surat Panggilan**
+
+actor "Pembina\n(WK/Waka)" as PEMBINA
+
+box "Application Layer" #E8F5E9
+    participant "TindakLanjutController" as TLC
+    participant "SuratPanggilanService" as SPS
+end box
+
+box "Data Layer" #FFF3E0
+    participant "TindakLanjut" as TL
+    participant "SuratPanggilan" as SP
+    participant "SuratPanggilanPrintLog" as LOG
+    database "MySQL" as DB
+end box
+
+box "External" #FCE4EC
+    participant "DomPDF" as PDF
+end box
+
+== Preview Surat ==
+
+PEMBINA -> TLC : GET /tindak-lanjut/{id}/preview-surat
+activate TLC
+
+TLC -> TL : find(id)->with('suratPanggilan')
+TL -> DB : SELECT with relations
+DB --> TL : TindakLanjut + SuratPanggilan
+
+TLC -> SPS : getPreviewData(tindakLanjut)
+activate SPS
+
+SPS -> SP : getData()
+SP --> SPS : surat data (nomor, tanggal, pembina, dll)
+
+SPS --> TLC : preview data
+deactivate SPS
+
+TLC --> PEMBINA : Tampilkan preview surat
+deactivate TLC
+
+== Edit Surat (Optional) ==
+
+PEMBINA -> TLC : GET /tindak-lanjut/{id}/edit-surat
+TLC --> PEMBINA : Form edit surat
+
+PEMBINA -> TLC : PUT /tindak-lanjut/{id}/update-surat\n(tanggal_pertemuan, waktu, tempat, keperluan)
+activate TLC
+
+TLC -> SPS : updateSurat(id, data)
+activate SPS
+
+SPS -> SP : update(data)
+SP -> DB : UPDATE surat_panggilan\nSET tanggal_pertemuan = ?,\nwaktu_pertemuan = ?,\ntempat_pertemuan = ?,\nkeperluan = ?
+DB --> SP : Updated
+
+SPS --> TLC : Success
+deactivate SPS
+
+TLC --> PEMBINA : Flash "Surat berhasil diupdate"
+deactivate TLC
+
+== Cetak Surat (Download PDF) ==
+
+PEMBINA -> TLC : GET /tindak-lanjut/{id}/cetak-surat
+activate TLC
+
+TLC -> TL : find(id)->with('suratPanggilan', 'siswa')
+TL -> DB : SELECT with relations
+DB --> TL : Complete data
+
+TLC -> SPS : generatePDF(tindakLanjut)
+activate SPS
+
+SPS -> SP : getSuratData()
+SP --> SPS : Complete surat data
+
+SPS -> PDF : loadView('surat-panggilan', data)
+activate PDF
+PDF -> PDF : render HTML to PDF
+PDF --> SPS : PDF binary
+deactivate PDF
+
+SPS --> TLC : PDF response
+deactivate SPS
+
+' Log print activity
+TLC -> LOG : create([surat_id, user_id, printed_at, ip, user_agent])
+LOG -> DB : INSERT INTO surat_panggilan_print_logs
+DB --> LOG : Created
+
+' Update status if needed
+TLC -> TL : updateStatusIfNeeded()
+TL -> DB : UPDATE tindak_lanjut\nSET status = 'DITANGANI'\nWHERE status = 'DISETUJUI'
+DB --> TL : Updated (if applicable)
+
+TLC --> PEMBINA : Download PDF file
+deactivate TLC
+
+note right of PEMBINA #C8E6C9
+  File PDF terdownload
+  Print log tercatat
+  Status terupdate
+end note
+
+== View Print History ==
+
+PEMBINA -> TLC : GET /tindak-lanjut/{id}/print-history
+activate TLC
+
+TLC -> SP : find(id)->with('printLogs.user')
+SP -> DB : SELECT with print logs
+DB --> SP : SuratPanggilan + PrintLogs
+
+TLC --> PEMBINA : Tampilkan riwayat cetak
+deactivate TLC
+
+@enduml
