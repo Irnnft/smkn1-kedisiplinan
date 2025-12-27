@@ -13,7 +13,7 @@ use App\Http\Controllers\TindakLanjut\TindakLanjutController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // STATIC ROUTES (HARUS SEBELUM RESOURCE!)

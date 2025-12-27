@@ -14,7 +14,7 @@ use App\Http\Controllers\Utility\FileController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // DEVELOPER TOOLS (Non-Production Only)

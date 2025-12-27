@@ -12,7 +12,7 @@ use App\Http\Controllers\Pembinaan\PembinaanStatusController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     Route::prefix('pembinaan')->name('pembinaan.')->group(function () {
         

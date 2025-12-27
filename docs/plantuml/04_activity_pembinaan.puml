@@ -1,0 +1,78 @@
+@startuml Activity_Pembinaan
+' ============================================================================
+' ACTIVITY DIAGRAM - PEMBINAAN INTERNAL END-TO-END
+' ============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+
+skinparam activity {
+    BackgroundColor #E3F2FD
+    BorderColor #1976D2
+    FontColor #0D47A1
+    DiamondBackgroundColor #FFF8E1
+    DiamondBorderColor #FF8F00
+    ArrowColor #455A64
+}
+
+skinparam swimlane {
+    BorderColor #9E9E9E
+}
+
+title **AD-03: Proses Pembinaan Internal End-to-End**
+
+|#FFF3E0|FASE 1: TRIGGER|
+
+start
+
+:Siswa melakukan pelanggaran;
+
+:Poin pelanggaran dihitung;
+
+if (Total poin masuk\nrange pembinaan?) then (Ya)
+    :Generate PembinaanStatus\n(status = PERLU_PEMBINAAN);
+    :Set pembina_roles berdasarkan rule;
+    :Notifikasi ke Pembina;
+else (Tidak)
+    stop
+endif
+
+|#E8F5E9|FASE 2: PEMBINAAN|
+
+:Pembina lihat daftar\nsiswa perlu pembinaan;
+
+:Pilih siswa untuk dibina;
+
+:Mulai pembinaan;
+
+:Update status = **SEDANG_DIBINA**;
+
+:Set dibina_oleh_user_id;
+
+:Set dibina_at = now();
+
+:Lakukan sesi pembinaan;
+
+:Input catatan pembinaan;
+
+|#E3F2FD|FASE 3: PENYELESAIAN|
+
+:Input hasil pembinaan;
+
+:Selesaikan pembinaan;
+
+:Update status = **SELESAI**;
+
+:Set diselesaikan_oleh_user_id;
+
+:Set selesai_at = now();
+
+:Simpan hasil_pembinaan;
+
+:Log aktivitas;
+
+stop
+
+@enduml

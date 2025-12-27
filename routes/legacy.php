@@ -19,7 +19,7 @@ use App\Http\Controllers\TindakLanjut\TindakLanjutController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // LEGACY: SISWA BULK OPERATIONS (Placeholder - Not Implemented Yet)
@@ -206,27 +206,12 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('siswa.update', $id);
     })->name('audit.siswa.update');
 
-    // ===================================================================
-    // LEGACY: PROFILE COMPLETE ROUTES
-    // ===================================================================
-    
     /**
-     * Profile completion wizard routes (if exists)
-     * Redirect to profile edit or placeholder
+     * LEGACY: Profile completion routes
+     * 
+     * REMOVED - Replaced by ProfileCompletionController in routes/web.php
+     * Routes: profile.complete.show, profile.complete.store, profile.complete.skip
      */
-    
-    Route::get('/profile/complete', function () {
-        return redirect()->route('profile.edit')
-            ->with('info', 'Please complete your profile.');
-    })->name('profile.complete');
-
-    Route::post('/profile/complete', function () {
-        return redirect()->route('profile.update');
-    })->name('profile.complete.store');
-
-    Route::get('/profile/complete/wizard', function () {
-        return redirect()->route('profile.edit');
-    })->name('profile.complete.wizard');
 
     // ===================================================================
     // LEGACY: DATA ROUTES (Old Master Data Naming)

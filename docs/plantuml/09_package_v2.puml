@@ -1,0 +1,240 @@
+@startuml Package_Diagram
+' ============================================================================
+' PACKAGE DIAGRAM - STRUKTUR FOLDER LARAVEL
+' ============================================================================
+' Author: System Documentation
+' Version: 1.1 (PlantUML) - Fixed duplicate names
+' Date: 27 Desember 2024
+' ============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 9
+
+skinparam package {
+    BackgroundColor #FFFFFF
+    BorderColor #37474F
+    FontColor #212121
+    BorderThickness 1.5
+}
+
+skinparam component {
+    BackgroundColor #FFF8E1
+    BorderColor #FF8F00
+}
+
+title **Package Diagram: Struktur Laravel Application**\n//Sistem Informasi Kedisiplinan Siswa//
+
+' ============================================================================
+' ROOT PACKAGES
+' ============================================================================
+
+package "smkn1-kedisiplinan" as ROOT {
+    
+    ' ===== APP LAYER =====
+    package "app" as APP #E3F2FD {
+        
+        package "Http" as HTTP {
+            package "Controllers" as CTRL {
+                [AuthController] as C_Auth
+                [DashboardController] as C_Dashboard
+                
+                package "Pelanggaran" as CTRL_PEL {
+                    [RiwayatController] as C_Riwayat
+                    [TindakLanjutCtrl] as C_TL_Legacy
+                }
+                
+                package "TindakLanjut" as CTRL_TL {
+                    [TLController] as C_TL
+                    [ApprovalController] as C_Approval
+                }
+                
+                package "Pembinaan" as CTRL_PB {
+                    [PembinaanController] as C_Pembinaan
+                }
+                
+                package "MasterData" as CTRL_MD {
+                    [SiswaController] as C_Siswa
+                    [KelasController] as C_Kelas
+                    [JurusanController] as C_Jurusan
+                    [UserController] as C_User
+                    [JenisPelanggaranCtrl] as C_Jenis
+                }
+                
+                package "Report" as CTRL_RPT {
+                    [ReportController] as C_Report
+                    [ExportController] as C_Export
+                }
+                
+                package "Rules" as CTRL_RULES {
+                    [FrequencyRuleController] as C_FreqRule
+                    [PembinaanRuleController] as C_PbRule
+                    [SettingsController] as C_Settings
+                }
+            }
+            
+            package "Middleware" as MW {
+                [RoleMiddleware] as MW_Role
+                [EnsureActive] as MW_Active
+            }
+            
+            package "Requests" as REQ {
+                [LoginRequest] as R_Login
+                [RiwayatRequest] as R_Riwayat
+                [TindakLanjutRequest] as R_TL
+            }
+        }
+        
+        package "Services" as SVC #E8F5E9 {
+            package "Pelanggaran" as SVC_PEL {
+                [PelanggaranService] as S_Pelanggaran
+                [PelanggaranRulesEngine] as S_RulesEngine
+                [PreviewService] as S_Preview
+            }
+            
+            package "TindakLanjut" as SVC_TL {
+                [TindakLanjutService] as S_TL
+                [SuratPanggilanService] as S_Surat
+            }
+            
+            package "Pembinaan" as SVC_PB {
+                [PembinaanService] as S_Pembinaan
+            }
+            
+            package "MasterData" as SVC_MD {
+                [SiswaService] as S_Siswa
+                [KelasService] as S_Kelas
+                [JurusanService] as S_Jurusan
+                [UserService] as S_User
+                [JenisPelanggaranSvc] as S_Jenis
+            }
+            
+            package "Rules" as SVC_RULES {
+                [FrequencyRuleService] as S_FreqRule
+                [RulesEngineSettingSvc] as S_RulesSetting
+            }
+        }
+        
+        package "Repositories" as REPO #FFF3E0 {
+            package "Contracts" as REPO_CTR {
+                [RepositoryInterface] as I_Repo
+            }
+            [SiswaRepository] as R_SiswaRepo
+            [RiwayatPelanggaranRepo] as R_RiwayatRepo
+            [TindakLanjutRepo] as R_TLRepo
+            [FrequencyRuleRepo] as R_FreqRepo
+            [JenisPelanggaranRepo] as R_JenisRepo
+        }
+        
+        package "Models" as MDL #FCE4EC {
+            [User] as M_User
+            [Role] as M_Role
+            [Siswa] as M_Siswa
+            [Kelas] as M_Kelas
+            [Jurusan] as M_Jurusan
+            [JenisPelanggaran] as M_Jenis
+            [RiwayatPelanggaran] as M_Riwayat
+            [TindakLanjut] as M_TL
+            [SuratPanggilan] as M_Surat
+            [PembinaanStatus] as M_PbStatus
+            [FrequencyRule] as M_FreqRule
+            [PembinaanRule] as M_PbRule
+        }
+        
+        package "Data (DTOs)" as DTO #E8EAF6 {
+            [RiwayatPelanggaranData] as D_Riwayat
+            [TindakLanjutData] as D_TL
+            [TindakLanjutFilterData] as D_TLFilter
+        }
+        
+        package "Notifications" as NOTIF {
+            [TLNotificationService] as N_TL
+            [PembinaanNotification] as N_Pembinaan
+        }
+        
+        package "Policies" as POL {
+            [TindakLanjutPolicy] as P_TL
+            [RiwayatPolicy] as P_Riwayat
+        }
+        
+        package "Enums" as ENUM {
+            [StatusTindakLanjut] as E_StatusTL
+            [StatusPembinaan] as E_StatusPB
+        }
+    }
+    
+    ' ===== RESOURCES LAYER =====
+    package "resources" as RES #EFEBE9 {
+        package "views" as VIEWS {
+            [auth/] as V_Auth
+            [dashboard/] as V_Dashboard
+            [pelanggaran/] as V_Pelanggaran
+            [tindak-lanjut/] as V_TL
+            [pembinaan/] as V_Pembinaan
+            [master-data/] as V_Master
+            [components/] as V_Components
+        }
+        
+        [css/app.css] as CSS
+        [js/app.js] as JS
+    }
+    
+    ' ===== DATABASE LAYER =====
+    package "database" as DB #B2DFDB {
+        [migrations/] as DB_Mig
+        [seeders/] as DB_Seed
+        [factories/] as DB_Factory
+    }
+    
+    ' ===== ROUTES =====
+    package "routes" as ROUTES #FFCCBC {
+        [web.php] as RT_Web
+        [admin.php] as RT_Admin
+        [tindak_lanjut.php] as RT_TL
+        [report.php] as RT_Report
+        [legacy.php] as RT_Legacy
+    }
+    
+    ' ===== DOCS =====
+    package "docs" as DOCS #FFF9C4 {
+        [plantuml/] as DOC_PUML
+        [diagrams/] as DOC_DIA
+        [ARCHITECTURE.md] as DOC_ARCH
+    }
+}
+
+' ============================================================================
+' DEPENDENCIES
+' ============================================================================
+
+CTRL ..> SVC : uses
+SVC ..> REPO : uses
+REPO ..> MDL : uses
+SVC ..> DTO : uses
+SVC ..> NOTIF : uses
+CTRL ..> REQ : validates
+CTRL ..> POL : authorizes
+
+' ============================================================================
+' LEGEND
+' ============================================================================
+
+legend right
+  **LEGENDA**
+  ════════════════
+  <back:#E3F2FD>  </back> HTTP Layer
+  <back:#E8F5E9>  </back> Services Layer
+  <back:#FFF3E0>  </back> Repository Layer
+  <back:#FCE4EC>  </back> Models (Eloquent)
+  <back:#E8EAF6>  </back> DTOs (Data Objects)
+  <back:#EFEBE9>  </back> Resources (View)
+  <back:#B2DFDB>  </back> Database
+  <back:#FFCCBC>  </back> Routes
+  ════════════════
+  **Clean Architecture:**
+  Controller → Service
+  → Repository → Model
+endlegend
+
+@enduml

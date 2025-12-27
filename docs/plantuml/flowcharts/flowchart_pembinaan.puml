@@ -1,0 +1,204 @@
+@startuml Flowchart_Pembinaan_Internal
+' ============================================================================
+' FLOWCHART: ALUR PROSES PEMBINAAN INTERNAL SISWA
+' ============================================================================
+' Author: System Documentation
+' Version: 2.2 (PlantUML) - Fixed backward error
+' Date: 27 Desember 2024
+' ============================================================================
+
+!theme materia-outline
+
+' === GLOBAL STYLING ===
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 11
+skinparam wrapWidth 220
+
+' === ACTIVITY STYLING ===
+skinparam activity {
+    BackgroundColor #FFFFFF
+    BorderColor #455A64
+    FontColor #212121
+    DiamondBackgroundColor #FFF8E1
+    DiamondBorderColor #FF8F00
+    DiamondFontColor #E65100
+    ArrowColor #37474F
+    BarColor #78909C
+}
+
+' === NOTE STYLING ===
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #FBC02D
+    FontColor #5D4037
+}
+
+title <size:16>**FLOWCHART: ALUR PROSES PEMBINAAN INTERNAL SISWA**</size>\n<size:11>//Sistem Informasi Kedisiplinan SMK Negeri 1//</size>
+
+' ============================================================================
+' FASE 1: TRIGGER PEMBINAAN
+' ============================================================================
+
+|#FFF3E0|<&cog> RULES ENGINE|
+start
+
+:**FASE 1: TRIGGER PEMBINAAN**;
+
+:Pelanggaran baru\ndicatat ke sistem;
+
+:Hitung **total poin akumulasi**\nsiswa bersangkutan;
+
+:Cek terhadap tabel\n**pembinaan_internal_rules**;
+
+note right
+  Contoh Rules:
+  ────────────────
+  1-49 poin → Wali Kelas
+  50-99 poin → + Kaprodi
+  100+ poin → + Waka + Kepsek
+end note
+
+if (Total poin masuk\nrange rule?) then (<color:green>**Ya**</color>)
+    
+    if (Sudah ada pembinaan aktif\nuntuk siswa & rule ini?) then (<color:red>**Ya**</color>)
+        #FFECB3:Skip - tidak\nbuat duplikat;
+        stop
+    else (<color:green>**Tidak**</color>)
+    endif
+    
+    |#E8F5E9|<&database> SISTEM|
+    
+    :Buat record\n**PembinaanStatus**;
+    
+    :Set status =\n**PERLU_PEMBINAAN**;
+    
+    :Set **pembinaan_rule_id**;
+    
+    :Set **total_poin_saat_trigger**;
+    
+    :Set **pembina_roles**\nsesuai rule;
+    
+else (<color:red>**Tidak**</color>)
+    #E0E0E0:Tidak perlu pembinaan\n(poin belum mencapai threshold);
+    stop
+endif
+
+|#E8F5E9|<&mail> NOTIFIKASI|
+
+:Kirim **notifikasi** ke\npembina sesuai roles;
+
+' ============================================================================
+' FASE 2: PROSES PEMBINAAN
+' ============================================================================
+
+|#E3F2FD|<&person> PEMBINA|
+
+:**FASE 2: PROSES PEMBINAAN**;
+
+:Terima **notifikasi**\nsiswa perlu pembinaan;
+
+:Buka menu\n**Siswa Perlu Pembinaan**;
+
+:Lihat daftar siswa\nyang memerlukan pembinaan;
+
+note left
+  Filter berdasarkan:
+  - Role pembina login
+  - Status = PERLU_PEMBINAAN
+  - Kelas/Jurusan
+end note
+
+:Pilih siswa untuk\nmulai pembinaan;
+
+:Review **detail pembinaan**:\n- Riwayat pelanggaran\n- Total poin akumulasi\n- Range pembinaan;
+
+if (Siap memulai\npembinaan?) then (<color:green>**Ya**</color>)
+    :Klik **"Mulai Pembinaan"**;
+else (<color:red>**Tidak**</color>)
+    :Tunda untuk\nwaktu lain;
+    stop
+endif
+
+|#E8F5E9|<&play> SISTEM|
+
+:Update status ke\n**SEDANG_DIBINA**;
+
+:Set **dibina_oleh_user_id**\n= current user;
+
+:Set **dibina_at** = now();
+
+|#E3F2FD|<&person> PEMBINA|
+
+#E3F2FD:===== SESI PEMBINAAN =====;
+
+:Panggil **siswa**\nuntuk sesi pembinaan;
+
+:Lakukan **pembinaan**:\n- Dialog dengan siswa\n- Identifikasi akar masalah\n- Berikan arahan & motivasi;
+
+:Input **catatan pembinaan**\n(proses dan observasi);
+
+note right
+  Catatan pembinaan berisi:
+  - Kronologi sesi
+  - Respon siswa
+  - Kesepakatan yang dibuat
+end note
+
+' ============================================================================
+' FASE 3: PENYELESAIAN PEMBINAAN
+' ============================================================================
+
+:**FASE 3: PENYELESAIAN**;
+
+:Input **hasil pembinaan**:\n- Kesimpulan\n- Rekomendasi\n- Komitmen siswa;
+
+:Klik **"Selesaikan Pembinaan"**;
+
+|#E8F5E9|<&check> SISTEM|
+
+:Update status ke\n**SELESAI**;
+
+:Set **diselesaikan_oleh_user_id**\n= current user;
+
+:Set **selesai_at** = now();
+
+:Simpan **hasil_pembinaan**;
+
+:Log aktivitas ke\n**activity_log**;
+
+|#E3F2FD|<&person> PEMBINA|
+
+#C8E6C9:Tampilkan pesan\n**"Pembinaan berhasil diselesaikan"**;
+
+:Lakukan **monitoring berkala**\nterhadap siswa;
+
+note right
+  Jika siswa mengulangi
+  pelanggaran, proses
+  trigger akan berjalan
+  lagi sesuai rules
+end note
+
+stop
+
+legend right
+  <b>LEGENDA</b>
+  ────────────
+  <back:#FFF3E0>    </back> Rules Engine
+  <back:#E8F5E9>    </back> Sistem
+  <back:#E3F2FD>    </back> Pembina
+  ────────────
+  <b>Status Flow:</b>
+  [Trigger] → PERLU_PEMBINAAN
+  → SEDANG_DIBINA → SELESAI
+  ────────────
+  <b>Pembina Roles:</b>
+  Sesuai range poin di
+  pembinaan_internal_rules
+endlegend
+
+footer \n//Generated by PlantUML | Sistem Kedisiplinan Siswa SMK Negeri 1//
+
+@enduml
