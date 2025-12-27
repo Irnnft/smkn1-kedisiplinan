@@ -52,7 +52,7 @@
         </div>
 
         {{-- FILTER SECTION --}}
-        <div id="stickyFilter" >
+        <div>
              @include('components.riwayat.filter-form')
         </div>
 
