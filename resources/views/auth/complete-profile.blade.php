@@ -366,6 +366,16 @@
 
                     <button type="submit" class="btn-submit">Simpan & Lanjutkan →</button>
                 </form>
+
+                <!-- Logout Link -->
+                <div style="margin-top: 1.5rem; text-align: center; padding-top: 1.5rem; border-top: 1px solid #E5E7EB;">
+                    <form action="{{ route('logout') }}" method="POST" style="display: inline;">
+                        @csrf
+                        <button type="submit" style="background: none; border: none; color: #6B7280; font-size: 0.85rem; cursor: pointer; font-weight: 500;">
+                            ← Logout / Kembali ke Login
+                        </button>
+                    </form>
+                </div>
             </div>
         </div>
 
