@@ -16,27 +16,26 @@
     }
 </script>
 
+<script>
+    function toggleFilterKepsek() {
+        const content = document.getElementById('filterContentKepsek');
+        content.classList.toggle('hidden');
+    }
+</script>
+
 <div class="page-wrap">
 
-    <!-- Header Section -->
     <div class="relative rounded-2xl bg-gradient-to-r from-slate-800 to-blue-900 p-6 shadow-lg mb-8 text-white flex flex-col md:flex-row items-center justify-between gap-4 border border-blue-800/50 overflow-hidden">
-        
         <div class="absolute top-0 right-0 w-64 h-64 bg-blue-500 opacity-10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
         <div class="absolute bottom-0 left-0 w-40 h-40 bg-cyan-400 opacity-10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
-
         <div class="relative z-10 w-full md:w-auto">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-[10px] font-medium text-blue-200 mb-2">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 Kepala Sekolah Panel
             </div>
-            <h1 class="text-xl md:text-2xl font-bold leading-tight">
-                Halo, {{ auth()->user()->username }}! 👋
-            </h1>
-            <p class="text-blue-100 text-xs md:text-sm opacity-80 mt-1">
-                Dashboard khusus untuk monitoring dan persetujuan kasus surat panggilan seluruh sekolah.
-            </p>
+            <h1 class="text-xl md:text-2xl font-bold leading-tight">Halo, {{ auth()->user()->username }}! 👋</h1>
+            <p class="text-blue-100 text-xs md:text-sm opacity-80 mt-1">Dashboard khusus untuk monitoring dan persetujuan kasus surat panggilan seluruh sekolah.</p>
         </div>
-
         <div class="hidden xs:flex items-center gap-3 bg-white/10 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10 shadow-inner min-w-[140px] relative z-10">
             <div class="bg-blue-500/20 p-2 rounded-lg text-blue-200">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
@@ -48,26 +47,34 @@
         </div>
     </div>
 
-    <!-- Date Filter -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 mb-6">
-        <form method="GET" action="{{ route('dashboard.kepsek') }}" class="flex flex-wrap gap-4 items-end">
-            <div class="flex-1 min-w-[200px]">
-                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Dari Tanggal</label>
-                <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-            </div>
-            <div class="flex-1 min-w-[200px]">
-                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Sampai Tanggal</label>
-                <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-            </div>
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">
-                Filter
-            </button>
-        </form>
+    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors" onclick="toggleFilterKepsek()">
+            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider m-0 flex items-center gap-2">
+                <span class="p-1.5 bg-blue-50 border border-blue-100 rounded-lg text-blue-600"><i class="fas fa-calendar-alt"></i></span>
+                Filter Periode Laporan
+            </h3>
+            <i class="fas fa-chevron-down text-slate-400"></i>
+        </div>
+        <div id="filterContentKepsek" class="p-6 transition-all">
+            <form action="{{ route('dashboard.kepsek') }}" method="GET" class="w-full">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Dari Tanggal</label>
+                        <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none transition-all">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Sampai Tanggal</label>
+                        <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none transition-all">
+                    </div>
+                    <div class="md:col-span-1 flex gap-3">
+                        <button type="submit" class="flex-[2] py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black uppercase rounded-xl transition-all h-[42px] border-none cursor-pointer">Filter</button>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Stats Cards -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        
         <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Populasi</span>
@@ -79,160 +86,97 @@
             <p class="text-xs text-slate-500">Total Siswa Sekolah</p>
             <div class="absolute bottom-0 left-0 w-full h-1 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
         </div>
-
         <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kasus Surat</span>
-                <div class="text-rose-500 bg-rose-50 p-2 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300 {{ $totalKasus > 0 ? 'animate-pulse' : '' }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <div class="text-rose-500 bg-rose-50 p-2 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                 </div>
             </div>
             <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalKasus }}</h3>
             <p class="text-xs text-slate-500">Yang Melibatkan Saya</p>
-            <div class="absolute bottom-0 left-0 w-full h-1 bg-rose-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
         </div>
-
         <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Menunggu</span>
-                <div class="text-amber-500 bg-amber-50 p-2 rounded-lg group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300 {{ $totalKasusMenunggu > 0 ? 'animate-pulse' : '' }}">
+                <div class="text-amber-500 bg-amber-50 p-2 rounded-lg group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 </div>
             </div>
             <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalKasusMenunggu }}</h3>
             <p class="text-xs text-slate-500">Perlu Persetujuan</p>
-            <div class="absolute bottom-0 left-0 w-full h-1 bg-amber-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
         </div>
-
         <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
             <div class="flex items-center justify-between mb-3">
                 <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pelanggaran</span>
                 <div class="text-blue-500 bg-blue-50 p-2 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg>
                 </div>
             </div>
             <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalPelanggaran }}</h3>
             <p class="text-xs text-slate-500">Total Periode Ini</p>
-            <div class="absolute bottom-0 left-0 w-full h-1 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-        </div>
-
-    </div>
-
-    <!-- Kasus Menunggu Approval -->
-    @if($totalKasusMenunggu > 0)
-    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8">
-        <h3 class="text-sm font-bold text-amber-800 mb-4 flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Menunggu Persetujuan Anda ({{ $totalKasusMenunggu }})
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            @foreach($kasusMenunggu as $kasus)
-            <div class="bg-white rounded-xl p-4 border border-amber-100 hover:border-amber-300 transition-colors">
-                <div class="flex justify-between items-start mb-2">
-                    <div>
-                        <h4 class="text-sm font-bold text-slate-800">{{ $kasus->siswa->nama_siswa }}</h4>
-                        <p class="text-xs text-slate-500">{{ $kasus->siswa->kelas->nama_kelas ?? 'N/A' }}</p>
-                    </div>
-                    <span class="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded">{{ $kasus->suratPanggilan->tipe_surat ?? 'N/A' }}</span>
-                </div>
-                <p class="text-xs text-slate-600 mb-3">{{ Str::limit($kasus->pemicu, 60) }}</p>
-                <a href="{{ route('kasus.edit', $kasus->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-white bg-amber-600 px-3 py-1.5 rounded-lg hover:bg-amber-700 transition no-underline">
-                    Review & Approve
-                </a>
-            </div>
-            @endforeach
         </div>
     </div>
-    @endif
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
         
-        <!-- Kasus Table -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
+        <div class="lg:col-span-7 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/30">
-                <h3 class="text-sm font-bold text-slate-700 m-0">📋 Semua Kasus Surat</h3>
+                <h3 class="text-sm font-bold text-slate-700 m-0">📋 Kasus Terbaru</h3>
             </div>
             
-            <div class="overflow-x-auto max-h-[500px]">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider sticky top-0">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left table-fixed">
+                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
                         <tr>
-                            <th class="px-4 py-3">Siswa</th>
-                            <th class="px-4 py-3">Pemicu</th>
-                            <th class="px-4 py-3">Status</th>
-                            <th class="px-4 py-3 text-right">Aksi</th>
+                            <th class="w-1/3 px-4 py-3">Siswa</th>
+                            <th class="w-1/2 px-4 py-3">Pemicu</th>
+                            <th class="w-24 px-4 py-3 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-50">
                         @forelse($kasusBaru as $kasus)
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-4 py-3">
-                                <div class="text-sm font-bold text-slate-800">{{ $kasus->siswa->nama_siswa }}</div>
+                                <div class="text-xs font-bold text-slate-800 truncate">{{ $kasus->siswa->nama_siswa }}</div>
                                 <div class="text-[10px] text-slate-500">{{ $kasus->siswa->kelas->nama_kelas ?? 'N/A' }}</div>
                             </td>
                             <td class="px-4 py-3">
-                                <div class="text-xs text-slate-600 truncate max-w-[120px]">
-                                    {{ Str::limit($kasus->pemicu, 25) }}
-                                </div>
+                                <p class="text-[11px] text-slate-600 leading-snug line-clamp-2 m-0 italic">
+                                    {{ $kasus->pemicu }}
+                                </p>
                             </td>
-                            <td class="px-4 py-3">
-                                @if($kasus->status == 'Menunggu Persetujuan')
-                                    <span class="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded">Menunggu</span>
-                                @else
-                                    <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded">{{ $kasus->status }}</span>
-                                @endif
-                            </td>
-                            <td class="px-4 py-3 text-right">
-                                <a href="{{ route('kasus.edit', $kasus->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-white bg-blue-600 px-2 py-1 rounded hover:bg-blue-700 transition no-underline">
-                                    Detail
-                                </a>
+                            <td class="px-4 py-3 text-right text-xs">
+                                <a href="{{ route('kasus.edit', $kasus->id) }}" class="text-blue-600 font-bold hover:underline">Detail</a>
                             </td>
                         </tr>
                         @empty
-                        <tr>
-                            <td colspan="4" class="text-center py-12 text-slate-400 text-xs">
-                                Tidak ada kasus surat.
-                            </td>
-                        </tr>
+                        <tr><td colspan="3" class="text-center py-10 text-slate-400 text-xs text-italic">Kosong</td></tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Charts Grid -->
-        <div class="grid grid-cols-1 gap-6">
-            <!-- Chart 1: Pelanggaran Populer -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
-                <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/30">
-                    <h3 class="text-sm font-bold text-slate-700 m-0">📊 Pelanggaran Populer</h3>
-                </div>
-                <div class="p-6">
-                    <canvas id="chartPelanggaran" height="180"></canvas>
-                </div>
+        <div class="lg:col-span-5 flex flex-col gap-6">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                <h3 class="text-[11px] font-bold text-slate-400 uppercase mb-4">📊 Pelanggaran Populer</h3>
+                <div class="h-40"><canvas id="chartPelanggaran"></canvas></div>
             </div>
-
-            <!-- Chart 2: Per Jurusan -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100">
-                <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/30">
-                    <h3 class="text-sm font-bold text-slate-700 m-0">🏢 Per Jurusan</h3>
-                </div>
-                <div class="p-6">
-                    <canvas id="chartJurusan" height="180"></canvas>
-                </div>
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+                <h3 class="text-[11px] font-bold text-slate-400 uppercase mb-4">🏢 Per Jurusan</h3>
+                <div class="h-40"><canvas id="chartJurusan"></canvas></div>
             </div>
         </div>
-
     </div>
 
-    <!-- Chart 3: Trend (Full Width) -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-8">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 mb-8 overflow-hidden">
         <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/30">
             <h3 class="text-sm font-bold text-slate-700 m-0">📈 Trend Pelanggaran (6 Bulan Terakhir)</h3>
         </div>
         <div class="p-6">
-            <canvas id="chartTrend" height="100"></canvas>
+            <div class="relative w-full h-[180px]"> <canvas id="chartTrend"></canvas>
+            </div>
         </div>
     </div>
 
@@ -245,21 +189,18 @@ new Chart(document.getElementById('chartPelanggaran'), {
     data: {
         labels: {!! json_encode($chartLabels) !!},
         datasets: [{
-            label: 'Jumlah',
             data: {!! json_encode($chartData) !!},
-            backgroundColor: 'rgba(59, 130, 246, 0.8)',
-            borderColor: 'rgba(59, 130, 246, 1)',
-            borderWidth: 1,
-            borderRadius: 6,
+            backgroundColor: '#3b82f6',
+            borderRadius: 4,
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: { legend: { display: false } },
-        scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } },
-            x: { ticks: { font: { size: 9 }, maxRotation: 45, minRotation: 45 } }
+        scales: { 
+            y: { beginAtZero: true, ticks: { display: false }, grid: { display: false } },
+            x: { ticks: { font: { size: 9 } } }
         }
     }
 });
@@ -271,25 +212,17 @@ new Chart(document.getElementById('chartJurusan'), {
         labels: {!! json_encode($chartJurusanLabels) !!},
         datasets: [{
             data: {!! json_encode($chartJurusanData) !!},
-            backgroundColor: [
-                'rgba(59, 130, 246, 0.8)',
-                'rgba(16, 185, 129, 0.8)',
-                'rgba(245, 158, 11, 0.8)',
-                'rgba(239, 68, 68, 0.8)',
-                'rgba(168, 85, 247, 0.8)'
-            ],
+            backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#a855f7'],
         }]
     },
     options: {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom', labels: { font: { size: 10 } } }
-        }
+        plugins: { legend: { position: 'right', labels: { font: { size: 9 }, boxWidth: 10 } } }
     }
 });
 
-// Chart 3: Trend
+// Chart 3: Trend (SLIM SETTINGS)
 new Chart(document.getElementById('chartTrend'), {
     type: 'line',
     data: {
@@ -297,18 +230,20 @@ new Chart(document.getElementById('chartTrend'), {
         datasets: [{
             label: 'Pelanggaran',
             data: {!! json_encode($chartTrendData) !!},
-            borderColor: 'rgba(79, 70, 229, 1)',
+            borderColor: '#4f46e5',
             backgroundColor: 'rgba(79, 70, 229, 0.1)',
             tension: 0.4,
             fill: true,
+            pointRadius: 3
         }]
     },
     options: {
         responsive: true,
-        maintainAspectRatio: false,
+        maintainAspectRatio: false, // WAJIB false agar ikut tinggi 180px
         plugins: { legend: { display: false } },
         scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 } }
+            y: { beginAtZero: true, ticks: { font: { size: 10 } } },
+            x: { ticks: { font: { size: 10 } } }
         }
     }
 });
@@ -316,8 +251,15 @@ new Chart(document.getElementById('chartTrend'), {
 
 <style>
     .page-wrap { background: #f8fafc; min-height: 100vh; padding: 1.5rem; font-family: 'Inter', sans-serif; }
-    .hover-lift { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease; }
-    .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
+    .hover-lift { transition: all 0.3s ease; }
+    .hover-lift:hover { transform: translateY(-3px); }
+    /* Mengatasi pemicu agar tidak berantakan tapi tetap kebaca */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+    }
 </style>
 
 @endsection
