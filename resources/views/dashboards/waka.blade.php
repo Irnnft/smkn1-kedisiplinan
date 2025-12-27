@@ -130,54 +130,61 @@
             </div>
         </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-        <div class="stat-card hover-lift border-l-4 border-l-emerald-500 group relative overflow-hidden">
-            <div class="flex justify-between items-start mb-3">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Populasi</span>
-                <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-                </div>
+   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden cursor-default">
+        <div class="flex justify-between items-start mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Populasi</span>
+            <div class="p-2 bg-emerald-50 text-emerald-600 rounded-lg group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
             </div>
-            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalSiswa }}</h3>
-            <p class="text-xs text-slate-500">Total Siswa Sekolah</p>
         </div>
-        <div class="stat-card hover-lift border-l-4 border-l-rose-500 group relative overflow-hidden">
-            <div class="flex justify-between items-start mb-3">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kasus Surat</span>
-                <div class="p-2 bg-rose-50 text-rose-600 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
-                </div>
-            </div>
-            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalKasus }}</h3>
-            <p class="text-xs text-slate-500">Melibatkan Saya</p>
-        </div>
-        <div class="stat-card hover-lift border-l-4 border-l-amber-500 group relative overflow-hidden">
-            <div class="flex justify-between items-start mb-3">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pelanggaran</span>
-                <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                </div>
-            </div>
-            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $pelanggaranFiltered }}</h3>
-            <p class="text-xs text-slate-500">Periode Ini</p>
-        </div>
-        <div class="stat-card hover-lift border-l-4 border-l-blue-500 group relative overflow-hidden">
-            <div class="flex justify-between items-start mb-3">
-                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kasus Aktif</span>
-                <div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                </div>
-            </div>
-            <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $kasusAktif }}</h3>
-            <p class="text-xs text-slate-500">Belum Selesai</p>
-        </div>
+        <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalSiswa }}</h3>
+        <p class="text-xs text-slate-500">Total Siswa Sekolah</p>
+        <div class="absolute bottom-0 left-0 w-full h-1 bg-emerald-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
     </div>
+
+    <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden cursor-default">
+        <div class="flex justify-between items-start mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kasus Surat</span>
+            <div class="p-2 bg-rose-50 text-rose-600 rounded-lg group-hover:bg-rose-500 group-hover:text-white transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+            </div>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $totalKasus }}</h3>
+        <p class="text-xs text-slate-500">Melibatkan Saya</p>
+        <div class="absolute bottom-0 left-0 w-full h-1 bg-rose-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+    </div>
+
+    <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden cursor-default">
+        <div class="flex justify-between items-start mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Pelanggaran</span>
+            <div class="p-2 bg-amber-50 text-amber-600 rounded-lg group-hover:bg-amber-500 group-hover:text-white transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </div>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $pelanggaranFiltered }}</h3>
+        <p class="text-xs text-slate-500">Periode Ini</p>
+        <div class="absolute bottom-0 left-0 w-full h-1 bg-amber-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+    </div>
+
+    <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden cursor-default">
+        <div class="flex justify-between items-start mb-3">
+            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Kasus Aktif</span>
+            <div class="p-2 bg-blue-50 text-blue-600 rounded-lg group-hover:bg-blue-500 group-hover:text-white transition-colors duration-300">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+        </div>
+        <h3 class="text-2xl font-bold text-slate-700 mb-1">{{ $kasusAktif }}</h3>
+        <p class="text-xs text-slate-500">Belum Selesai</p>
+        <div class="absolute bottom-0 left-0 w-full h-1 bg-blue-500 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+    </div>
+</div>
 
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-start">
         
         <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-                <h3 class="text-sm font-bold text-slate-700 m-0">📋 Daftar Kasus Surat Panggilan</h3>
+                <h3 class="text-sm font-bold text-slate-700 m-0">Daftar Kasus Surat Panggilan</h3>
                 @if($totalKasus > 0)
                     <span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-100">{{ $totalKasus }} Kasus</span>
                 @endif
