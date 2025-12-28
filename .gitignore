@@ -21,3 +21,9 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+nul
+plantuml.jar
+out/
+docs/
+plantuml/
+plan/
