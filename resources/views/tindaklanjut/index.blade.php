@@ -366,20 +366,6 @@
            title="Lihat Detail Kasus">
             <i class="fas fa-eye text-xs group-hover/btn:scale-110 transition-transform"></i>
         </a>
-
-        {{-- Tombol Edit/Manage (Hanya Muncul jika Aktif) --}}
-        @if($item->status->isActive())
-            <a href="{{ route('tindak-lanjut.edit', $item->id) }}" 
-               class="group/btn w-9 h-9 rounded-xl bg-slate-50 text-slate-400 hover:bg-amber-500 hover:text-white transition-all duration-300 flex items-center justify-center no-underline shadow-sm hover:shadow-amber-200 hover:shadow-lg active:scale-90" 
-               title="Kelola Tindak Lanjut">
-                <i class="fas fa-pen-nib text-xs group-hover/btn:rotate-12 transition-transform"></i>
-            </a>
-        @else
-            {{-- Placeholder atau Tombol Terkunci (Opsional) --}}
-            <div class="w-9 h-9 rounded-xl bg-slate-50 text-slate-200 flex items-center justify-center cursor-not-allowed" title="Kasus Selesai/Terkunci">
-                <i class="fas fa-lock text-xs"></i>
-            </div>
-        @endif
     </div>
 </td>
                 </tr>

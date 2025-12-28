@@ -59,17 +59,24 @@
     
     <div class="flex items-center gap-2 shrink-0">
         @if($tindakLanjut->status->isActive())
+            @if($tindakLanjut->suratPanggilan)
+            <a href="{{ route('tindak-lanjut.preview-surat', $tindakLanjut->id) }}" 
+               class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700 hover:-translate-y-0.5 shadow-sm shadow-indigo-200 transition-all no-underline active:scale-95">
+                <i class="fas fa-eye text-[10px]"></i>Preview
+            </a>
+            @else
             <a href="{{ route('tindak-lanjut.edit', $tindakLanjut->id) }}" 
                class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700 hover:-translate-y-0.5 shadow-sm shadow-indigo-200 transition-all no-underline active:scale-95">
                 <i class="fas fa-edit text-[10px]"></i> Kelola Kasus
             </a>
+            @endif
         @endif
         
         <a href="{{ route('tindak-lanjut.index') }}" 
            class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white text-slate-600 text-[11px] font-bold border border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all no-underline shadow-sm active:scale-95">
             <i class="fas fa-arrow-left text-[10px]"></i> Kembali
         </a>
-    </div>
+    </div> 
 </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -269,9 +276,15 @@
                         <h3 class="text-sm font-bold text-slate-700 m-0">Aksi Cepat</h3>
                     </div>
                     <div class="p-4 space-y-2">
+                        @if($tindakLanjut->suratPanggilan)
+                        <a href="{{ route('tindak-lanjut.preview-surat', $tindakLanjut->id) }}" class="block w-full px-4 py-3 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-bold text-center hover:bg-indigo-100 transition-all no-underline">
+                            <i class="fas fa-eye mr-2"></i> Preview
+                        </a>
+                        @else
                         <a href="{{ route('tindak-lanjut.edit', $tindakLanjut->id) }}" class="block w-full px-4 py-3 rounded-xl bg-indigo-50 text-indigo-700 text-sm font-bold text-center hover:bg-indigo-100 transition-all no-underline">
                             <i class="fas fa-edit mr-2"></i> Kelola Kasus
                         </a>
+                        @endif
                         @if($tindakLanjut->suratPanggilan)
                         <a href="{{ route('tindak-lanjut.cetak-surat', $tindakLanjut->id) }}" class="block w-full px-4 py-3 rounded-xl bg-amber-50 text-amber-700 text-sm font-bold text-center hover:bg-amber-100 transition-all no-underline">
                             <i class="fas fa-print mr-2"></i> Cetak Surat
