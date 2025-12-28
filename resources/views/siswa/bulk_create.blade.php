@@ -2,275 +2,249 @@
 
 @section('content')
 
+{{-- 1. TAILWIND CONFIG --}}
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
     tailwind.config = {
         theme: {
             extend: {
                 colors: {
-                    primary: '#4f46e5',
-                    slate: { 800: '#1e293b', 900: '#0f172a' }
-                }
+                    primary: '#2563eb', // Blue 600
+                    indigo: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                    slate: { 800: '#1e293b' }
+                },
+                boxShadow: { 'soft': '0 4px 10px rgba(0,0,0,0.05)' }
             }
         },
         corePlugins: { preflight: false }
     }
 </script>
 
-<div class="page-container p-4">
-    
-    {{-- Header --}}
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 pb-1 border-b border-gray-200">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Tambah Banyak Siswa Sekaligus</h1>
-            <p class="text-sm text-gray-500 mt-1">Tambahkan multiple siswa ke satu kelas dengan mudah dan cepat.</p>
-        </div>
+<div class="page-container p-4 md:p-6 bg-slate-50 min-h-screen font-['Inter']">
+    <div class="max-w-7xl mx-auto">
         
-        <div class="flex flex-wrap gap-2 mt-3 sm:mt-0">
-            <a href="{{ route('siswa.index') }}" class="px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all flex items-center gap-2 no-underline">
-                <i class="fas fa-arrow-left"></i> Kembali
-            </a>
-            <a href="{{ route('siswa.create') }}" class="px-4 py-2 bg-blue-500 text-white text-sm font-bold rounded-xl hover:bg-blue-600 shadow-lg shadow-blue-200 transition-all flex items-center gap-2 no-underline">
-                <i class="fas fa-user-plus"></i> Tambah Satuan
-            </a>
-        </div>
-    </div>
-
-    <form action="{{ route('siswa.bulk-store') }}" method="POST" enctype="multipart/form-data" id="bulkCreateForm">
-        @csrf
-
-        {{-- Alert Error --}}
-        @if(session('error'))
-            <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 rounded-r">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-circle text-red-500"></i>
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-red-700 font-bold">{{ session('error') }}</p>
-                    </div>
-                </div>
+        {{-- HEADER SECTION --}}
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4 border-b border-slate-200 pb-4">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-800 m-0 flex items-center gap-3">
+                    <span class="p-2 bg-blue-50 text-blue-600 rounded-xl shadow-sm border border-blue-100">
+                        <i class="fas fa-users-cog text-lg"></i>
+                    </span>
+                    Tambah Banyak Siswa Sekaligus
+                </h1>
+                <p class="text-slate-500 text-sm mt-1">Impor data siswa secara massal ke dalam satu kelas tujuan.</p>
             </div>
-        @endif
+            
+            <div class="flex flex-wrap gap-2">
+                <a href="{{ route('siswa.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl text-sm font-bold no-underline hover:bg-slate-50 transition-all shadow-sm">
+                    <i class="fas fa-arrow-left text-xs"></i> Kembali
+                </a>
+                <a href="{{ route('siswa.create') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold no-underline hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
+                    <i class="fas fa-user-plus text-xs"></i> Tambah Satuan
+                </a>
+            </div>
+        </div>
 
-        @if(session('bulk_errors'))
-            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 mb-4 rounded-r">
-                <div class="flex">
-                    <div class="flex-shrink-0">
-                        <i class="fas fa-exclamation-triangle text-amber-500"></i>
+        <form action="{{ route('siswa.bulk-store') }}" method="POST" enctype="multipart/form-data" id="bulkCreateForm">
+            @csrf
+
+            {{-- ERROR ALERTS --}}
+            @if(session('error') || session('bulk_errors'))
+                <div class="mb-6 space-y-3">
+                    @if(session('error'))
+                    <div class="bg-rose-50 border-l-4 border-rose-500 p-4 rounded-r-xl shadow-sm">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-exclamation-circle text-rose-500"></i>
+                            <p class="text-sm text-rose-700 font-bold m-0">{{ session('error') }}</p>
+                        </div>
                     </div>
-                    <div class="ml-3">
-                        <p class="text-sm text-amber-700 font-bold mb-2">Beberapa baris bermasalah:</p>
-                        <ul class="list-disc list-inside text-xs text-amber-600 space-y-1">
+                    @endif
+
+                    @if(session('bulk_errors'))
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm">
+                        <p class="text-sm text-amber-800 font-bold mb-2 flex items-center gap-2">
+                            <i class="fas fa-database"></i> Baris bermasalah terdeteksi:
+                        </p>
+                        <ul class="list-disc list-inside text-xs text-amber-700 space-y-1">
                             @foreach(session('bulk_errors') as $be)
                                 <li>{{ $be }}</li>
                             @endforeach
                         </ul>
                     </div>
+                    @endif
                 </div>
-            </div>
-        @endif
+            @endif
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {{-- Main Content --}}
-            <div class="lg:col-span-2 space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
                 
-                {{-- Card 1: Pilih Kelas --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
-                        <h3 class="text-sm font-bold text-slate-700 m-0 uppercase tracking-wide flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-primary"></span>
-                            1. Pilih Kelas Tujuan
-                        </h3>
-                    </div>
-                    <div class="p-6">
-                        <label class="form-label-modern">Kelas <span class="text-red-500">*</span></label>
-                        <div class="relative">
-                            <select name="kelas_id" class="form-input-modern w-full appearance-none pr-8" required>
-                                <option value="">-- Pilih Kelas --</option>
-                                @foreach(App\Models\Kelas::orderBy('nama_kelas')->get() as $k)
-                                    <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>
-                                        {{ $k->nama_kelas }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-500">
-                                <i class="fas fa-chevron-down text-xs"></i>
+                {{-- KOLOM KIRI: KONFIGURASI DATA --}}
+                <div class="lg:col-span-8 space-y-6">
+                    
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                            <h3 class="text-sm font-black text-slate-700 m-0 uppercase tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                1. Konfigurasi Kelas
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <label class="form-label-modern">Kelas Tujuan <span class="text-rose-500">*</span></label>
+                            <div class="relative">
+                                <select name="kelas_id" class="form-input-modern w-full appearance-none pr-10 cursor-pointer" required>
+                                    <option value="">-- Pilih Kelas --</option>
+                                    @foreach(App\Models\Kelas::orderBy('nama_kelas')->get() as $k)
+                                        <option value="{{ $k->id }}" {{ old('kelas_id') == $k->id ? 'selected' : '' }}>{{ $k->nama_kelas }}</option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-slate-400">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Card 2: Input Data Siswa --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
-                        <h3 class="text-sm font-bold text-slate-700 m-0 uppercase tracking-wide flex items-center gap-2">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                            2. Input Data Siswa
-                        </h3>
-                    </div>
-                    <div class="p-6">
-                        
-                        <div class="bg-blue-50 border border-blue-100 rounded-lg p-3 mb-4 text-xs text-blue-700">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            <strong>Tips:</strong> Copy-paste dari Excel/Sheets langsung ke tabel, atau upload file CSV/XLSX.
-                        </div>
-
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <button type="button" id="addRowBtn" class="px-4 py-2 bg-indigo-500 text-white text-sm font-bold rounded-lg hover:bg-indigo-600 transition flex items-center gap-2">
-                                <i class="fas fa-plus"></i> Tambah Baris
-                            </button>
-                            <button type="button" id="pasteHintBtn" class="px-4 py-2 bg-slate-100 text-slate-700 text-sm font-bold rounded-lg hover:bg-slate-200 transition flex items-center gap-2">
-                                <i class="fas fa-clipboard"></i> Paste dari Spreadsheet
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-slate-50/80 px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                            <h3 class="text-sm font-black text-slate-700 m-0 uppercase tracking-widest flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                                2. Input Data Manual
+                            </h3>
+                            <button type="button" id="addRowBtn" class="px-3 py-1 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all">
+                                <i class="fas fa-plus mr-1"></i> Tambah Baris
                             </button>
                         </div>
+                        <div class="p-6">
+                            <div class="bg-blue-50/50 border border-blue-100 rounded-xl p-3 mb-6 flex items-start gap-3">
+                                <i class="fas fa-lightbulb text-blue-500 mt-0.5"></i>
+                                <p class="text-[11px] text-blue-700 leading-relaxed m-0 font-medium">
+                                    <strong>Tips Pro:</strong> Anda bisa langsung melakukan <strong>Copy-Paste</strong> data dari Excel atau Google Sheets ke baris NISN pertama. Sistem akan otomatis membagi kolom.
+                                </p>
+                            </div>
 
-                        <div class="overflow-x-auto border border-slate-200 rounded-xl">
-                            <table class="w-full text-sm" id="bulkTable">
-                                <thead class="bg-slate-100">
-                                    <tr>
-                                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wide border-b border-slate-200" style="min-width:140px">NISN</th>
-                                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wide border-b border-slate-200" style="min-width:200px">Nama Lengkap</th>
-                                        <th class="px-4 py-3 text-left text-xs font-bold text-slate-600 uppercase tracking-wide border-b border-slate-200" style="min-width:140px">No. HP Wali</th>
-                                        <th class="px-4 py-3 text-center text-xs font-bold text-slate-600 uppercase tracking-wide border-b border-slate-200" style="width:80px">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-slate-100">
-                                    @php $initial = old('bulk_rows') ?? 5; @endphp
-                                    @for($i = 0; $i < $initial; $i++)
-                                    <tr class="hover:bg-slate-50 transition">
-                                        <td class="px-4 py-2">
-                                            <input type="text" class="form-input-table bulk-nisn" value="" placeholder="123456...">
-                                        </td>
-                                        <td class="px-4 py-2">
-                                            <input type="text" class="form-input-table bulk-nama" value="" placeholder="Nama Siswa">
-                                        </td>
-                                        <td class="px-4 py-2">
-                                            <input type="text" class="form-input-table bulk-hp" value="" placeholder="08123...">
-                                        </td>
-                                        <td class="px-4 py-2 text-center">
-                                            <button type="button" class="remove-row text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                    @endfor
-                                </tbody>
-                            </table>
+                            {{-- CARD CONTAINER --}}
+<div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse custom-solid-table" id="bulkTable">
+            <thead>
+                <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50 border-b border-slate-100">
+                    <th class="px-6 py-4" style="width: 25%;">NISN</th>
+                    <th class="px-6 py-4" style="width: 40%;">Nama Lengkap</th>
+                    <th class="px-6 py-4" style="width: 25%;">No. HP Wali</th>
+                    <th class="px-6 py-4 text-center" style="width: 10%;">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                @php $initial = old('bulk_rows') ?? 5; @endphp
+                @for($i = 0; $i < $initial; $i++)
+                <tr class="hover:bg-slate-50/50 transition-colors group">
+                    {{-- 1. NISN --}}
+                    <td class="px-4 py-3">
+                        <input type="text" 
+                               name="nisn[]" 
+                               class="form-input-clean bulk-nisn" 
+                               placeholder="1234567890"
+                               style="width: 100%;">
+                    </td>
+
+                    {{-- 2. NAMA LENGKAP --}}
+                    <td class="px-4 py-3">
+                        <input type="text" 
+                               name="nama[]" 
+                               class="form-input-clean bulk-nama" 
+                               placeholder="Masukkan nama lengkap siswa"
+                               style="width: 100%;">
+                    </td>
+
+                    {{-- 3. NO HP WALI --}}
+                    <td class="px-4 py-3">
+                        <input type="text" 
+                               name="hp_wali[]" 
+                               class="form-input-clean bulk-hp" 
+                               placeholder="08123456789"
+                               style="width: 100%;">
+                    </td>
+
+                    {{-- 4. AKSI (HAPUS BARIS) --}}
+                    <td class="px-6 py-3 text-center">
+                        <button type="button" 
+                                class="remove-row w-8 h-8 inline-flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all border-none bg-transparent cursor-pointer">
+                            <i class="fas fa-minus-circle text-lg"></i>
+                        </button>
+                    </td>
+                </tr>
+                @endfor
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+                            <textarea name="bulk_data" id="bulk_data" class="hidden">{{ old('bulk_data') }}</textarea>
                         </div>
+                    </div>
 
-                        <p class="text-xs text-slate-500 mt-3">
-                            <i class="fas fa-lightbulb text-amber-500 mr-1"></i>
-                            Copy data dari Excel/Sheets dan paste ke kolom NISN pertama. Sistem akan otomatis mem-parse data.
-                        </p>
-                        <textarea name="bulk_data" id="bulk_data" class="hidden">{{ old('bulk_data') }}</textarea>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="bg-blue-50/50 px-6 py-4 border-b border-blue-100 flex items-center justify-between">
+                            <h3 class="text-[10px] font-black text-blue-700 m-0 uppercase tracking-widest flex items-center gap-2 italic">
+                                <i class="fas fa-file-excel"></i>
+                                Alternatif: Impor File Spreadsheet
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <input type="file" name="bulk_file" accept=".csv,.xlsx" 
+                                   class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer transition-all">
+                            <p class="text-[10px] text-slate-400 mt-3 font-medium">
+                                *Mendukung .CSV atau .XLSX. Format kolom harus: <strong>NISN, Nama Lengkap, Nomor HP Wali</strong>.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Card 3: Upload File --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-blue-200 overflow-hidden">
-                    <div class="bg-blue-50 px-6 py-4 border-b border-blue-100">
-                        <h3 class="text-sm font-bold text-blue-800 m-0 uppercase tracking-wide flex items-center gap-2">
-                            <i class="fas fa-file-upload text-blue-600"></i>
-                            Alternatif: Upload File
-                        </h3>
-                    </div>
-                    <div class="p-6">
-                        <label class="form-label-modern text-blue-700">File CSV atau XLSX</label>
-                        <input type="file" name="bulk_file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" 
-                               class="form-input-modern w-full file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                        <p class="text-xs text-slate-500 mt-2">
-                            <i class="fas fa-file-excel text-emerald-500 mr-1"></i>
-                            Format: <strong>NISN</strong>, <strong>Nama Lengkap</strong>, <strong>NomorHP</strong> (opsional). Jika ada file, data tabel akan diabaikan.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-
-            {{-- Sidebar --}}
-            <div class="space-y-6">
-                
-                {{-- Card: Opsi Akun Wali --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-50 px-6 py-4 border-b border-slate-200">
-                        <h3 class="text-sm font-bold text-slate-700 m-0 uppercase tracking-wide flex items-center gap-2">
-                            <i class="fas fa-user-friends text-amber-500"></i>
-                            Opsi Akun Wali
-                        </h3>
-                    </div>
-                    <div class="p-6">
-                        <div class="bg-gradient-to-r from-slate-50 to-blue-50 p-4 rounded-xl border border-slate-200">
-                            <div class="flex items-start">
+                {{-- KOLOM KANAN: SIDEBAR AKSI --}}
+                <div class="lg:col-span-4 space-y-6">
+                    
+                    {{-- Card: Opsi Wali --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div class="p-6">
+                            <div class="flex items-start gap-4">
                                 <div class="flex items-center h-6">
-                                    <input type="checkbox" class="w-5 h-5 text-indigo-600 bg-white border-slate-300 rounded focus:ring-indigo-500 focus:ring-2 cursor-pointer transition" 
-                                           id="create_wali_all" name="create_wali_all" value="1">
+                                    <input id="create_wali_all" name="create_wali_all" type="checkbox" value="1" 
+                                           class="w-5 h-5 text-blue-600 border-slate-300 rounded focus:ring-blue-500 cursor-pointer">
                                 </div>
-                                <label class="ml-3 cursor-pointer" for="create_wali_all">
-                                    <span class="text-sm font-bold text-slate-800 block">Buat akun Wali Murid otomatis</span>
-                                    <span class="text-xs text-slate-500 mt-0.5 block">Sistem akan membuat akun untuk setiap siswa yang ditambahkan</span>
+                                <label for="create_wali_all" class="cursor-pointer">
+                                    <span class="block text-sm font-black text-slate-800 leading-tight">Buat Akun Wali</span>
+                                    <span class="text-[11px] text-slate-500 mt-1 block leading-relaxed">Otomatis membuat akses akun wali untuk semua siswa baru.</span>
                                 </label>
                             </div>
-                            
-                            <div id="bulk-preview" class="mt-4 p-3 bg-white border border-indigo-200 rounded-lg hidden">
-                                <p class="text-xs font-bold text-indigo-800 mb-2">
-                                    <i class="fas fa-eye mr-1"></i> Preview Username:
-                                </p>
-                                <code id="bulk-preview-sample" class="text-xs text-indigo-600 bg-indigo-50 px-3 py-1 rounded block">-</code>
-                            </div>
                         </div>
                     </div>
-                </div>
 
-                {{-- Card: Action Buttons --}}
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-6">
-                    <div class="p-6">
-                        <h4 class="text-sm font-bold text-slate-700 uppercase tracking-wide mb-3 flex items-center gap-2">
-                            <i class="fas fa-check-circle text-emerald-500"></i> Proses Data
-                        </h4>
-                        <p class="text-xs text-slate-500 mb-6 leading-relaxed">
-                            Pastikan kelas tujuan dan data siswa sudah benar sebelum memproses.
-                        </p>
-                        
-                        <button type="submit" id="bulkSubmitBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-indigo-200 transition-all transform active:scale-95 mb-3 flex items-center justify-center gap-2">
-                            <i class="fas fa-save"></i> Proses Tambah Banyak
-                        </button>
-                        
-                        <a href="{{ route('siswa.index') }}" class="w-full block text-center bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 font-bold py-3 px-4 rounded-xl transition-colors text-sm">
-                            Batal
-                        </a>
+                    {{-- Action Button --}}
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden sticky top-6">
+                        <div class="p-6 bg-slate-900 text-white">
+                            <h3 class="text-xs font-black uppercase tracking-widest m-0 flex items-center gap-2 italic">
+                                <i class="fas fa-rocket text-blue-400"></i> Finalisasi
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <p class="text-xs text-slate-500 mb-6 leading-relaxed">
+                                Pastikan kelas tujuan dan format data di tabel sudah sesuai sebelum memproses pendaftaran massal.
+                            </p>
+                            
+                            <button type="submit" id="bulkSubmitBtn" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-blue-100 transition-all active:scale-95 flex items-center justify-center gap-2">
+                                <i class="fas fa-cloud-upload-alt"></i> Proses Data Masal
+                            </button>
+                            
+                            <a href="{{ route('siswa.index') }}" class="w-full mt-3 inline-flex justify-center items-center py-3 px-4 bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 rounded-xl text-[10px] font-black uppercase tracking-widest no-underline transition-all">
+                                Batalkan Prosedur
+                            </a>
+                        </div>
                     </div>
+                    
                 </div>
-
-                {{-- Card: Panduan --}}
-                <div class="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-200 p-5">
-                    <h5 class="text-xs font-bold text-slate-600 uppercase tracking-wide mb-3 flex items-center gap-2">
-                        <i class="fas fa-book text-amber-500"></i> Panduan
-                    </h5>
-                    <ul class="space-y-2 text-xs text-slate-600">
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-check-circle text-emerald-500 mt-0.5"></i>
-                            <span>Pilih kelas tujuan terlebih dahulu</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-check-circle text-emerald-500 mt-0.5"></i>
-                            <span>Isi data siswa di tabel atau upload file</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-check-circle text-emerald-500 mt-0.5"></i>
-                            <span>NISN minimal 8 digit numeric</span>
-                        </li>
-                        <li class="flex items-start gap-2">
-                            <i class="fas fa-check-circle text-emerald-500 mt-0.5"></i>
-                            <span>Nomor HP opsional (untuk notifikasi)</span>
-                        </li>
-                    </ul>
-                </div>
-
             </div>
-        </div>
-    </form>
+        </form>
+    </div>
 </div>
 
 @endsection
@@ -279,53 +253,79 @@
 <style>
     .form-label-modern {
         display: block;
-        font-size: 0.75rem;
-        font-weight: 700;
+        font-size: 0.7rem;
+        font-weight: 800;
         text-transform: uppercase;
         color: #64748b;
         margin-bottom: 0.5rem;
-        letter-spacing: 0.025em;
+        letter-spacing: 0.05em;
     }
 
     .form-input-modern {
         display: block;
-        width: 100%;
         padding: 0.75rem 1rem;
         font-size: 0.875rem;
-        line-height: 1.25;
         color: #1e293b;
         background-color: #fff;
         border: 1px solid #e2e8f0;
         border-radius: 0.75rem;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        transition: all 0.2s;
     }
 
     .form-input-modern:focus {
-        border-color: #6366f1;
+        border-color: #2563eb;
         outline: 0;
-        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
     }
 
     .form-input-table {
         width: 100%;
-        padding: 0.5rem 0.75rem;
+        background-color: transparent;
+        border: 1px solid transparent;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
         font-size: 0.875rem;
         color: #1e293b;
-        background-color: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.5rem;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        transition: all 0.2s;
     }
 
     .form-input-table:focus {
-        border-color: #6366f1;
+        background-color: #fff;
+        border-color: #2563eb;
         outline: 0;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
-    .form-input-table::placeholder {
-        color: #cbd5e1;
-        font-size: 0.8rem;
+    .page-container { max-width: 1400px; margin: 0 auto; }
+</style>
+
+{{-- CSS UNTUK INPUT FIELD AGAR BORDERLESS --}}
+<style>
+    .form-input-clean {
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.875rem; /* text-sm */
+        color: #334155; /* slate-700 */
+        font-weight: 600;
+        transition: all 0.2s ease;
+    }
+
+    .form-input-clean:hover {
+        background-color: #f8fafc; /* slate-50 */
+    }
+
+    .form-input-clean:focus {
+        outline: none;
+        background-color: #ffffff;
+        border-color: #e2e8f0; /* slate-200 */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+
+    .form-input-clean::placeholder {
+        color: #cbd5e1; /* slate-300 */
+        font-weight: 400;
     }
 </style>
 @endsection

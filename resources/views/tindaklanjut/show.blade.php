@@ -39,29 +39,38 @@
     <div class="max-w-5xl mx-auto">
         
         {{-- HEADER --}}
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 pb-4 border-b border-slate-200">
-            <div>
-                <div class="flex items-center gap-2 text-indigo-600 mb-1">
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em] bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Detail Kasus</span>
-                    <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase {{ $sc['badge'] }}">{{ $tindakLanjut->status->label() }}</span>
-                </div>
-                <h1 class="text-2xl font-bold text-slate-800 m-0 tracking-tight flex items-center gap-3">
-                    <i class="fas fa-folder-open text-indigo-600"></i> Kasus #{{ $tindakLanjut->id }}
-                </h1>
-                <p class="text-slate-500 text-sm mt-1">Dibuat: {{ $tindakLanjut->created_at->format('d M Y, H:i') }}</p>
-            </div>
-            
-            <div class="flex gap-2 mt-4 md:mt-0">
-                @if($tindakLanjut->status->isActive())
-                <a href="{{ route('tindak-lanjut.edit', $tindakLanjut->id) }}" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 transition-all no-underline">
-                    <i class="fas fa-edit mr-1"></i> Kelola Kasus
-                </a>
-                @endif
-                <a href="{{ route('tindak-lanjut.index') }}" class="px-4 py-2 rounded-lg bg-white text-slate-600 text-xs font-bold border border-slate-200 hover:bg-slate-50 no-underline">
-                    <i class="fas fa-arrow-left mr-1"></i> Kembali
-                </a>
-            </div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 pb-3 border-b border-slate-200/60">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="text-[9px] font-black uppercase tracking-wider bg-indigo-50 text-indigo-600 px-1.5 py-0.5 rounded border border-indigo-100/50">
+                Detail Kasus
+            </span>
+            <span class="text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border {{ $sc['badge'] }}">
+                {{ $tindakLanjut->status->label() }}
+            </span>
         </div>
+        <h1 class="text-lg font-extrabold text-slate-800 m-0 tracking-tight flex items-center gap-2">
+            <i class="fas fa-folder-open text-indigo-500 text-base"></i> Kasus #{{ $tindakLanjut->id }}
+        </h1>
+        <p class="text-slate-400 text-[10px] mt-0.5 font-medium flex items-center gap-1">
+            <i class="far fa-calendar-alt"></i> Dibuat: {{ $tindakLanjut->created_at->format('d M Y, H:i') }}
+        </p>
+    </div>
+    
+    <div class="flex items-center gap-2 shrink-0">
+        @if($tindakLanjut->status->isActive())
+            <a href="{{ route('tindak-lanjut.edit', $tindakLanjut->id) }}" 
+               class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700 hover:-translate-y-0.5 shadow-sm shadow-indigo-200 transition-all no-underline active:scale-95">
+                <i class="fas fa-edit text-[10px]"></i> Kelola Kasus
+            </a>
+        @endif
+        
+        <a href="{{ route('tindak-lanjut.index') }}" 
+           class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-white text-slate-600 text-[11px] font-bold border border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all no-underline shadow-sm active:scale-95">
+            <i class="fas fa-arrow-left text-[10px]"></i> Kembali
+        </a>
+    </div>
+</div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {{-- LEFT COLUMN - Main Info --}}
@@ -168,39 +177,7 @@
             {{-- RIGHT COLUMN - Status & Timeline --}}
             <div class="space-y-6">
                 {{-- STATUS BOX --}}
-                <div class="bg-white rounded-2xl shadow-sm border {{ $sc['border'] }} overflow-hidden">
-                    <div class="p-6 {{ $sc['bg'] }}">
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="text-[10px] font-black {{ $sc['text'] }} uppercase tracking-wider">Status Kasus</span>
-                            <span class="px-3 py-1.5 rounded-lg text-[10px] font-black uppercase {{ $sc['badge'] }}">
-                                {{ $tindakLanjut->status->label() }}
-                            </span>
-                        </div>
-                        
-                        @if($tindakLanjut->status->value === 'Selesai')
-                        <div class="flex items-center gap-3 p-3 bg-white/50 rounded-xl">
-                            <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center">
-                                <i class="fas fa-check"></i>
-                            </div>
-                            <div>
-                                <span class="text-sm font-bold text-slate-700 block">Kasus Tuntas</span>
-                                <span class="text-[10px] text-slate-500">Diselesaikan {{ $tindakLanjut->updated_at->format('d M Y') }}</span>
-                            </div>
-                        </div>
-                        @elseif($tindakLanjut->status->value === 'Ditolak')
-                        <div class="flex items-center gap-3 p-3 bg-white/50 rounded-xl">
-                            <div class="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center">
-                                <i class="fas fa-times"></i>
-                            </div>
-                            <div>
-                                <span class="text-sm font-bold text-slate-700 block">Kasus Ditolak</span>
-                                <span class="text-[10px] text-slate-500">Ditolak {{ $tindakLanjut->updated_at->format('d M Y') }}</span>
-                            </div>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-
+                
                 {{-- TIMELINE --}}
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">

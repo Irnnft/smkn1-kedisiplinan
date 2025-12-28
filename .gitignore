@@ -1,5 +1,6 @@
 *.log
 .DS_Store
+.env
 .env.backup
 .env.production
 .phpactor.json
@@ -21,9 +22,16 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+<<<<<<< HEAD
 nul
 plantuml.jar
 out/
 docs/
 plantuml/
 plan/
+=======
+out/
+plantuml.jar
+nul 
+docs/
+>>>>>>> dev

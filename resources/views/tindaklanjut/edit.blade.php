@@ -30,251 +30,141 @@
 </style>
 
 <div class="page-wrap-custom min-h-screen p-5 bg-slate-50">
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 pb-1 border-b border-slate-200">
+        {{-- Header Section --}}
+        <div class="flex items-center justify-between mb-6">
             <div>
-                <div class="flex items-center gap-2 text-indigo-600 mb-1">
-                    <span class="text-[10px] font-black uppercase tracking-[0.2em] bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">Manajemen Kasus</span>
+                <div class="flex items-center gap-2 mb-1">
+                    <a href="{{ route('dashboard.walikelas') }}" class="text-xs font-bold text-slate-400 hover:text-indigo-600 transition-colors">
+                        <i class="fas fa-home"></i> Home
+                    </a>
+                    <span class="text-slate-300">/</span>
+                    <span class="text-xs font-bold text-slate-500">Manajemen Kasus</span>
                 </div>
-                <h1 class="text-2xl font-bold text-slate-800 m-0 tracking-tight flex items-center gap-3">
-                    <i class="fas fa-tasks text-indigo-600"></i> Kelola Kasus: {{ $kasus->siswa->nama_siswa }}
+                <h1 class="text-xl font-black text-slate-800 tracking-tight">
+                    Tindak Lanjut Kasus
                 </h1>
             </div>
-            
-            <a href="javascript:history.back()" class="btn-clean-action no-underline">
-                <i class="fas fa-arrow-left mr-1"></i> Kembali
+            <a href="javascript:history.back()" class="btn-clean-action no-underline flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> <span>Kembali</span>
             </a>
         </div>
 
-        {{-- LAYOUT DENGAN KOTAK TERPISAH DAN KONSISTEN --}}
-        <div class="space-y-5">
+        {{-- Unified "Case File" Card --}}
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             
-            {{-- KOTAK 1: INFO SISWA --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-5 py-3 bg-gradient-to-r from-indigo-50 to-slate-50 border-b border-slate-100">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-indigo-600 m-0 flex items-center gap-2">
-                        <i class="fas fa-user"></i> Informasi Siswa
-                    </h3>
-                </div>
-                <div class="p-5">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-600 to-indigo-700 text-white flex items-center justify-center text-xl font-black shadow-md">
-                            {{ strtoupper(substr($kasus->siswa->nama_siswa, 0, 1)) }}
-                        </div>
-                        <div class="flex-1">
-                            <h2 class="text-lg font-black text-slate-800 leading-tight mb-1">{{ $kasus->siswa->nama_siswa }}</h2>
-                            <div class="flex flex-wrap gap-2 text-[11px] font-bold uppercase tracking-wider">
-                                <span class="text-slate-400">NISN: {{ $kasus->siswa->nisn }}</span>
-                                <span class="text-indigo-600 px-2 py-0.5 bg-indigo-50 rounded-lg border border-indigo-100">{{ $kasus->siswa->kelas->nama_kelas }}</span>
-                            </div>
-                        </div>
-                        <div class="hidden md:block">
-                            @php
-                                $statusColors = [
-                                    'Baru' => 'bg-blue-100 text-blue-700 border-blue-200',
-                                    'Menunggu Persetujuan' => 'bg-amber-100 text-amber-700 border-amber-200',
-                                    'Disetujui' => 'bg-emerald-100 text-emerald-700 border-emerald-200',
-                                    'Ditangani' => 'bg-indigo-100 text-indigo-700 border-indigo-200',
-                                    'Selesai' => 'bg-slate-100 text-slate-600 border-slate-200',
-                                ];
-                                $statusColor = $statusColors[$kasus->status->value] ?? 'bg-slate-100 text-slate-600 border-slate-200';
-                            @endphp
-                            <span class="px-4 py-2 rounded-xl {{ $statusColor }} font-black text-xs uppercase tracking-wider border">
-                                {{ $kasus->status->value }}
-                            </span>
+            {{-- 1. Card Header: Student & Status --}}
+            <div class="bg-slate-50/50 p-6 border-b border-slate-100 flex flex-col md:flex-row gap-4 items-start justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg font-black shadow-indigo-100 shadow-md">
+                        {{ strtoupper(substr($kasus->siswa->nama_siswa, 0, 1)) }}
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-800 leading-tight">{{ $kasus->siswa->nama_siswa }}</h2>
+                        <div class="flex items-center gap-3 mt-1 text-xs font-medium text-slate-500">
+                            <span class="flex items-center gap-1"><i class="fas fa-id-card opacity-50"></i> {{ $kasus->siswa->nisn }}</span>
+                            <span class="text-slate-300">|</span>
+                            <span class="text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">{{ $kasus->siswa->kelas->nama_kelas }}</span>
                         </div>
                     </div>
+                </div>
+
+                @php
+                    $statusColors = [
+                        'Baru' => 'bg-rose-50 text-rose-600 border-rose-100 ring-rose-500/10',
+                        'Menunggu Persetujuan' => 'bg-amber-50 text-amber-600 border-amber-100 ring-amber-500/10',
+                        'Disetujui' => 'bg-emerald-50 text-emerald-600 border-emerald-100 ring-emerald-500/10',
+                        'Ditangani' => 'bg-indigo-50 text-indigo-600 border-indigo-100 ring-indigo-500/10',
+                        'Selesai' => 'bg-slate-50 text-slate-600 border-slate-100 ring-slate-500/10',
+                    ];
+                    $statusColor = $statusColors[$kasus->status->value] ?? 'bg-slate-50 text-slate-600 border-slate-200';
+                @endphp
+                <div class="px-3 py-1.5 rounded-lg border ring-1 {{ $statusColor }} flex items-center gap-2">
+                    <span class="relative flex h-2 w-2">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 currentColor"></span>
+                      <span class="relative inline-flex rounded-full h-2 w-2 currentColor bg-current"></span>
+                    </span>
+                    <span class="text-xs font-bold uppercase tracking-wider">{{ $kasus->status->value }}</span>
                 </div>
             </div>
 
-            {{-- KOTAK 2: DETAIL KASUS --}}
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-5 py-3 bg-gradient-to-r from-rose-50 to-slate-50 border-b border-slate-100">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-rose-600 m-0 flex items-center gap-2">
-                        <i class="fas fa-exclamation-triangle"></i> Detail Kasus
-                    </h3>
-                </div>
-                <div class="p-5 space-y-4">
+            {{-- 2. Card Body: Grid Layout --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-100">
+                
+                {{-- Left Side: Details --}}
+                <div class="p-6 space-y-5">
                     <div>
-                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Pemicu Kasus</label>
-                        <div class="p-4 bg-slate-50 rounded-xl border border-slate-100 italic text-sm text-slate-600 leading-relaxed font-medium">
-                            "{{ $kasus->pemicu }}"
-                        </div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Pemicu Kasus</label>
+                        <p class="text-sm text-slate-700 font-medium italic">"{{ $kasus->pemicu }}"</p>
                     </div>
-
-                    <div class="p-4 rounded-xl bg-rose-50 border border-rose-100">
-                        <div class="flex justify-between items-center">
-                            <span class="text-[9px] font-black text-rose-400 uppercase tracking-widest">Sanksi Sistem</span>
-                            <span class="text-sm font-black text-rose-700">{{ $kasus->sanksi_deskripsi }}</span>
+                    
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Sanksi Sistem</label>
+                        <div class="text-sm font-semibold text-rose-600 bg-rose-50 px-3 py-2 rounded-lg border border-rose-100 inline-block">
+                            {{ $kasus->sanksi_deskripsi }}
                         </div>
                     </div>
 
                     @if($kasus->suratPanggilan && $kasus->suratPanggilan->keperluan)
                     <div>
-                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-2">Keperluan Pemanggilan</label>
-                        <div class="p-4 bg-amber-50/50 rounded-xl border border-amber-100 text-sm text-amber-800 leading-relaxed">
-                            {{ $kasus->suratPanggilan->keperluan }}
-                        </div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 block">Keperluan</label>
+                        <p class="text-sm text-slate-600 leading-relaxed">{{ $kasus->suratPanggilan->keperluan }}</p>
                     </div>
                     @endif
                 </div>
             </div>
 
-            {{-- KOTAK 2.5: TRACKING PENANGANAN (hanya tampil jika status bukan Baru) --}}
-            @if($kasus->status->value !== 'Baru')
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-5 py-3 bg-gradient-to-r from-cyan-50 to-slate-50 border-b border-slate-100">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-cyan-600 m-0 flex items-center gap-2">
-                        <i class="fas fa-history"></i> Riwayat Penanganan
-                    </h3>
-                </div>
-                <div class="p-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {{-- Info Penanganan --}}
-                        @if($kasus->ditangani_at)
-                        <div class="p-4 rounded-xl bg-indigo-50/50 border border-indigo-100">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-play-circle"></i>
+                {{-- Right Side: Letter Info & Actions --}}
+                <div class="p-6 bg-slate-50/30">
+                     @if($kasus->suratPanggilan)
+                        <div class="mb-6">
+                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 block flex items-center gap-2">
+                                <i class="fas fa-envelope text-indigo-400"></i> Detail Surat
+                            </label>
+                            
+                            <div class="grid grid-cols-2 gap-y-4 gap-x-2">
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Nomor Surat</span>
+                                    <span class="text-xs font-bold text-slate-700 font-mono">{{ $kasus->suratPanggilan->nomor_surat }}</span>
                                 </div>
-                                <div class="flex-1">
-                                    <div class="text-[9px] font-black text-indigo-400 uppercase tracking-widest mb-1">Ditangani Oleh</div>
-                                    <div class="font-bold text-slate-700">{{ $kasus->ditanganiOleh->username ?? 'N/A' }}</div>
-                                    <div class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                        <i class="fas fa-clock text-[10px]"></i> 
-                                        {{ $kasus->ditangani_at->format('d M Y, H:i') }} WIB
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5">
-                                        ({{ $kasus->ditangani_at->diffForHumans() }})
-                                    </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Tanggal Undangan</span>
+                                    <span class="text-xs font-bold text-slate-700">
+                                        {{ \Carbon\Carbon::parse($kasus->suratPanggilan->tanggal_pertemuan)->format('d M Y') }}
+                                    </span>
                                 </div>
-                            </div>
-                        </div>
-                        @endif
-
-                        {{-- Info Penyelesaian --}}
-                        @if($kasus->diselesaikan_at)
-                        <div class="p-4 rounded-xl bg-emerald-50/50 border border-emerald-100">
-                            <div class="flex items-start gap-3">
-                                <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-check-circle"></i>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Waktu</span>
+                                    <span class="text-xs font-bold text-slate-700">{{ $kasus->suratPanggilan->waktu_pertemuan }} WIB</span>
                                 </div>
-                                <div class="flex-1">
-                                    <div class="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-1">Diselesaikan Oleh</div>
-                                    <div class="font-bold text-slate-700">{{ $kasus->diselesaikanOleh->username ?? 'N/A' }}</div>
-                                    <div class="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                                        <i class="fas fa-clock text-[10px]"></i> 
-                                        {{ $kasus->diselesaikan_at->format('d M Y, H:i') }} WIB
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5">
-                                        ({{ $kasus->diselesaikan_at->diffForHumans() }})
-                                    </div>
+                                <div>
+                                    <span class="text-[10px] text-slate-400 block">Status Cetak</span>
+                                    @if($kasus->suratPanggilan->printLogs->count() > 0)
+                                        <span class="text-xs font-bold text-emerald-600">{{ $kasus->suratPanggilan->printLogs->count() }}x Dicetak</span>
+                                    @else
+                                        <span class="text-xs font-bold text-slate-400 italic">Belum dicetak</span>
+                                    @endif
                                 </div>
                             </div>
                         </div>
-                        @elseif($kasus->status->value === 'Ditangani')
-                        <div class="p-4 rounded-xl bg-amber-50/50 border border-amber-100 border-dashed">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-amber-100 text-amber-500 flex items-center justify-center flex-shrink-0">
-                                    <i class="fas fa-hourglass-half"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <div class="text-[9px] font-black text-amber-500 uppercase tracking-widest mb-1">Status</div>
-                                    <div class="font-bold text-amber-700">Menunggu Penyelesaian</div>
-                                    <div class="text-xs text-amber-600/80 mt-1">
-                                        Klik tombol "Selesaikan Kasus" untuk menyelesaikan
-                                    </div>
-                                </div>
+
+                        {{-- Action Buttons --}}
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <a href="{{ route('tindak-lanjut.preview-surat', $kasus->id) }}" 
+                                   class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-indigo-600 transition-all shadow-sm no-underline">
+                                    <i class="fas fa-eye"></i> Preview
+                                </a>
+                                <a href="{{ route('tindak-lanjut.cetak-surat', $kasus->id) }}" 
+                                   target="_blank"
+                                   onclick="return confirm('Cetak surat?')"
+                                   class="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 hover:text-emerald-600 transition-all shadow-sm no-underline">
+                                    <i class="fas fa-print"></i> Cetak
+                                </a>
                             </div>
-                        </div>
-                        @endif
-                    </div>
-                </div>
-            </div>
-            @endif
 
-            {{-- KOTAK 3: SURAT PANGGILAN --}}
-            @if($kasus->suratPanggilan)
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-5 py-3 bg-gradient-to-r from-emerald-50 to-slate-50 border-b border-slate-100">
-                    <h3 class="text-[10px] font-black uppercase tracking-widest text-emerald-600 m-0 flex items-center gap-2">
-                        <i class="fas fa-envelope"></i> Surat Panggilan
-                    </h3>
-                </div>
-                <div class="p-5">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-5">
-                        <div>
-                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Nomor Surat</span>
-                            <div class="font-mono text-xs text-slate-700 font-bold break-all">{{ $kasus->suratPanggilan->nomor_surat }}</div>
-                        </div>
-                        <div>
-                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tipe Surat</span>
-                            <span class="px-3 py-1 rounded-lg bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200">
-                                {{ $kasus->suratPanggilan->tipe_surat }}
-                            </span>
-                        </div>
-                        <div>
-                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tanggal Pertemuan</span>
-                            <div class="text-xs text-slate-700 font-semibold">
-                                {{ \Carbon\Carbon::parse($kasus->suratPanggilan->tanggal_pertemuan)->format('d M Y') }}
-                                <span class="text-slate-400 mx-1">•</span>
-                                {{ $kasus->suratPanggilan->waktu_pertemuan }}
-                            </div>
-                        </div>
-                        <div>
-                            <span class="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Status Cetak</span>
-                            @if($kasus->suratPanggilan->printLogs->count() > 0)
-                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200">
-                                    <i class="fas fa-check-double"></i> {{ $kasus->suratPanggilan->printLogs->count() }}x dicetak
-                                </span>
-                            @else
-                                <span class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200">
-                                    <i class="fas fa-times"></i> Belum dicetak
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Riwayat Cetak --}}
-                    @if($kasus->suratPanggilan->printLogs->count() > 0)
-                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 mb-5">
-                        <div class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-3">
-                            <i class="fas fa-history mr-1"></i> Riwayat Cetak
-                        </div>
-                        <div class="space-y-2">
-                            @foreach($kasus->suratPanggilan->printLogs->take(3) as $log)
-                            <div class="flex items-center gap-2 text-xs">
-                                <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                                    <i class="fas fa-user text-[10px]"></i>
-                                </div>
-                                <span class="font-bold text-slate-600">{{ $log->user->username ?? 'System' }}</span>
-                                <span class="text-slate-300">•</span>
-                                <span class="text-slate-500">{{ $log->printed_at->diffForHumans() }}</span>
-                                <span class="ml-auto text-[10px] text-slate-400 font-mono">{{ $log->printed_at->format('d/m/Y H:i') }}</span>
-                            </div>
-                            @endforeach
-                        </div>
-                    </div>
-                    @endif
-
-                    {{-- Tombol Aksi --}}
-                    <div class="flex flex-wrap gap-3">
-                        <a href="{{ route('tindak-lanjut.preview-surat', $kasus->id) }}" 
-                           class="flex items-center gap-2 px-5 py-3 rounded-xl bg-blue-50 text-blue-700 border-2 border-blue-200 hover:bg-blue-100 hover:border-blue-300 transition-all font-bold text-xs uppercase tracking-wider no-underline">
-                            <i class="fas fa-eye"></i>
-                            <span>Preview Surat</span>
-                        </a>
-                        
-                        <a href="{{ route('tindak-lanjut.cetak-surat', $kasus->id) }}" 
-                           onclick="return confirm('Cetak surat untuk {{ $kasus->siswa->nama_siswa }}?')"
-                           target="_blank"
-                           class="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-50 text-emerald-700 border-2 border-emerald-200 hover:bg-emerald-100 hover:border-emerald-300 transition-all font-bold text-xs uppercase tracking-wider no-underline">
-                            <i class="fas fa-print"></i>
-                            <span>Cetak Surat</span>
-                        </a>
-
-                        @if(in_array($kasus->status->value, ['Baru', 'Disetujui']))
+                        @if($kasus->status->value === 'Baru')
                         <form action="{{ route('tindak-lanjut.mulai-tangani', $kasus->id) }}" method="POST" 
                               onsubmit="return confirm('Mulai menangani kasus ini?')" class="ml-auto">
                             @csrf
@@ -287,26 +177,26 @@
                         </form>
                         @endif
 
-                        @if($kasus->status->value === 'Ditangani')
-                        <form action="{{ route('tindak-lanjut.selesaikan', $kasus->id) }}" method="POST" 
-                              onsubmit="return confirm('Selesaikan kasus ini?')" class="ml-auto">
-                            @csrf
-                            @method('PUT')
-                            <button type="submit" 
-                                    class="flex items-center gap-2 px-5 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-emerald-200">
-                                <i class="fas fa-check-circle"></i>
-                                <span>Selesaikan Kasus</span>
-                            </button>
-                        </form>
-                        @endif
-                    </div>
+                            @if($kasus->status->value === 'Ditangani')
+                            <form action="{{ route('tindak-lanjut.selesaikan', $kasus->id) }}" method="POST" onsubmit="return confirm('Selesaikan kasus?')">
+                                @csrf @method('PUT')
+                                <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs uppercase tracking-wider shadow-emerald-100 shadow-lg transition-all">
+                                    <i class="fas fa-check-circle"></i> Selesaikan Kasus
+                                </button>
+                            </form>
+                            @endif
+                        </div>
+
+                     @else
+                        <div class="h-full flex flex-col items-center justify-center text-center p-6 text-slate-400">
+                            <i class="fas fa-file-excel text-4xl mb-3 opacity-20"></i>
+                            <span class="text-xs font-medium">Belum ada surat panggilan yang dibuat untuk kasus ini.</span>
+                        </div>
+                     @endif
                 </div>
             </div>
-            @endif
-
+            
         </div>
-        {{-- END LAYOUT --}}
-
     </div>
 </div>
 @endsection
