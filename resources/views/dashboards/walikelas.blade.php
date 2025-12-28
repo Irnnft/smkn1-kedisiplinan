@@ -49,24 +49,42 @@
     </div>
 
     <!-- Date Filter -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-4 mb-6">
-        <form method="GET" action="{{ route('dashboard.walikelas') }}" class="flex flex-wrap gap-4 items-end">
-            <div class="flex-1 min-w-[200px]">
-                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Dari Tanggal</label>
-                <input type="date" name="start_date" value="{{ $startDate }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-            </div>
-            <div class="flex-1 min-w-[200px]">
-                <label class="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Sampai Tanggal</label>
-                <input type="date" name="end_date" value="{{ $endDate }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm">
-            </div>
-            <button type="submit" class="px-6 py-2 bg-blue-600 text-white text-sm font-bold rounded-lg hover:bg-blue-700 transition">
-                Filter
-            </button>
-        </form>
+   <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-all group" 
+         onclick="document.getElementById('filterContentToggle').classList.toggle('hidden')">
+        
+        <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider m-0 flex items-center gap-2">
+            <span class="text-blue-600">
+                <i class="fas fa-filter text-xs"></i>
+            </span>
+            Konfigurasi Periode Laporan
+        </h3>
+        <i class="fas fa-chevron-down text-slate-400 group-hover:text-blue-600 transition-all"></i>
     </div>
 
+    <div id="filterContentToggle" class="hidden p-6 transition-all duration-300">
+        <form method="GET" action="{{ route('dashboard.walikelas') }}">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <div class="md:col-span-5">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Rentang Mulai</label>
+                    <input type="date" name="start_date" value="{{ $startDate }}" class="block w-full p-2.5 text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all">
+                </div>
+                <div class="md:col-span-5">
+                    <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Rentang Akhir</label>
+                    <input type="date" name="end_date" value="{{ $endDate }}" class="block w-full p-2.5 text-sm font-semibold text-slate-700 border border-slate-200 rounded-xl bg-slate-50 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all">
+                </div>
+                <div class="md:col-span-2">
+                    <button type="submit" class="w-full h-[42px] bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-lg transition-all active:scale-95 border-none cursor-pointer">
+                        Filter
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
     <!-- Stats Cards -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
         
         <div class="group hover-lift bg-white rounded-xl p-4 shadow-sm border border-slate-100 relative overflow-hidden">
             <div class="flex items-center justify-between mb-3">
@@ -107,11 +125,11 @@
     </div>
 
     <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 items-start">
         
         <!-- Kasus Table -->
-        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden">
-            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/30">
+        <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden text-sm">
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
                 <h3 class="text-sm font-bold text-slate-700 m-0 flex items-center gap-2">
                     @if($totalKasus > 0)
                         <span class="relative flex h-2.5 w-2.5">
@@ -132,55 +150,54 @@
             </div>
             
             <div class="overflow-x-auto">
-                <table class="float-table text-left w-full">
-                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-slate-50 text-slate-500 text-[10px] uppercase font-bold tracking-wider border-b border-slate-200">
                         <tr>
-                            <th class="px-6 py-3 pl-8">Siswa</th>
-                            <th class="px-6 py-3">Pemicu</th>
-                            <th class="px-6 py-3">Surat</th>
-                            <th class="px-6 py-3 text-center">Status</th>
-                            <th class="px-6 py-3 text-right pr-8">Aksi</th>
+                            <th class="px-4 py-3 pl-6 font-bold w-[25%]">Siswa</th>
+                            <th class="px-4 py-3 font-bold w-[30%]">Pemicu</th>
+                            <th class="px-4 py-3 font-bold w-[12%] whitespace-nowrap text-center">Tipe Surat</th>
+                            <th class="px-4 py-3 text-center font-bold w-[13%] whitespace-nowrap">Status</th>
+                            <th class="px-4 py-3 text-right pr-6 font-bold w-[10%] whitespace-nowrap">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-slate-50">
+                    <tbody class="divide-y divide-slate-100">
                         @forelse($kasusBaru as $kasus)
                         <tr class="hover:bg-slate-50 transition-colors group">
-                            <td class="px-6 py-3 pl-8">
-                                <div class="text-sm font-bold text-slate-800">{{ $kasus->siswa->nama_siswa }}</div>
-                                <div class="text-[10px] text-slate-500">NISN: {{ $kasus->siswa->nisn }}</div>
+                            <td class="px-4 py-3 pl-6 align-middle">
+                                <div class="text-xs font-bold text-slate-700">{{ $kasus->siswa->nama_siswa }}</div>
+                                <div class="text-[10px] text-slate-500 font-medium mt-0.5">NISN: {{ $kasus->siswa->nisn }}</div>
                             </td>
-                            <td class="px-6 py-3">
-                                <div class="text-xs text-slate-600 truncate max-w-[150px]" title="{{ $kasus->pemicu }}">
-                                    {{ Str::limit($kasus->pemicu, 30) }}
+                            <td class="px-4 py-3 align-middle">
+                                <div class="text-xs text-slate-600 line-clamp-2 leading-relaxed" title="{{ $kasus->pemicu }}">
+                                    {{ $kasus->pemicu }}
                                 </div>
                             </td>
-                            <td class="px-6 py-3">
-                                <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                                    {{ $kasus->suratPanggilan->tipe_surat ?? 'N/A' }}
+                            <td class="px-4 py-3 whitespace-nowrap align-middle text-center">
+                                <span class="text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-100 px-2 py-1 rounded inline-block min-w-[60px]">
+                                    {{ $kasus->suratPanggilan->tipe_surat ?? '-' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-3 text-center">
+                            <td class="px-4 py-3 text-center whitespace-nowrap align-middle">
                                 @if($kasus->status == 'Menunggu Persetujuan')
-                                    <span class="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-1 rounded">Menunggu</span>
+                                    <span class="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-100 px-2 py-1 rounded inline-block min-w-[70px]">Menunggu</span>
                                 @elseif($kasus->status == 'Baru')
-                                    <span class="text-[10px] font-bold bg-rose-100 text-rose-700 px-2 py-1 rounded animate-pulse">Baru</span>
+                                    <span class="text-[10px] font-bold text-rose-600 bg-rose-50 border border-rose-100 px-2 py-1 rounded inline-block min-w-[70px] animate-pulse">Baru</span>
                                 @else
-                                    <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded">{{ $kasus->status }}</span>
+                                    <span class="text-[10px] font-bold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-1 rounded inline-block min-w-[70px]">{{ $kasus->status }}</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-3 text-right pr-8">
-                                <a href="{{ route('kasus.edit', $kasus->id) }}" class="inline-flex items-center gap-1 text-xs font-bold text-white bg-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-700 shadow-sm transition no-underline">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                    Detail
+                            <td class="px-4 py-3 text-right pr-6 whitespace-nowrap align-middle">
+                                <a href="{{ route('kasus.edit', $kasus->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-100 transition-all shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center py-12 text-slate-400 text-xs">
-                                <div class="flex flex-col items-center opacity-60">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 mb-2 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                    Tidak ada kasus surat aktif. Kelas aman.
+                            <td colspan="5" class="text-center py-10 text-slate-400">
+                                <div class="flex flex-col items-center justify-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                                    <span class="text-xs font-medium">Tidak ada data kasus surat saat ini.</span>
                                 </div>
                             </td>
                         </tr>
@@ -191,14 +208,29 @@
         </div>
 
         <!-- Chart Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 flex flex-col overflow-hidden h-full">
-            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/30">
-                <h3 class="text-sm font-bold text-slate-700 m-0">📊 Pelanggaran Populer</h3>
-                <p class="text-[10px] text-slate-400 mt-0.5">Top pelanggaran di kelas ini</p>
-            </div>
+        <div class="lg:col-span-4 flex flex-col h-full">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col h-full">
+                <!-- Header Chart (Matching Table Header) -->
+                <div class="px-6 py-4 border-b border-slate-100 bg-white rounded-t-2xl">
+                    <h3 class="text-sm font-bold text-slate-700 m-0 flex items-center gap-2">
+                        <span class="w-2 h-2 bg-indigo-500 rounded-full ring-2 ring-indigo-100"></span>
+                        Statistik Pelanggaran
+                    </h3>
+                </div>
 
-            <div class="flex-1 p-6">
-                <canvas id="chartPelanggaran"></canvas>
+                <!-- Chart Body -->
+                <div class="p-6 flex-1 flex flex-col justify-center">
+                    @if(collect($chartData)->sum() > 0)
+                        <div class="relative h-[250px] w-full">
+                            <canvas id="chartPelanggaran"></canvas>
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center h-[200px] text-slate-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 mb-2 opacity-50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                            <span class="text-xs font-medium">Belum ada data pelanggaran</span>
+                        </div>
+                    @endif
+                </div>
             </div>
         </div>
 
@@ -207,7 +239,7 @@
 </div>
 
 <script>
-// Chart Pelanggaran Populer
+// Chart Pelanggaran Populer (Horizontal)
 const ctx = document.getElementById('chartPelanggaran').getContext('2d');
 new Chart(ctx, {
     type: 'bar',
@@ -216,48 +248,75 @@ new Chart(ctx, {
         datasets: [{
             label: 'Jumlah Pelanggaran',
             data: {!! json_encode($chartData) !!},
-            backgroundColor: 'rgba(79, 70, 229, 0.8)',
-            borderColor: 'rgba(79, 70, 229, 1)',
-            borderWidth: 1,
-            borderRadius: 8,
+            backgroundColor: '#4f46e5', // Indigo-600 (Darker)
+            hoverBackgroundColor: '#4338ca', // Indigo-700
+            borderRadius: 4,
+            barThickness: 24, // Thicker bars
+            maxBarThickness: 32
         }]
     },
     options: {
+        indexAxis: 'y', // Horizontal
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
+        layout: {
+            padding: {
+                left: 0,
+                right: 20, // Add space for labels
+                top: 0,
+                bottom: 0
+            }
+        },
         plugins: {
-            legend: {
-                display: false
-            },
+            legend: { display: false },
             tooltip: {
-                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                backgroundColor: 'rgba(15, 23, 42, 1)', // Dark background for high contrast
+                titleColor: '#ffffff',
+                bodyColor: '#e2e8f0',
                 padding: 12,
-                titleFont: { size: 12, weight: 'bold' },
-                bodyFont: { size: 11 },
-                cornerRadius: 8
+                titleFont: { size: 13, weight: 'bold' },
+                bodyFont: { size: 12 },
+                cornerRadius: 8,
+                displayColors: false,
+                callbacks: {
+                    label: function(context) {
+                        return 'Total: ' + context.parsed.x + ' Kasus';
+                    }
+                }
             }
         },
         scales: {
-            y: {
-                beginAtZero: true,
-                ticks: {
-                    precision: 0,
-                    font: { size: 10 }
-                },
-                grid: {
-                    color: 'rgba(0, 0, 0, 0.05)'
-                }
-            },
             x: {
-                ticks: {
-                    font: { size: 9 },
-                    maxRotation: 45,
-                    minRotation: 45
+                beginAtZero: true,
+                grid: { 
+                    color: '#e2e8f0', // Visible subtle grid
+                    borderDash: [4, 4],
+                    drawBorder: false 
                 },
-                grid: {
-                    display: false
-                }
+                ticks: { 
+                    font: { size: 11, weight: '600', family: "'Inter', sans-serif" }, 
+                    color: '#475569', // Darker text
+                    stepSize: 1 
+                },
+                border: { display: false }
+            },
+            y: {
+                grid: { display: false, drawBorder: false },
+                ticks: {
+                    font: { size: 11, weight: '600', family: "'Inter', sans-serif" },
+                    color: '#334155', // Slate-700 (High contrast)
+                    autoSkip: false,
+                    callback: function(value) {
+                         const label = this.getLabelForValue(value);
+                         return label.length > 18 ? label.substr(0, 18) + '...' : label;
+                    }
+                },
+                border: { display: false }
             }
+        },
+        animation: {
+            duration: 800,
+            easing: 'easeOutQuart'
         }
     }
 });
@@ -269,16 +328,6 @@ new Chart(ctx, {
     /* Hover Lift Effect */
     .hover-lift { transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease; }
     .hover-lift:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1); }
-
-    /* Stat Card */
-    .stat-card { background: white; border-radius: 1rem; padding: 1.25rem; border: 1px solid #f1f5f9; box-shadow: 0 2px 4px rgba(0,0,0,0.02); display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
-    
-    /* Tabel Floating Clean */
-    .float-table { border-collapse: separate; border-spacing: 0 8px; width: 100%; }
-    .float-row { background: white; transition: 0.2s; border: 1px solid #f1f5f9; }
-    .float-row td:first-child { border-radius: 8px 0 0 8px; border-left: 1px solid #f1f5f9; }
-    .float-row td:last-child { border-radius: 0 8px 8px 0; border-right: 1px solid #f1f5f9; }
-    .float-row:hover { transform: translateY(-2px); border-color: #bfdbfe; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
 </style>
 
 @endsection
