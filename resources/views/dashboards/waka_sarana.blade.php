@@ -142,7 +142,7 @@
         {{-- Tabel Kasus (Sisi Kiri) --}}
         <div class="lg:col-span-8 bg-white rounded-2xl shadow-sm border border-slate-200 flex flex-col overflow-hidden">
             <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-                <h3 class="text-sm font-bold text-slate-700 m-0">📋 Daftar Kasus Surat Panggilan</h3>
+                <h3 class="text-sm font-bold text-slate-700 m-0">Daftar Kasus Surat Panggilan</h3>
                 @if($totalKasus > 0)
                     <span class="text-[10px] font-bold text-rose-600 bg-rose-50 px-2 py-1 rounded border border-rose-100">{{ $totalKasus }} Kasus</span>
                 @endif

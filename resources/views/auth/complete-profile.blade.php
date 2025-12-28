@@ -7,384 +7,238 @@
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 600: '#4f46e5', 700: '#4338ca' },
+                        slate: { 50: '#f8fafc', 800: '#1e293b' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        /* RESET & BASE */
-        *, *::before, *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        :root {
-            --primary-600: #4F46E5;
-            --primary-700: #4338CA;
-            --primary-gradient: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
-            --bg-color: #0f172a;
-            --card-bg: rgba(255, 255, 255, 0.95);
-            --text-main: #111827;
-            --text-muted: #6B7280;
-            --border-color: #E5E7EB;
-            --error-color: #EF4444;
-            --success-color: #10B981;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            background-image: 
-                radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
-                radial-gradient(at 50% 100%, hsla(225,39%,30%,1) 0, transparent 50%);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            overflow-x: hidden;
-        }
-
-        /* CONTAINER */
-        .page-container {
-            width: 100%;
-            max-width: 480px;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* DECORATION */
-        .blob {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.5;
-            z-index: -1;
-            animation: float 10s infinite ease-in-out;
-        }
-        .blob-1 { background: #4F46E5; top: -100px; left: -100px; }
-        .blob-2 { background: #EC4899; bottom: -100px; right: -100px; animation-delay: -5s; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(20px, 20px); }
-        }
-
-        /* CARD */
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            box-shadow: 
-                0 25px 50px -12px rgba(0, 0, 0, 0.5), 
-                0 0 0 1px rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-
-        /* HEADER */
-        .card-header {
-            padding: 2.5rem 2rem 1.5rem;
-            text-align: center;
-            background: linear-gradient(to bottom, #ffffff, #f9fafb);
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .icon-wrapper {
-            width: 64px;
-            height: 64px;
-            background: var(--primary-gradient);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            margin: 0 auto 1.5rem;
-            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
-            transform: rotate(-10deg);
-        }
-
-        h1 {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.025em;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            line-height: 1.5;
-        }
-
-        /* BODY */
-        .card-body {
-            padding: 2rem;
-        }
-
-        .user-badge {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: #EEF2FF;
-            color: var(--primary-700);
-            padding: 10px 16px;
-            border-radius: 50px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 2rem;
-            border: 1px solid #E0E7FF;
-        }
-
-        /* FORM ELEMENTS */
-        .form-group {
-            margin-bottom: 1.25rem;
-        }
-
-        label {
-            display: block;
-            font-size: 0.875rem;
-            font-weight: 600;
-            color: #374151;
-            margin-bottom: 0.5rem;
-        }
-
-        .label-desc {
-            font-weight: 400;
-            font-size: 0.8em;
-            color: var(--text-muted);
-            margin-left: 4px;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 0.95rem;
-            font-family: inherit;
-            transition: all 0.2s;
-            background: #fff;
-        }
-
-        input:focus {
-            outline: none;
-            border-color: var(--primary-600);
-            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
-        }
-
-        .input-hint {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 6px;
-        }
-
-        .current-value {
-            font-size: 0.85rem;
-            background: #F3F4F6;
-            padding: 6px 10px;
-            border-radius: 6px;
-            display: inline-block;
-            margin-bottom: 8px;
-            color: #4B5563;
-        }
-
-        /* PASSWORD SECTION */
-        .password-section {
-            background: #FFF1F2;
-            border: 1px solid #FECDD3;
-            border-radius: 16px;
-            padding: 1.5rem;
-            margin-top: 2rem;
-        }
-
-        .password-title {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #BE123C;
-            font-weight: 700;
-            font-size: 0.95rem;
-            margin-bottom: 1rem;
-        }
-
-        /* BUTTON */
-        .btn-submit {
-            display: block;
-            width: 100%;
-            background: var(--primary-gradient);
-            color: white;
-            border: none;
-            padding: 1rem;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 12px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 1.5rem;
-        }
-
-        .btn-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.4);
-        }
-
-        .btn-submit:active {
-            transform: scale(0.98);
-        }
-
-        /* ALERT */
-        .alert {
-            padding: 1rem;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
-        .alert-error {
-            background: #FEF2F2;
-            color: #991B1B;
-            border: 1px solid #fecaca;
-        }
-
-        /* DEV SKIP */
-        .dev-skip {
-            margin-top: 20px;
-            text-align: center;
-        }
-        .dev-skip a {
-            color: rgba(255,255,255,0.6);
-            text-decoration: none;
-            font-size: 0.8rem;
-            border-bottom: 1px dotted rgba(255,255,255,0.4);
-        }
-        .dev-skip a:hover { color: white; }
-
-        /* RESPONSIVE */
-        @media (max-width: 640px) {
-            .card-header { padding: 2rem 1.5rem; }
-            .card-body { padding: 1.5rem; }
-            h1 { font-size: 1.25rem; }
+        .bg-pattern {
+            background-image: radial-gradient(#e0e7ff 1px, transparent 1px);
+            background-size: 24px 24px;
         }
     </style>
 </head>
-<body>
+<body class="h-screen overflow-hidden text-slate-800 bg-white">
 
-    <div class="page-container">
-        <!-- Background Blobs -->
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
+    <div class="flex h-full w-full">
+        
+        <!-- LEFT PANEL: Visual Identity (Matches 'Login' layout structure) -->
+        <div class="hidden lg:flex w-5/12 bg-indigo-900 relative items-center justify-center overflow-hidden">
+            <!-- Background Gradients -->
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-600 to-indigo-900 opacity-90"></div>
+            <div class="absolute -top-24 -left-24 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+            <div class="absolute bottom-0 right-0 w-80 h-80 bg-blue-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
 
-        <div class="card">
-            <div class="card-header">
-                <div class="icon-wrapper">🎓</div>
-                <h1>Selamat Datang</h1>
-                <p class="subtitle">Demi keamanan, mohon lengkapi data profil<br>Anda sebelum masuk ke sistem.</p>
+            <!-- Content -->
+            <div class="relative z-10 p-12 w-full max-w-lg">
+                <div class="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center mb-8 border border-white/20 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.2-2.85.582-4.161" />
+                    </svg>
+                </div>
+
+                <h1 class="text-4xl font-extrabold text-white tracking-tight leading-tight mb-4">Verifikasi<br><span class="text-indigo-200">Keamanan Akun</span></h1>
+                <p class="text-indigo-100 text-lg leading-relaxed font-medium opacity-90 mb-8">
+                    Sistem mendeteksi profil Anda belum lengkap. Mohon perbarui data untuk melanjutkan akses ke dashboard.
+                </p>
+
+                <!-- User Card Mini -->
+                <div class="flex items-center gap-4 bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-lg">
+                    <div class="w-12 h-12 rounded-xl bg-white text-indigo-700 flex items-center justify-center font-black text-xl shadow-sm shrink-0">
+                        {{ strtoupper(substr($user->nama, 0, 1)) }}
+                    </div>
+                    <div>
+                        <div class="font-bold text-white text-base tracking-wide">{{ $user->nama }}</div>
+                        <div class="text-[11px] bg-indigo-500/50 px-2 py-0.5 rounded text-white uppercase tracking-wider font-bold inline-block mt-1">{{ $user->role->nama_role }}</div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="card-body">
-                <div class="user-badge">
-                    <span>👤</span>
-                    <span>{{ $user->nama }}</span>
-                    <span style="opacity:0.3">|</span>
-                    <span>{{ $user->role->nama_role }}</span>
+        <!-- RIGHT PANEL: Form (Scrollable) -->
+        <div class="w-full lg:w-7/12 h-full overflow-y-auto bg-white bg-pattern relative">
+            <div class="min-h-full flex flex-col justify-center items-center py-10">
+                
+                <div class="w-full max-w-2xl px-8">
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                        <span class="w-2 h-8 bg-indigo-600 rounded-full"></span>
+                        Formulir Data Diri
+                    </h2>
+                    <p class="text-slate-500 mt-2 ml-5">Perbarui informasi akun Anda di bawah ini.</p>
                 </div>
 
                 @if ($errors->any())
-                    <div class="alert alert-error">
-                        <ul style="margin: 0; padding-left: 1.2rem;">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                    <div class="mb-8 p-4 rounded-xl bg-rose-50 border border-rose-100 text-rose-700 text-sm font-medium flex items-start gap-3 shadow-sm">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                        </svg>
+                        <div class="space-y-1">
+                            <p class="font-bold">Perhatian:</p>
+                            <ul class="list-disc list-inside opacity-90">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
                 @endif
 
                 <form action="{{ route('profile.complete.store') }}" method="POST">
                     @csrf
 
-                    <!-- USERNAME -->
-                    <div class="form-group">
-                        <label>Username <span class="label-desc">(Opsional)</span></label>
-                        <div class="current-value">Saat ini: <strong>{{ $user->username }}</strong></div>
-                        <input type="text" name="username" value="{{ old('username') }}" placeholder="Ubah hanya jika perlu">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <!-- Username -->
+                        <div class="group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 group-focus-within:text-indigo-600 transition-colors">Username <span class="text-slate-300 font-normal ml-0.5 normal-case">(Opsional)</span></label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                    <i class="fas fa-user text-sm"></i>
+                                </span>
+                                <input type="text" name="username" value="{{ old('username', $user->username) }}" 
+                                    class="w-full pl-9 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-semibold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none shadow-sm"
+                                    placeholder="Username">
+                            </div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="group">
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 group-focus-within:text-indigo-600 transition-colors">Email <span class="text-rose-400">*</span></label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                    <i class="fas fa-envelope text-sm"></i>
+                                </span>
+                                <input type="email" name="email" value="{{ old('email', $user->email) }}" required
+                                    class="w-full pl-9 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-semibold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none shadow-sm"
+                                    placeholder="email@sekolah.sch.id">
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- EMAIL -->
-                    <div class="form-group">
-                        <label>Email <span style="color:var(--error-color)">*</span></label>
-                        @if($user->email)
-                            <div class="current-value">Saat ini: <strong>{{ $user->email }}</strong></div>
-                        @endif
-                        <input type="email" name="email" value="{{ old('email', $user->email) }}" placeholder="email@sekolah.sch.id" required>
-                        <div class="input-hint">Email aktif untuk pemulihan akun & notifikasi.</div>
-                    </div>
-
-                    <!-- PHONE (Conditional) -->
                     @if(!$isWaliMurid)
-                    <div class="form-group">
-                        <label>WhatsApp <span class="label-desc">(Opsional)</span></label>
-                        <input type="text" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="08xxxxxxxxxx">
+                    <div class="mb-6 group">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 group-focus-within:text-indigo-600 transition-colors">WhatsApp <span class="text-slate-300 font-normal ml-0.5 normal-case">(Opsional)</span></label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400">
+                                <i class="fab fa-whatsapp text-lg"></i>
+                            </span>
+                            <input type="text" name="phone" value="{{ old('phone', $user->phone) }}"
+                                class="w-full pl-9 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-semibold focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none shadow-sm"
+                                placeholder="0812xxxxxxxx">
+                        </div>
                     </div>
                     @endif
 
-                    <!-- PASSWORD CHANGE -->
                     @if($needsPasswordChange)
-                    <div class="password-section">
-                        <div class="password-title">
-                            <span>🔒</span> Keamanan Password (Wajib)
-                        </div>
+                    <div class="mt-8 pt-8 border-t border-slate-100 relative">
+                        <div class="absolute top-0 left-0 bg-white pr-4 text-xs font-bold text-slate-400 uppercase tracking-widest -translate-y-1/2">Keamanan Akun</div>
+                        
+                        <div class="space-y-5">
+                            <div>
+                                 <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Password Lama</label>
+                                 <div class="relative">
+                                     <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fas fa-lock text-sm"></i></span>
+                                     <input type="password" name="current_password" id="current_password" required
+                                        class="w-full pl-9 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 text-sm font-medium focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none placeholder:text-slate-400"
+                                        placeholder="Password Lama (dari operator)">
+                                     <button type="button" onclick="togglePassword('current_password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-indigo-600 transition-colors outline-none">
+                                         <i class="fas fa-eye"></i>
+                                     </button>
+                                 </div>
+                            </div>
 
-                        <div class="form-group">
-                            <label>Password Lama <span style="color:var(--error-color)">*</span></label>
-                            <input type="password" name="current_password" placeholder="Password dari operator" required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Password Baru <span style="color:var(--error-color)">*</span></label>
-                            <input type="password" name="password" placeholder="Minimal 6 karakter" required>
-                        </div>
-
-                        <div class="form-group" style="margin-bottom: 0">
-                            <label>Ulangi Password Baru <span style="color:var(--error-color)">*</span></label>
-                            <input type="password" name="password_confirmation" placeholder="Ketik ulang password baru" required>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Password Baru</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fas fa-key text-sm"></i></span>
+                                        <input type="password" name="password" id="password" required
+                                            class="w-full pl-9 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none placeholder:text-slate-400"
+                                            placeholder="Minimal 6 karakter">
+                                        <button type="button" onclick="togglePassword('password')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-indigo-600 transition-colors outline-none">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Ulangi Password</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-400"><i class="fas fa-check-double text-sm"></i></span>
+                                        <input type="password" name="password_confirmation" id="password_confirmation" required
+                                            class="w-full pl-9 pr-10 py-3 bg-white border border-slate-200 rounded-xl text-slate-700 text-sm font-medium focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none placeholder:text-slate-400"
+                                            placeholder="Ketik ulang password">
+                                        <button type="button" onclick="togglePassword('password_confirmation')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-indigo-600 transition-colors outline-none">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     @endif
 
-                    <button type="submit" class="btn-submit">Simpan & Lanjutkan →</button>
+                    <div class="mt-10 flex items-center justify-between gap-6">
+                        <form action="{{ route('logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="text-slate-400 hover:text-slate-600 text-sm font-bold px-1 transition-colors hover:underline">
+                                <i class="fas fa-arrow-left mr-1"></i> Logout
+                            </button>
+                        </form>
+                        
+                        <button type="submit" class="flex-1 md:flex-none bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-indigo-500/30 transition-all transform hover:-translate-y-0.5 active:translate-y-0 text-sm">
+                            Simpan & Lanjutkan <i class="fas fa-arrow-right ml-2"></i>
+                        </button>
+                    </div>
                 </form>
 
-                <!-- Logout Link -->
-                <div style="margin-top: 1.5rem; text-align: center; padding-top: 1.5rem; border-top: 1px solid #E5E7EB;">
-                    <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                        @csrf
-                        <button type="submit" style="background: none; border: none; color: #6B7280; font-size: 0.85rem; cursor: pointer; font-weight: 500;">
-                            ← Logout / Kembali ke Login
-                        </button>
-                    </form>
+                <div class="mt-12 pt-6 border-t border-slate-100 text-center text-xs text-slate-400 font-medium">
+                    &copy; {{ date('Y') }} {{ school_name() }}. All rights reserved.
                 </div>
             </div>
         </div>
-
-        @if(app()->environment('local'))
-        <div class="dev-skip">
-            <a href="{{ route('profile.complete.skip') }}">[Developer: Skip Langkah Ini]</a>
-        </div>
-        @endif
     </div>
+    
+    @if(app()->environment('local'))
+    <div class="fixed bottom-4 right-4 z-50">
+        <a href="{{ route('profile.complete.skip') }}" class="group flex items-center gap-2 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-slate-200 shadow-sm hover:shadow-md transition-all text-slate-500 hover:text-indigo-600 no-underline">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 group-hover:bg-indigo-500 transition-colors"></span>
+            <span class="text-[11px] font-bold uppercase tracking-wider">Dev Skip</span>
+        </a>
+    </div>
+    @endif
+    
+    <!-- Icons Script -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        function togglePassword(fieldId) {
+            const input = document.getElementById(fieldId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
 
 </body>
 </html>

@@ -19,92 +19,162 @@
 </script>
 
 <div class="page-wrap-custom min-h-screen p-6">
-    <div class="max-w-3xl mx-auto">
+    <div class="max-w-5xl mx-auto">
         
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-3 gap-1 pb-1 custom-header-row">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 custom-header-row pb-4">
             <div>
                 <h1 class="text-2xl font-bold text-slate-800 m-0 tracking-tight flex items-center gap-3">
-                    <i class="fas fa-edit text-indigo-600"></i> Edit Catatan Pelanggaran
+                    <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-lg shadow-lg shadow-indigo-200">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    Edit Catatan
                 </h1>
-                <p class="text-slate-500 text-sm mt-1">Perbarui informasi laporan pelanggaran siswa.</p>
+                <p class="text-slate-500 text-sm mt-1 ml-14">Perbarui detail laporan pelanggaran anda.</p>
             </div>
             
-            <a href="{{ route('my-riwayat.index') }}" class="btn-clean-action no-underline">
+            <a href="{{ route('my-riwayat.index') }}" class="btn-clean-action no-underline bg-white shadow-sm hover:shadow-md">
                 <i class="fas fa-arrow-left"></i> Kembali
             </a>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden animate-in fade-in duration-500">
-            <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-xs border border-indigo-100 shadow-sm">
-                    <i class="fas fa-user"></i>
-                </div>
-                <div>
-                    <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 block leading-none">Siswa Terkait</span>
-                    <span class="text-sm font-bold text-slate-700 leading-tight">{{ $r->siswa?->nama }}</span>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
+            
+            {{-- SIDEBAR: INFO SISWA & STATUS --}}
+            <div class="lg:col-span-1 space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 relative overflow-hidden">
+                    
+                    <div class="relative z-10">
+                        
+                        <span class="text-[10px] font-black uppercase tracking-widest text-indigo-500 block mb-1">Siswa Terkait</span>
+                        <h2 class="text-xl font-bold text-slate-800 leading-tight mb-4">{{ $r->siswa?->nama }}</h2>
+                        
+                        <div class="pt-4 border-t border-slate-100">
+                            <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Status Bukti</div>
+                            @if($r->bukti_foto_path)
+                                <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-100 flex items-center gap-3 group cursor-pointer transition-all hover:shadow-md" onclick="window.open('{{ route('bukti.show', $r->bukti_foto_path) }}', '_blank')">
+                                    <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-bold text-emerald-700">Tersedia</div>
+                                        <div class="text-[10px] text-emerald-600">Klik untuk lihat</div>
+                                    </div>
+                                    <i class="fas fa-external-link-alt ml-auto text-emerald-400 group-hover:text-emerald-600"></i>
+                                </div>
+                            @else
+                                <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-lg bg-slate-200 text-slate-400 flex items-center justify-center">
+                                        <i class="fas fa-minus"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-xs font-bold text-slate-500">Belum Ada</div>
+                                        <div class="text-[10px] text-slate-400">Silahkan unggah foto</div>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="p-8">
-                <form action="{{ route('my-riwayat.update', $r->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            {{-- MAIN CONTENT: FORM EDIT --}}
+            <div class="lg:col-span-2">
+                <style>
+                    /* Local Override for Compact Form */
+                    .custom-label { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; display: block; margin-bottom: 0.35rem; }
+                    .form-card { background: white; border-radius: 1rem; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+                </style>
+
+                <form action="{{ route('my-riwayat.update', $r->id) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                     @csrf
                     @method('PUT')
-
-                    <div>
-                        <label for="jenis_pelanggaran_id" class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-tight">Jenis Pelanggaran</label>
-                        <select name="jenis_pelanggaran_id" id="jenis_pelanggaran_id" class="custom-select-clean w-full">
-                            @foreach($jenis as $j)
-                                <option value="{{ $j->id }}" {{ $r->jenis_pelanggaran_id == $j->id ? 'selected' : '' }}>
-                                    {{ $j->nama_pelanggaran }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="tanggal_kejadian" class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-tight">Tanggal Kejadian</label>
-                            <input type="date" name="tanggal_kejadian" id="tanggal_kejadian" 
-                                   value="{{ optional($r->tanggal_kejadian)->format('Y-m-d') }}" 
-                                   class="custom-input-clean w-full">
-                        </div>
-                        <div>
-                            <label for="jam_kejadian" class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-tight">Jam Kejadian</label>
-                            <input type="time" name="jam_kejadian" id="jam_kejadian" 
-                                   value="{{ optional($r->tanggal_kejadian)->format('H:i') }}" 
-                                   class="custom-input-clean w-full">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label for="keterangan" class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-tight">Keterangan Tambahan</label>
-                        <textarea name="keterangan" id="keterangan" rows="4" 
-                                  class="custom-input-clean w-full resize-none" 
-                                  placeholder="Tuliskan detail kejadian...">{{ old('keterangan', $r->keterangan) }}</textarea>
-                    </div>
-
-                    <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                        <label for="bukti_foto" class="text-[10px] font-bold text-slate-400 uppercase mb-2 block tracking-tight">Unggah Bukti Foto (Opsional)</label>
-                        <input type="file" name="bukti_foto" id="bukti_foto" class="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                    
+                    <div class="p-6 md:p-8 space-y-5">
                         
-                        @if($r->bukti_foto_path)
-                            <div class="mt-4 flex items-center gap-3 p-3 bg-white border border-slate-200 rounded-xl shadow-sm">
-                                <i class="fas fa-image text-indigo-500"></i>
-                                <span class="text-xs text-slate-600 font-medium">Bukti saat ini sudah tersedia</span>
-                                <a href="{{ route('bukti.show', $r->bukti_foto_path) }}" target="_blank" class="ml-auto text-xs font-bold text-indigo-600 hover:text-indigo-800 no-underline">Lihat Foto</a>
+                        <!-- Jenis Pelanggaran -->
+                        <div>
+                            <label for="jenis_pelanggaran_id" class="custom-label">Jenis Pelanggaran</label>
+                            <div class="relative">
+                                <select name="jenis_pelanggaran_id" id="jenis_pelanggaran_id" class="custom-select-clean w-full pl-10 appearance-none bg-slate-50 border-slate-200 focus:bg-white transition-colors h-11">
+                                    @foreach($jenis as $j)
+                                        <option value="{{ $j->id }}" {{ $r->jenis_pelanggaran_id == $j->id ? 'selected' : '' }}>
+                                            {{ $j->nama_pelanggaran }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                <div class="absolute left-3 top-0 bottom-0 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fas fa-exclamation-circle text-xs"></i>
+                                </div>
+                                <div class="absolute right-3 top-0 bottom-0 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fas fa-chevron-down text-xs"></i>
+                                </div>
                             </div>
-                        @endif
+                        </div>
+
+                        <!-- Date & Time Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label for="tanggal_kejadian" class="custom-label">Tanggal</label>
+                                <div class="relative">
+                                    <input type="date" name="tanggal_kejadian" id="tanggal_kejadian" 
+                                           value="{{ optional($r->tanggal_kejadian)->format('Y-m-d') }}" 
+                                           class="custom-input-clean w-full pl-10 bg-slate-50 border-slate-200 focus:bg-white h-11">
+                                    <div class="absolute left-3 top-0 bottom-0 flex items-center pointer-events-none text-slate-400">
+                                        <i class="far fa-calendar text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="jam_kejadian" class="custom-label">Waktu</label>
+                                <div class="relative">
+                                    <input type="time" name="jam_kejadian" id="jam_kejadian" 
+                                           value="{{ optional($r->tanggal_kejadian)->format('H:i') }}" 
+                                           class="custom-input-clean w-full pl-10 bg-slate-50 border-slate-200 focus:bg-white h-11">
+                                    <div class="absolute left-3 top-0 bottom-0 flex items-center pointer-events-none text-slate-400">
+                                        <i class="far fa-clock text-xs"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Keterangan -->
+                        <div>
+                            <label for="keterangan" class="custom-label">Keterangan Tambahan</label>
+                            <textarea name="keterangan" id="keterangan" rows="4" 
+                                      class="custom-input-clean w-full bg-slate-50 border-slate-200 focus:bg-white p-3 leading-relaxed" 
+                                      placeholder="Deskripsikan detail kejadian pelanggaran...">{{ old('keterangan', $r->keterangan) }}</textarea>
+                        </div>
+
+                        <!-- Upload New Foto -->
+                        <div class="pt-2">
+                            <label for="bukti_foto" class="custom-label">
+                                <i class="fas fa-cloud-upload-alt mr-1"></i> Perbarui Bukti (Opsional)
+                            </label>
+                            <input type="file" name="bukti_foto" id="bukti_foto" 
+                                   class="block w-full text-xs text-slate-500
+                                          file:mr-4 file:py-2.5 file:px-4
+                                          file:rounded-xl file:border-0
+                                          file:text-xs file:font-bold
+                                          file:bg-indigo-50 file:text-indigo-700
+                                          hover:file:bg-indigo-100
+                                          cursor-pointer border border-slate-200 rounded-xl bg-slate-50">
+                        </div>
                     </div>
 
-                    <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
-                        <a href="{{ route('my-riwayat.index') }}" class="btn-filter-secondary no-underline px-6">Batal</a>
-                        <button type="submit" class="btn-filter-primary px-8">
-                            <i class="fas fa-save mr-2"></i> Simpan Perubahan
-                        </button>
+                    <!-- Footer Actions -->
+                    <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-4">
+                        <span class="text-xs text-slate-400 hidden sm:inline">Pastikan data sudah benar sebelum menyimpan.</span>
+                        <div class="flex items-center gap-3 ml-auto">
+                            <a href="{{ route('my-riwayat.index') }}" class="btn-filter-secondary no-underline px-5 py-2.5 text-xs">Batal</a>
+                            <button type="submit" class="btn-filter-primary px-6 py-2.5 shadow-lg shadow-indigo-200">
+                                Simpan Perubahan
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
         </div>
+
     </div>
 </div>
 
