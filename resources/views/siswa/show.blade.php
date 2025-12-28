@@ -78,11 +78,89 @@
                         </div>
                     </div>
 
-                    @if(!empty($pembinaanRekomendasi['pembina_roles']))
+                    @if($pembinaanAktif)
+                    {{-- Status Pembinaan AKTIF (Perlu Pembinaan / Sedang Dibina) --}}
+                    @php
+                        $statusColors = [
+                            'Perlu Pembinaan' => ['bg' => 'bg-amber-50', 'border' => 'border-amber-200', 'text' => 'text-amber-700', 'badge' => 'bg-amber-100 text-amber-700 border-amber-200'],
+                            'Sedang Dibina' => ['bg' => 'bg-blue-50', 'border' => 'border-blue-200', 'text' => 'text-blue-700', 'badge' => 'bg-blue-100 text-blue-700 border-blue-200'],
+                            'Selesai' => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-200', 'text' => 'text-emerald-700', 'badge' => 'bg-emerald-100 text-emerald-700 border-emerald-200'],
+                        ];
+                        $sc = $statusColors[$pembinaanAktif->status->value] ?? $statusColors['Perlu Pembinaan'];
+                    @endphp
+                    <div class="p-5 {{ $sc['bg'] }} border-t {{ $sc['border'] }}">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-user-check {{ $sc['text'] }} text-sm"></i>
+                                <span class="text-[10px] font-black {{ $sc['text'] }} uppercase tracking-wider">Status Pembinaan</span>
+                            </div>
+                            <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase border {{ $sc['badge'] }}">
+                                {{ $pembinaanAktif->status->value }}
+                            </span>
+                        </div>
+                        <p class="text-[11px] {{ $sc['text'] }} leading-relaxed font-bold italic mb-3">
+                            "{{ $pembinaanAktif->keterangan_pembinaan }}"
+                        </p>
+                        <div class="text-[10px] {{ $sc['text'] }} space-y-1 mb-3">
+                            <div><i class="fas fa-chart-line mr-1"></i> {{ $pembinaanAktif->range_text }} ({{ $pembinaanAktif->total_poin_saat_trigger }} poin)</div>
+                            @if($pembinaanAktif->dibinaOleh)
+                            <div><i class="fas fa-user mr-1"></i> Dibina oleh: {{ $pembinaanAktif->dibinaOleh->username }}</div>
+                            @endif
+                            @if($pembinaanAktif->dibina_at)
+                            <div><i class="fas fa-clock mr-1"></i> Mulai: {{ $pembinaanAktif->dibina_at->format('d M Y H:i') }}</div>
+                            @endif
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            @foreach($pembinaanAktif->pembina_roles as $role)
+                                <span class="px-2 py-1 {{ $sc['text'] }} bg-white/50 text-[9px] font-black rounded-md uppercase tracking-tighter border {{ $sc['border'] }}">
+                                    {{ $role }}
+                                </span>
+                            @endforeach
+                        </div>
+                    </div>
+                    @elseif($pembinaanSelesai)
+                    {{-- Pembinaan SELESAI untuk range poin saat ini --}}
+                    <div class="p-5 bg-emerald-50 border-t border-emerald-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2">
+                                <i class="fas fa-check-circle text-emerald-600 text-sm"></i>
+                                <span class="text-[10px] font-black text-emerald-700 uppercase tracking-wider">Pembinaan Selesai</span>
+                            </div>
+                            <span class="px-2 py-1 rounded-lg text-[9px] font-black uppercase bg-emerald-100 text-emerald-700 border border-emerald-200">
+                                Tuntas
+                            </span>
+                        </div>
+                        <p class="text-[11px] text-emerald-700 leading-relaxed font-bold italic mb-3">
+                            "{{ $pembinaanSelesai->keterangan_pembinaan }}"
+                        </p>
+                        <div class="text-[10px] text-emerald-700 space-y-1 mb-3">
+                            <div><i class="fas fa-chart-line mr-1"></i> {{ $pembinaanSelesai->range_text }} ({{ $pembinaanSelesai->total_poin_saat_trigger }} poin saat dibina)</div>
+                            @if($pembinaanSelesai->dibinaOleh)
+                            <div><i class="fas fa-user mr-1"></i> Dibina oleh: {{ $pembinaanSelesai->dibinaOleh->username }}</div>
+                            @endif
+                            @if($pembinaanSelesai->dibina_at)
+                            <div><i class="fas fa-play-circle mr-1"></i> Mulai: {{ $pembinaanSelesai->dibina_at->format('d M Y H:i') }}</div>
+                            @endif
+                            @if($pembinaanSelesai->diselesaikanOleh)
+                            <div><i class="fas fa-user-check mr-1"></i> Diselesaikan oleh: {{ $pembinaanSelesai->diselesaikanOleh->username }}</div>
+                            @endif
+                            @if($pembinaanSelesai->selesai_at)
+                            <div><i class="fas fa-check-double mr-1"></i> Selesai: {{ $pembinaanSelesai->selesai_at->format('d M Y H:i') }}</div>
+                            @endif
+                        </div>
+                        @if($pembinaanSelesai->hasil_pembinaan)
+                        <div class="bg-white/50 rounded-lg p-3 border border-emerald-200 mt-3">
+                            <span class="text-[9px] font-black text-emerald-600 uppercase tracking-wider block mb-1">Hasil Pembinaan:</span>
+                            <p class="text-[11px] text-emerald-800 m-0">{{ $pembinaanSelesai->hasil_pembinaan }}</p>
+                        </div>
+                        @endif
+                    </div>
+                    @elseif(!empty($pembinaanRekomendasi['pembina_roles']))
+                    {{-- Fallback: Perlu pembinaan tapi belum ada record --}}
                     <div class="p-5 bg-rose-50 border-t border-rose-100">
                         <div class="flex items-center gap-2 mb-3">
                             <i class="fas fa-exclamation-triangle text-rose-600 text-sm"></i>
-                            <span class="text-[10px] font-black text-rose-700 uppercase tracking-wider">Status Pembinaan</span>
+                            <span class="text-[10px] font-black text-rose-700 uppercase tracking-wider">Perlu Pembinaan</span>
                         </div>
                         <p class="text-[11px] text-rose-800 leading-relaxed font-bold italic mb-3">
                             "{{ $pembinaanRekomendasi['keterangan'] }}"
@@ -108,7 +186,7 @@
                     </div>
                     <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                         @php $fields = [
-                            ['icon' => 'fas fa-user-shield', 'label' => 'Wali Murid', 'val' => $siswa->waliMurid->nama ?? '-'],
+                            ['icon' => 'fas fa-user-shield', 'label' => 'Wali Murid', 'val' => $siswa->waliMurid->username ?? '-'],
                             ['icon' => 'fas fa-phone-alt', 'label' => 'No. HP Wali', 'val' => $siswa->nomor_hp_wali_murid ?? '-'],
                             ['icon' => 'fas fa-user-tie', 'label' => 'Wali Kelas', 'val' => $siswa->kelas->waliKelas->username ?? '-'],
                             ['icon' => 'fas fa-user-cog', 'label' => 'Kaprodi', 'val' => $siswa->kelas->jurusan->kaprodi->username ?? '-']
@@ -188,7 +266,7 @@
                         </div>
                         <div class="flex flex-col leading-none">
                             <span class="text-[8px] font-bold text-slate-400 uppercase tracking-tighter">Dicatat Oleh</span>
-                            <span class="text-[10px] font-bold text-slate-700 truncate max-w-[100px]">{{ $riwayat->guruPencatat->nama ?? '-' }}</span>
+                            <span class="text-[10px] font-bold text-slate-700 truncate max-w-[100px]">{{ $riwayat->guruPencatat->username ?? '-' }}</span>
                         </div>
                     </div>
                 </div>

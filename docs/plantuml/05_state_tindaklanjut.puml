@@ -1,0 +1,101 @@
+@startuml State_Diagram
+' ============================================================================
+' STATE DIAGRAM - SISTEM INFORMASI KEDISIPLINAN SISWA SMK NEGERI 1
+' ============================================================================
+' Author: System Documentation
+' Version: 2.1 (PlantUML) - Fixed: DITOLAK is FINAL status
+' Date: 27 Desember 2024
+' ============================================================================
+
+' === GLOBAL STYLING ===
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+
+' === STATE STYLING ===
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #37474F
+    FontColor #212121
+    ArrowColor #455A64
+    StartColor #4CAF50
+    EndColor #F44336
+}
+
+' ============================================================================
+' STATE DIAGRAM 1: TINDAK LANJUT
+' ============================================================================
+
+title **STD-01: State Diagram - Tindak Lanjut**
+
+[*] --> Baru : Pelanggaran\ntrigger rules
+
+state Baru #E3F2FD {
+    Baru : entry/ Generate surat draft
+    Baru : entry/ Notifikasi approver (auto-submit)
+    Baru : do/ Menunggu approval
+}
+
+Baru --> Disetujui : Approver approve
+Baru --> Ditolak : Approver reject
+
+state Ditolak #FFEBEE {
+    Ditolak : entry/ Simpan alasan tolak
+    Ditolak : entry/ Notifikasi pembina
+    Ditolak : do/ FINAL - Tidak dapat diubah
+}
+
+Ditolak --> [*] : <<final>>
+
+state Disetujui #E8F5E9 {
+    Disetujui : entry/ Set penyetuju_user_id
+    Disetujui : do/ Siap ditangani
+}
+
+Disetujui --> Ditangani : Pembina mulai tangani
+
+state Ditangani #E3F2FD {
+    Ditangani : entry/ Set ditangani_by
+    Ditangani : entry/ Set ditangani_at
+    Ditangani : do/ Pembinaan berlangsung
+}
+
+Ditangani --> Selesai : Pembina selesaikan
+
+state Selesai #C8E6C9 {
+    Selesai : entry/ Set selesai_by
+    Selesai : entry/ Log hasil
+    Selesai : do/ FINAL - Kasus closed
+}
+
+Selesai --> [*] : <<final>>
+
+note right of Baru
+  Kasus langsung masuk
+  ke approval (auto-submit)
+  setelah di-generate
+end note
+
+note right of Ditolak
+  **FINAL STATUS**
+  Tidak dapat di-revisi
+  atau di-submit ulang
+end note
+
+note right of Selesai
+  **FINAL STATUS**
+  Kasus closed,
+  tidak dapat diubah
+end note
+
+legend right
+  <b>FLOW:</b>
+  BARU → DISETUJUI → DITANGANI → SELESAI
+       ↘ DITOLAK (FINAL)
+  ----
+  Status DITOLAK dan SELESAI
+  adalah status FINAL
+endlegend
+
+@enduml

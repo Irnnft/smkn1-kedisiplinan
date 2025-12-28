@@ -164,6 +164,52 @@
                 </div>
             @endif
 
+            {{-- STATUS PEMBINAAN AKTIF --}}
+            @if($pembinaanAktif)
+            @php
+                $statusColors = [
+                    'Perlu Pembinaan' => ['bg' => 'bg-amber-50', 'border' => 'border-amber-200', 'text' => 'text-amber-700', 'icon' => 'text-amber-500'],
+                    'Sedang Dibina' => ['bg' => 'bg-blue-50', 'border' => 'border-blue-200', 'text' => 'text-blue-700', 'icon' => 'text-blue-500'],
+                    'Selesai' => ['bg' => 'bg-emerald-50', 'border' => 'border-emerald-200', 'text' => 'text-emerald-700', 'icon' => 'text-emerald-500'],
+                ];
+                $sc = $statusColors[$pembinaanAktif->status->value] ?? $statusColors['Perlu Pembinaan'];
+            @endphp
+            <div class="{{ $sc['bg'] }} {{ $sc['border'] }} border rounded-2xl p-5 shadow-sm">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-base font-bold {{ $sc['text'] }} flex items-center gap-2">
+                        <i class="fas fa-user-check {{ $sc['icon'] }}"></i>
+                        Status Pembinaan
+                    </h3>
+                    <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase {{ $sc['bg'] }} {{ $sc['text'] }} border {{ $sc['border'] }}">
+                        {{ $pembinaanAktif->status->value }}
+                    </span>
+                </div>
+                
+                <p class="text-sm {{ $sc['text'] }} italic mb-3">
+                    "{{ $pembinaanAktif->keterangan_pembinaan }}"
+                </p>
+                
+                <div class="bg-white/50 rounded-xl p-3 space-y-2 text-sm {{ $sc['text'] }}">
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-chart-line w-4"></i>
+                        <span>{{ $pembinaanAktif->range_text }} ({{ $pembinaanAktif->total_poin_saat_trigger }} poin)</span>
+                    </div>
+                    @if($pembinaanAktif->dibinaOleh)
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-user w-4"></i>
+                        <span>Dibina oleh: <strong>{{ $pembinaanAktif->dibinaOleh->nama ?? $pembinaanAktif->dibinaOleh->username }}</strong></span>
+                    </div>
+                    @endif
+                    @if($pembinaanAktif->dibina_at)
+                    <div class="flex items-center gap-2">
+                        <i class="fas fa-clock w-4"></i>
+                        <span>Mulai: {{ $pembinaanAktif->dibina_at->format('d M Y, H:i') }}</span>
+                    </div>
+                    @endif
+                </div>
+            </div>
+            @endif
+
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
                     <h3 class="text-base font-bold text-slate-700 m-0">📜 Riwayat Kedisiplinan</h3>

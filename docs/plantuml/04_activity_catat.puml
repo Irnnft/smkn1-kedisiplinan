@@ -1,0 +1,96 @@
+@startuml Activity_Diagram
+' ============================================================================
+' ACTIVITY DIAGRAM - SISTEM INFORMASI KEDISIPLINAN SISWA SMK NEGERI 1
+' ============================================================================
+' Author: System Documentation
+' Version: 2.0 (PlantUML)
+' Date: 27 Desember 2024
+' ============================================================================
+
+' === GLOBAL STYLING ===
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+
+' === ACTIVITY STYLING ===
+skinparam activity {
+    BackgroundColor #E3F2FD
+    BorderColor #1976D2
+    FontColor #0D47A1
+    DiamondBackgroundColor #FFF8E1
+    DiamondBorderColor #FF8F00
+    ArrowColor #455A64
+}
+
+skinparam activityDiamond {
+    BackgroundColor #FFF8E1
+    BorderColor #FF8F00
+}
+
+skinparam partition {
+    BackgroundColor #FAFAFA
+    BorderColor #9E9E9E
+}
+
+' ============================================================================
+' ACTIVITY 1: PROSES CATAT PELANGGARAN
+' ============================================================================
+
+title **AD-01: Proses Catat Pelanggaran**
+
+|#E8F5E9|Guru|
+start
+
+:Buka form catat pelanggaran;
+
+:Cari/Pilih Siswa;
+
+:Pilih Jenis Pelanggaran;
+
+|#FFF3E0|Rules Engine|
+
+if (Jenis memiliki\nFrequency Rules?) then (Ya)
+    :Hitung frekuensi\npelanggaran ke-N;
+    :Ambil poin dari\nmatched rule;
+else (Tidak)
+    :Gunakan poin default\ndari jenis pelanggaran;
+endif
+
+|Guru|
+
+:Input keterangan (opsional);
+
+:Upload bukti foto (opsional);
+
+:Submit pelanggaran;
+
+|#E3F2FD|Sistem|
+
+:Simpan ke RiwayatPelanggaran;
+
+fork
+    :Cek Frequency Rules;
+fork again
+    :Cek Pembinaan Rules;
+end fork
+
+if (Trigger Tindak Lanjut?) then (Ya)
+    :Generate TindakLanjut;
+    :Generate SuratPanggilan;
+    :Kirim Notifikasi ke Pembina;
+else (Tidak)
+endif
+
+if (Trigger Pembinaan?) then (Ya)
+    :Generate PembinaanStatus;
+else (Tidak)
+endif
+
+|Guru|
+
+:Tampilkan pesan sukses;
+
+stop
+
+@enduml

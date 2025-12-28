@@ -244,6 +244,15 @@
                 </a>
             </li>
 
+            @if($isDev || in_array($role, ['Wali Kelas', 'Kaprodi', 'Waka Kesiswaan', 'Kepala Sekolah', 'Operator Sekolah']))
+            <li class="nav-item">
+                <a href="{{ route('tindak-lanjut.index') }}" class="nav-link {{ Request::is('tindak-lanjut*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-folder-open"></i>
+                    <p>Daftar Kasus</p>
+                </a>
+            </li>
+            @endif
+
             @if($isDev || in_array($role, ['Wali Kelas', 'Kaprodi', 'Waka Kesiswaan', 'Kepala Sekolah']))
             <li class="nav-item">
                 <a href="{{ route('pembinaan.index') }}" class="nav-link {{ Request::is('pembinaan*') ? 'active' : '' }}">

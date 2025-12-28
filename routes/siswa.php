@@ -13,7 +13,7 @@ use App\Http\Controllers\MasterData\SiswaController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // IMPORTANT: Specific routes MUST be defined BEFORE resource routes

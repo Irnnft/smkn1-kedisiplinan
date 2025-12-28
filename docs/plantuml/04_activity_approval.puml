@@ -1,0 +1,74 @@
+@startuml Activity_Approval
+' ============================================================================
+' ACTIVITY DIAGRAM - APPROVAL TINDAK LANJUT
+' ============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+
+skinparam activity {
+    BackgroundColor #E3F2FD
+    BorderColor #1976D2
+    FontColor #0D47A1
+    DiamondBackgroundColor #FFF8E1
+    DiamondBorderColor #FF8F00
+    ArrowColor #455A64
+}
+
+title **AD-02: Proses Approval Tindak Lanjut**
+
+|#E8F5E9|Pembina (WaliKelas/Kaprodi)|
+start
+
+:Lihat daftar tindak lanjut;
+
+:Pilih kasus untuk submit;
+
+:Submit ke approval;
+
+|#E3F2FD|Sistem|
+
+:Update status = **Menunggu Persetujuan**;
+
+:Kirim notifikasi ke Approver;
+
+|#FFF3E0|Approver (Kepsek/Waka)|
+
+:Terima notifikasi kasus baru;
+
+:Review detail kasus;
+
+:Review surat panggilan;
+
+if (Keputusan?) then (Approve)
+    |Sistem|
+    :Update status = **Disetujui**;
+    :Set penyetuju_user_id;
+else (Reject)
+    |Approver (Kepsek/Waka)|
+    :Input alasan penolakan;
+    |Sistem|
+    :Update status = **Ditolak**;
+    :Simpan alasan_tolak;
+endif
+
+|Sistem|
+
+:Kirim notifikasi ke Pembina;
+
+|Pembina (WaliKelas/Kaprodi)|
+
+:Terima notifikasi hasil;
+
+if (Status = Disetujui?) then (Ya)
+    :Lanjutkan penanganan kasus;
+    stop
+else (Tidak)
+    :Revisi dan submit ulang;
+    ' Go back to submit
+    detach
+endif
+
+@enduml

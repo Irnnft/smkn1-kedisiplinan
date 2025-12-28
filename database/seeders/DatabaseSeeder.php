@@ -2,41 +2,51 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB; // <-- 1. IMPORT DB FACADE
 
+/**
+ * Database Seeder
+ * 
+ * Main seeder untuk SMK Negeri 1 Sistem Kedisiplinan
+ * 
+ * URUTAN PENTING:
+ * 1. RoleSeeder - Roles harus ada dulu
+ * 2. JurusanSeeder - Jurusan untuk referensi kelas & kaprodi
+ * 3. KelasSeeder - Kelas untuk referensi wali kelas
+ * 4. UserSeeder - Users dengan assignment ke jurusan/kelas
+ * 
+ * NANTI DITAMBAHKAN:
+ * 5. KategoriPelanggaranSeeder
+ * 6. JenisPelanggaranSeeder
+ * 7. FrequencyRulesSeeder
+ * 8. PembinaanInternalSeeder
+ */
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // Nonaktifkan Foreign Key Checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-
+        $this->command->info('');
+        $this->command->info('🌱 SEEDING DATABASE SMK NEGERI 1...');
+        $this->command->info('================================');
+        
+        // Core data
         $this->call([
-            RoleSeeder::class, 
-            UserSeeder::class,
+            RoleSeeder::class,
             JurusanSeeder::class,
-            
-            // KelasSeeder::class,  <-- HAPUS ATAU KOMENTARI INI (Sudah diganti MassSeeder)
-            // SiswaSeeder::class,  <-- HAPUS ATAU KOMENTARI INI
-            
-            KategoriPelanggaranSeeder::class, 
-            JenisPelanggaranSeeder::class,
-
-            // --- SEEDER RAKSASA KITA ---
-            MassSeeder::class, 
-            DeveloperRoleSeeder::class,
-            
-            // Frequency Rules (NEW - v2.0)
-            FrequencyRulesSeeder::class,
+            KelasSeeder::class,
+            UserSeeder::class,
         ]);
-
-        // Aktifkan kembali Foreign Key Checks
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        
+        // Pelanggaran & Rules (akan ditambahkan nanti)
+        // $this->call([
+        //     KategoriPelanggaranSeeder::class,
+        //     JenisPelanggaranSeeder::class,
+        //     FrequencyRulesSeeder::class,
+        //     PembinaanInternalSeeder::class,
+        // ]);
+        
+        $this->command->info('');
+        $this->command->info('✅ DATABASE SEEDING COMPLETE!');
+        $this->command->info('================================');
     }
 }

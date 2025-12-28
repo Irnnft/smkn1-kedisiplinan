@@ -148,6 +148,8 @@ class SiswaController extends Controller
             'siswa' => $result['siswa'],
             'totalPoin' => $result['totalPoin'],
             'pembinaanRekomendasi' => $result['pembinaanRekomendasi'],
+            'pembinaanAktif' => $result['pembinaanAktif'] ?? null,
+            'pembinaanSelesai' => $result['pembinaanSelesai'] ?? null,
         ]);
     }
 

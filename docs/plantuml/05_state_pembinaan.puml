@@ -1,0 +1,57 @@
+@startuml State_Pembinaan
+' ============================================================================
+' STATE DIAGRAM - PEMBINAAN STATUS
+' ============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 10
+
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #37474F
+    FontColor #212121
+    ArrowColor #455A64
+    StartColor #4CAF50
+    EndColor #F44336
+}
+
+title **STD-02: State Diagram - Pembinaan Status**
+
+[*] --> PerluPembinaan : Poin masuk\nrange rule
+
+state PerluPembinaan #FFF8E1 {
+    PerluPembinaan : entry/ Set rule_id
+    PerluPembinaan : entry/ Set poin_trigger
+    PerluPembinaan : entry/ Set pembina_roles
+    PerluPembinaan : do/ Muncul di dashboard pembina
+}
+
+PerluPembinaan --> SedangDibina : mulaiPembinaan(userId)
+
+state SedangDibina #E3F2FD {
+    SedangDibina : entry/ Set dibina_oleh_user_id
+    SedangDibina : entry/ Set dibina_at = now()
+    SedangDibina : do/ Pembina input catatan
+}
+
+SedangDibina --> Selesai : selesaikanPembinaan(userId, hasil)
+
+state Selesai #C8E6C9 {
+    Selesai : entry/ Set diselesaikan_oleh_user_id
+    Selesai : entry/ Set selesai_at = now()
+    Selesai : entry/ Save hasil_pembinaan
+}
+
+Selesai --> [*]
+
+note right of PerluPembinaan
+  Trigger berdasarkan
+  PembinaanInternalRule:
+  - 1-49 poin: Wali Kelas
+  - 50-99 poin: + Kaprodi
+  - 100+ poin: + Waka + Kepsek
+end note
+
+@enduml

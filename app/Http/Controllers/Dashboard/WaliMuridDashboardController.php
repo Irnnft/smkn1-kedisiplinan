@@ -50,12 +50,20 @@ class WaliMuridDashboardController extends Controller
             ->orderByDesc('created_at')
             ->get();
 
+        // 7. Ambil Pembinaan Aktif (jika ada)
+        $pembinaanAktif = \App\Models\PembinaanStatus::forSiswa($siswaAktif->id)
+            ->active()
+            ->with(['rule', 'dibinaOleh'])
+            ->latest()
+            ->first();
+
         return view('dashboards.wali_murid', [
             'semuaAnak' => $semuaAnak,
             'siswa' => $siswaAktif,
             'totalPoin' => $totalPoin,
             'riwayat' => $riwayat,
-            'kasus' => $kasus
+            'kasus' => $kasus,
+            'pembinaanAktif' => $pembinaanAktif,
         ]);
     }
 }

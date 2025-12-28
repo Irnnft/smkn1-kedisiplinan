@@ -1,0 +1,325 @@
+@startuml ERD_Diagram
+' ============================================================================
+' ENTITY RELATIONSHIP DIAGRAM - DATABASE STRUKTUR
+' ============================================================================
+' Author: System Documentation
+' Version: 1.0 (PlantUML)
+' Date: 27 Desember 2024
+' ============================================================================
+
+skinparam backgroundColor #FEFEFE
+skinparam shadowing false
+skinparam defaultFontName "Segoe UI"
+skinparam defaultFontSize 9
+skinparam linetype ortho
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #37474F
+    ArrowColor #455A64
+    FontColor #212121
+    AttributeFontColor #424242
+    HeaderBackgroundColor #ECEFF1
+    BorderThickness 1.5
+}
+
+skinparam package {
+    BackgroundColor #F5F5F5
+    BorderColor #9E9E9E
+    FontColor #424242
+}
+
+title **ERD: Sistem Informasi Kedisiplinan Siswa**\n//SMK Negeri 1//
+
+' ============================================================================
+' USER MANAGEMENT
+' ============================================================================
+
+package "User Management" #E3F2FD {
+    
+    entity "roles" as ROLE {
+        * **id** : BIGINT <<PK>>
+        --
+        nama_role : VARCHAR(50)
+    }
+    
+    entity "users" as USER {
+        * **id** : BIGINT <<PK>>
+        --
+        # role_id : BIGINT <<FK>>
+        nama : VARCHAR(100)
+        username : VARCHAR(50) <<UNIQUE>>
+        email : VARCHAR(100)
+        password : VARCHAR(255)
+        phone : VARCHAR(20)
+        nip : VARCHAR(30)
+        nuptk : VARCHAR(30)
+        is_active : BOOLEAN
+        last_login_at : TIMESTAMP
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+}
+
+' ============================================================================
+' SCHOOL STRUCTURE
+' ============================================================================
+
+package "School Structure" #E8F5E9 {
+    
+    entity "jurusan" as JURUSAN {
+        * **id** : BIGINT <<PK>>
+        --
+        # kaprodi_user_id : BIGINT <<FK>>
+        nama_jurusan : VARCHAR(100)
+        kode_jurusan : VARCHAR(10)
+    }
+    
+    entity "kelas" as KELAS {
+        * **id** : BIGINT <<PK>>
+        --
+        # jurusan_id : BIGINT <<FK>>
+        # wali_kelas_user_id : BIGINT <<FK>>
+        nama_kelas : VARCHAR(50)
+        tingkat : VARCHAR(10)
+    }
+    
+    entity "siswa" as SISWA {
+        * **id** : BIGINT <<PK>>
+        --
+        # kelas_id : BIGINT <<FK>>
+        # wali_murid_user_id : BIGINT <<FK>>
+        nisn : VARCHAR(20) <<UNIQUE>>
+        nama_siswa : VARCHAR(100)
+        nomor_hp_wali_murid : VARCHAR(20)
+        alasan_keluar : TEXT
+        deleted_at : TIMESTAMP
+    }
+}
+
+' ============================================================================
+' VIOLATION SYSTEM
+' ============================================================================
+
+package "Violation System" #FFF3E0 {
+    
+    entity "kategori_pelanggaran" as KATEGORI {
+        * **id** : BIGINT <<PK>>
+        --
+        nama_kategori : VARCHAR(100)
+        tingkat_keseriusan : ENUM
+    }
+    
+    entity "jenis_pelanggaran" as JENIS {
+        * **id** : BIGINT <<PK>>
+        --
+        # kategori_id : BIGINT <<FK>>
+        nama_pelanggaran : VARCHAR(200)
+        poin : INT
+        has_frequency_rules : BOOLEAN
+        is_active : BOOLEAN
+        filter_category : VARCHAR(50)
+        keywords : TEXT
+    }
+    
+    entity "pelanggaran_frequency_rules" as FREQ_RULE {
+        * **id** : BIGINT <<PK>>
+        --
+        # jenis_pelanggaran_id : BIGINT <<FK>>
+        frequency_min : INT
+        frequency_max : INT
+        poin : INT
+        sanksi_description : TEXT
+        trigger_surat : BOOLEAN
+        pembina_roles : JSON
+        display_order : INT
+    }
+    
+    entity "riwayat_pelanggaran" as RIWAYAT {
+        * **id** : BIGINT <<PK>>
+        --
+        # siswa_id : BIGINT <<FK>>
+        # jenis_pelanggaran_id : BIGINT <<FK>>
+        # guru_pencatat_user_id : BIGINT <<FK>>
+        tanggal_kejadian : DATE
+        keterangan : TEXT
+        bukti_foto_path : VARCHAR(255)
+        created_at : TIMESTAMP
+        deleted_at : TIMESTAMP
+    }
+}
+
+' ============================================================================
+' FOLLOW-UP SYSTEM
+' ============================================================================
+
+package "Follow-up System" #FCE4EC {
+    
+    entity "tindak_lanjut" as TL {
+        * **id** : BIGINT <<PK>>
+        --
+        # siswa_id : BIGINT <<FK>>
+        # penyetuju_user_id : BIGINT <<FK>>
+        # ditangani_oleh_user_id : BIGINT <<FK>>
+        # diselesaikan_oleh_user_id : BIGINT <<FK>>
+        pemicu : TEXT
+        sanksi_deskripsi : TEXT
+        pembina_roles : JSON
+        denda_deskripsi : TEXT
+        status : ENUM
+        tanggal_tindak_lanjut : DATE
+        ditangani_at : TIMESTAMP
+        diselesaikan_at : TIMESTAMP
+        created_at : TIMESTAMP
+        updated_at : TIMESTAMP
+    }
+    
+    entity "surat_panggilan" as SURAT {
+        * **id** : BIGINT <<PK>>
+        --
+        # tindak_lanjut_id : BIGINT <<FK>>
+        nomor_surat : VARCHAR(50) <<UNIQUE>>
+        tipe_surat : VARCHAR(20)
+        pembina_data : JSON
+        pembina_roles : JSON
+        tanggal_surat : DATE
+        tanggal_pertemuan : DATE
+        waktu_pertemuan : VARCHAR(20)
+        tempat_pertemuan : VARCHAR(100)
+        keperluan : TEXT
+        file_path_pdf : VARCHAR(255)
+        created_at : TIMESTAMP
+    }
+    
+    entity "surat_panggilan_print_logs" as PRINT_LOG {
+        * **id** : BIGINT <<PK>>
+        --
+        # surat_panggilan_id : BIGINT <<FK>>
+        # user_id : BIGINT <<FK>>
+        printed_at : TIMESTAMP
+        ip_address : VARCHAR(45)
+        user_agent : TEXT
+    }
+}
+
+' ============================================================================
+' COACHING SYSTEM
+' ============================================================================
+
+package "Coaching System" #E8EAF6 {
+    
+    entity "pembinaan_internal_rules" as PB_RULE {
+        * **id** : BIGINT <<PK>>
+        --
+        poin_min : INT
+        poin_max : INT
+        pembina_roles : JSON
+        keterangan : TEXT
+        display_order : INT
+    }
+    
+    entity "pembinaan_status" as PB_STATUS {
+        * **id** : BIGINT <<PK>>
+        --
+        # siswa_id : BIGINT <<FK>>
+        # pembinaan_rule_id : BIGINT <<FK>>
+        # dibina_oleh_user_id : BIGINT <<FK>>
+        # diselesaikan_oleh_user_id : BIGINT <<FK>>
+        total_poin_saat_trigger : INT
+        range_text : VARCHAR(50)
+        keterangan_pembinaan : TEXT
+        pembina_roles : JSON
+        status : ENUM
+        dibina_at : TIMESTAMP
+        selesai_at : TIMESTAMP
+        catatan_pembinaan : TEXT
+        hasil_pembinaan : TEXT
+        created_at : TIMESTAMP
+    }
+}
+
+' ============================================================================
+' SETTINGS
+' ============================================================================
+
+package "Settings" #EFEBE9 {
+    
+    entity "rules_engine_settings" as SETTING {
+        * **id** : BIGINT <<PK>>
+        --
+        key : VARCHAR(100) <<UNIQUE>>
+        value : TEXT
+        label : VARCHAR(200)
+        description : TEXT
+        category : VARCHAR(50)
+        data_type : VARCHAR(20)
+    }
+    
+    entity "rules_engine_setting_histories" as SETTING_HIST {
+        * **id** : BIGINT <<PK>>
+        --
+        # setting_id : BIGINT <<FK>>
+        # changed_by : BIGINT <<FK>>
+        old_value : TEXT
+        new_value : TEXT
+        created_at : TIMESTAMP
+    }
+}
+
+' ============================================================================
+' RELATIONSHIPS
+' ============================================================================
+
+' User Management
+ROLE ||--o{ USER : "has"
+
+' School Structure
+USER ||--o| JURUSAN : "kaprodi"
+USER ||--o| KELAS : "wali kelas"
+USER ||--o{ SISWA : "wali murid"
+JURUSAN ||--o{ KELAS : "has"
+KELAS ||--o{ SISWA : "has"
+
+' Violation System
+KATEGORI ||--o{ JENIS : "has"
+JENIS ||--o{ FREQ_RULE : "has"
+JENIS ||--o{ RIWAYAT : "recorded"
+SISWA ||--o{ RIWAYAT : "has"
+USER ||--o{ RIWAYAT : "records"
+
+' Follow-up System
+SISWA ||--o{ TL : "has"
+USER ||--o{ TL : "approves"
+TL ||--o| SURAT : "has"
+SURAT ||--o{ PRINT_LOG : "has"
+USER ||--o{ PRINT_LOG : "prints"
+
+' Coaching System
+PB_RULE ||--o{ PB_STATUS : "triggers"
+SISWA ||--o{ PB_STATUS : "has"
+USER ||--o{ PB_STATUS : "coaches"
+
+' Settings
+SETTING ||--o{ SETTING_HIST : "has"
+USER ||--o{ SETTING_HIST : "changes"
+
+' ============================================================================
+' LEGEND
+' ============================================================================
+
+legend right
+  **LEGENDA**
+  ════════════════
+  **Kardinalitas:**
+  ||--o{ : One to Many
+  ||--o| : One to One
+  
+  **Kolom:**
+  * **bold** : Primary Key
+  # italic : Foreign Key
+  <<UNIQUE>> : Unique constraint
+  
+  **Total: 16 Tabel**
+endlegend
+
+@enduml

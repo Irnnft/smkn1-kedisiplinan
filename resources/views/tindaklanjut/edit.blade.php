@@ -113,6 +113,7 @@
                     </div>
                     @endif
                 </div>
+            </div>
 
                 {{-- Right Side: Letter Info & Actions --}}
                 <div class="p-6 bg-slate-50/30">
@@ -163,14 +164,18 @@
                                 </a>
                             </div>
 
-                            @if($kasus->status->value === 'Baru')
-                            <form action="{{ route('tindak-lanjut.mulai-tangani', $kasus->id) }}" method="POST" onsubmit="return confirm('Mulai tangani?')">
-                                @csrf @method('PUT')
-                                <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider shadow-indigo-100 shadow-lg transition-all">
-                                    <i class="fas fa-play"></i> Mulai Penanganan
-                                </button>
-                            </form>
-                            @endif
+                        @if($kasus->status->value === 'Baru')
+                        <form action="{{ route('tindak-lanjut.mulai-tangani', $kasus->id) }}" method="POST" 
+                              onsubmit="return confirm('Mulai menangani kasus ini?')" class="ml-auto">
+                            @csrf
+                            @method('PUT')
+                            <button type="submit" 
+                                    class="flex items-center gap-2 px-5 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-indigo-200">
+                                <i class="fas fa-play-circle"></i>
+                                <span>Mulai Tangani</span>
+                            </button>
+                        </form>
+                        @endif
 
                             @if($kasus->status->value === 'Ditangani')
                             <form action="{{ route('tindak-lanjut.selesaikan', $kasus->id) }}" method="POST" onsubmit="return confirm('Selesaikan kasus?')">

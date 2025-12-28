@@ -13,7 +13,7 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'profile.completed'])->group(function () {
     
     // ===================================================================
     // USER CRUD ROUTES
